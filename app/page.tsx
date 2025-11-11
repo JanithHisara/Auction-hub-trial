@@ -59,53 +59,53 @@ export default async function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--gold-accent)]/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20">
         {/* Enhanced Hero Section */}
-        <div className="text-center mb-16 sm:mb-20">
-          <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/80 backdrop-blur-md border border-[var(--gold-light)]/50 rounded-full mb-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/80 backdrop-blur-md border border-[var(--gold-light)]/50 rounded-full mb-6 sm:mb-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="relative">
-              <div className="w-2.5 h-2.5 bg-[var(--gold-accent)] rounded-full animate-pulse-gold" />
-              <div className="absolute inset-0 w-2.5 h-2.5 bg-[var(--gold-accent)] rounded-full animate-ping opacity-75" />
+              <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[var(--gold-accent)] rounded-full animate-pulse-gold" />
+              <div className="absolute inset-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[var(--gold-accent)] rounded-full animate-ping opacity-75" />
             </div>
-            <span className="text-sm font-semibold text-[var(--text-primary)] tracking-wide">Live Auctions</span>
+            <span className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] tracking-wide">Live Auctions</span>
             {auctions.length > 0 && (
-              <span className="ml-2 px-2 py-0.5 bg-[var(--gold-accent)]/20 text-[var(--gold-dark)] text-xs font-bold rounded-full">
+              <span className="ml-1.5 sm:ml-2 px-1.5 sm:px-2 py-0.5 bg-[var(--gold-accent)]/20 text-[var(--gold-dark)] text-xs font-bold rounded-full">
                 {auctions.length} Active
               </span>
             )}
           </div>
           
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 lg:mb-8 tracking-tight leading-tight px-2">
             <span className="block mb-2 bg-gradient-to-r from-[var(--gold-dark)] via-[var(--gold-accent)] to-[var(--gold-dark)] bg-clip-text text-transparent bg-[length:200%_auto] animate-shimmer">
-              Premium Gem Auctions
+              Premium Auctions
             </span>
           </h1>
           
-          <p className="text-xl sm:text-2xl lg:text-3xl text-[var(--text-secondary)] max-w-4xl mx-auto font-light leading-relaxed mb-8">
-            Discover rare gems and place your bids in exclusive auctions
+          <p className="text-base sm:text-xl lg:text-2xl text-[var(--text-secondary)] max-w-4xl mx-auto font-light leading-relaxed mb-6 sm:mb-8 px-4">
+            Discover rare items and place your bids in exclusive auctions
           </p>
 
           {/* Statistics Bar */}
           {auctions.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-6 sm:gap-8 mt-12">
-              <div className="flex flex-col items-center px-6 py-4 bg-white/60 backdrop-blur-sm border border-[var(--border)] rounded-2xl shadow-sm min-w-[120px]">
-                <span className="text-2xl sm:text-3xl font-bold text-[var(--gold-dark)] mb-1">{auctions.length}</span>
-                <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider">Auctions</span>
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-6 lg:gap-8 mt-8 sm:mt-12 px-2">
+              <div className="flex flex-col items-center px-4 sm:px-6 py-3 sm:py-4 bg-white/60 backdrop-blur-sm border border-[var(--border)] rounded-xl sm:rounded-2xl shadow-sm min-w-[100px] sm:min-w-[120px]">
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--gold-dark)] mb-1">{auctions.length}</span>
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Auctions</span>
               </div>
-              <div className="flex flex-col items-center px-6 py-4 bg-white/60 backdrop-blur-sm border border-[var(--border)] rounded-2xl shadow-sm min-w-[120px]">
-                <span className="text-2xl sm:text-3xl font-bold text-[var(--gold-dark)] mb-1">{totalBids}</span>
-                <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider">Total Bids</span>
+              <div className="flex flex-col items-center px-4 sm:px-6 py-3 sm:py-4 bg-white/60 backdrop-blur-sm border border-[var(--border)] rounded-xl sm:rounded-2xl shadow-sm min-w-[100px] sm:min-w-[120px]">
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--gold-dark)] mb-1">{totalBids}</span>
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Total Bids</span>
               </div>
-              <div className="flex flex-col items-center px-6 py-4 bg-white/60 backdrop-blur-sm border border-[var(--border)] rounded-2xl shadow-sm min-w-[120px]">
-                <span className="text-xl sm:text-2xl font-bold text-[var(--gold-dark)] mb-1">{formatCurrency(totalValue)}</span>
-                <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider">Total Value</span>
+              <div className="flex flex-col items-center px-4 sm:px-6 py-3 sm:py-4 bg-white/60 backdrop-blur-sm border border-[var(--border)] rounded-xl sm:rounded-2xl shadow-sm min-w-[100px] sm:min-w-[120px]">
+                <span className="text-lg sm:text-xl lg:text-2xl font-bold text-[var(--gold-dark)] mb-1">{formatCurrency(totalValue)}</span>
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Total Value</span>
               </div>
             </div>
           )}
         </div>
 
         {auctions.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {auctions.map((gem, index) => {
               const bidIncrease = ((gem.currentBid - gem.starting_price) / gem.starting_price) * 100
               const isHot = gem.bidCount >= 5 || bidIncrease > 50
@@ -114,11 +114,11 @@ export default async function HomePage() {
                 <Link
                   key={gem.id}
                   href={`/gems/${gem.id}`}
-                  className="group card-premium rounded-3xl overflow-hidden h-full flex flex-col transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+                  className="group card-premium rounded-2xl sm:rounded-3xl overflow-hidden h-full flex flex-col transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Enhanced Image Section */}
-                  <div className="relative h-80 bg-gradient-to-br from-[var(--gold-light)]/20 to-[var(--gold)]/10 overflow-hidden">
+                  <div className="relative h-64 sm:h-72 lg:h-80 bg-gradient-to-br from-[var(--gold-light)]/20 to-[var(--gold)]/10 overflow-hidden">
                     {gem.imageUrl ? (
                       <>
                         <img
@@ -138,29 +138,29 @@ export default async function HomePage() {
                     )}
                     
                     {/* Enhanced Timer Badge */}
-                    <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-[var(--gold-light)] shadow-xl group-hover:shadow-2xl transition-shadow">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <svg className="w-3 h-3 text-[var(--gold-dark)]" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-md px-2 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-[var(--gold-light)] shadow-xl group-hover:shadow-2xl transition-shadow">
+                      <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[var(--gold-dark)]" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                         </svg>
-                        <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Ends In</span>
+                        <span className="text-[10px] sm:text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Ends In</span>
                       </div>
                       <CountdownTimer endTime={gem.end_time} />
                     </div>
 
                     {/* Enhanced Badges */}
                     {gem.bidCount > 0 && (
-                      <div className="absolute top-4 left-4 flex flex-col gap-2">
-                        <div className="bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-xl backdrop-blur-sm">
-                          <span className="flex items-center gap-1.5">
-                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="absolute top-2 left-2 sm:top-4 sm:left-4 flex flex-col gap-1.5 sm:gap-2">
+                        <div className="bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold shadow-xl backdrop-blur-sm">
+                          <span className="flex items-center gap-1 sm:gap-1.5">
+                            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                             {gem.bidCount} {gem.bidCount === 1 ? 'Bid' : 'Bids'}
                           </span>
                         </div>
                         {isHot && (
-                          <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg animate-pulse">
+                          <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-bold shadow-lg animate-pulse">
                             🔥 Hot
                           </div>
                         )}
@@ -169,21 +169,21 @@ export default async function HomePage() {
                   </div>
 
                   {/* Enhanced Content Section */}
-                  <div className="p-6 sm:p-7 flex flex-col flex-grow bg-white">
-                    <div className="mb-4">
-                      <h3 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3 group-hover:text-[var(--gold-dark)] transition-colors line-clamp-1">
+                  <div className="p-4 sm:p-6 lg:p-7 flex flex-col flex-grow bg-white">
+                    <div className="mb-3 sm:mb-4">
+                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] mb-2 sm:mb-3 group-hover:text-[var(--gold-dark)] transition-colors line-clamp-1">
                         {gem.name}
                       </h3>
-                      <p className="text-[var(--text-secondary)] mb-6 line-clamp-2 text-sm sm:text-base leading-relaxed flex-grow">
+                      <p className="text-[var(--text-secondary)] mb-4 sm:mb-6 line-clamp-2 text-sm sm:text-base leading-relaxed flex-grow">
                         {gem.description}
                       </p>
                     </div>
 
                     {/* Enhanced Price Section */}
-                    <div className="pt-6 border-t border-[var(--border)] mt-auto">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                    <div className="pt-4 sm:pt-6 border-t border-[var(--border)] mt-auto">
+                      <div className="flex flex-col gap-3 sm:gap-4">
                         <div className="flex-1">
-                          <p className="text-xs font-semibold text-[var(--text-muted)] mb-2 uppercase tracking-wider flex items-center gap-2">
+                          <p className="text-xs font-semibold text-[var(--text-muted)] mb-1.5 sm:mb-2 uppercase tracking-wider flex items-center gap-2 flex-wrap">
                             <span>Current Bid</span>
                             {bidIncrease > 0 && (
                               <span className="px-2 py-0.5 bg-green-50 text-green-600 text-xs font-bold rounded-full">
@@ -191,21 +191,21 @@ export default async function HomePage() {
                               </span>
                             )}
                           </p>
-                          <p className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] bg-clip-text text-transparent">
+                          <p className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] bg-clip-text text-transparent">
                             {formatCurrency(gem.currentBid)}
                           </p>
                         </div>
-                        <div className="px-5 py-3 bg-gradient-to-br from-[var(--gold-light)]/40 to-[var(--gold-light)]/20 rounded-xl border border-[var(--gold-light)] shadow-sm">
+                        <div className="px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-br from-[var(--gold-light)]/40 to-[var(--gold-light)]/20 rounded-lg sm:rounded-xl border border-[var(--gold-light)] shadow-sm">
                           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wider">Starting</p>
                           <p className="text-base sm:text-lg font-bold text-[var(--gold-dark)]">{formatCurrency(gem.starting_price)}</p>
                         </div>
                       </div>
                       
                       {/* View Details CTA */}
-                      <div className="mt-6 pt-4 border-t border-[var(--border)]">
-                        <div className="flex items-center justify-between text-sm">
+                      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-[var(--border)]">
+                        <div className="flex items-center justify-between text-xs sm:text-sm">
                           <span className="text-[var(--text-muted)] font-medium">View Details</span>
-                          <svg className="w-5 h-5 text-[var(--gold-dark)] group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--gold-dark)] group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </div>
@@ -217,18 +217,18 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <div className="text-center py-24 sm:py-32">
+          <div className="text-center py-16 sm:py-24 lg:py-32 px-4">
             <div className="max-w-md mx-auto">
-              <div className="mb-8 inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-[var(--gold-light)]/30 to-[var(--gold)]/20 rounded-full shadow-lg">
-                <svg className="w-14 h-14 text-[var(--gold-dark)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mb-6 sm:mb-8 inline-flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-br from-[var(--gold-light)]/30 to-[var(--gold)]/20 rounded-full shadow-lg">
+                <svg className="w-10 h-10 sm:w-14 sm:h-14 text-[var(--gold-dark)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                 </svg>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-4">No Active Auctions</h2>
-              <p className="text-lg text-[var(--text-secondary)] mb-8">Check back soon for new gem listings</p>
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-[var(--border)] rounded-full shadow-sm">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4">No Active Auctions</h2>
+              <p className="text-base sm:text-lg text-[var(--text-secondary)] mb-6 sm:mb-8">Check back soon for new listings</p>
+              <div className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white border border-[var(--border)] rounded-full shadow-sm">
                 <div className="w-2 h-2 bg-[var(--gold-accent)] rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-[var(--text-secondary)]">We'll notify you when new auctions start</span>
+                <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)]">We'll notify you when new auctions start</span>
               </div>
             </div>
           </div>

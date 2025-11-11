@@ -1,11 +1,11 @@
-# Gem Auction Platform
+# Auction Platform
 
-A premium gem auction platform built with Next.js, Supabase, and AWS SST. Features real-time bidding, admin management, and a luxury casino-inspired UI.
+A premium auction platform built with Next.js, Supabase, and AWS SST. Features real-time bidding, admin management, and a luxury casino-inspired UI.
 
 ## Features
 
 - **User Authentication**: Registration, login, and role-based access (user/admin)
-- **Admin Dashboard**: Create, manage, and publish gem listings
+- **Admin Dashboard**: Create, manage, and publish listings
 - **Real-time Bidding**: Live bid updates using Supabase Realtime
 - **Auction Management**: Time-limited auctions with countdown timers
 - **Payment Processing**: Dummy payment gateway for winning bidders
@@ -69,7 +69,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ├── app/                    # Next.js app router pages
 │   ├── admin/             # Admin dashboard pages
 │   ├── api/               # API routes
-│   ├── gems/              # Public gem detail pages
+│   ├── gems/              # Public detail pages
 │   └── ...
 ├── components/            # React components
 │   ├── admin/             # Admin-specific components
@@ -98,8 +98,8 @@ The platform uses Supabase Realtime to provide live bid updates. When a user pla
 
 ### Admin Workflow
 
-1. Create gem listing with all details
-2. Publish gem to make it active
+1. Create listing with all details
+2. Publish to make it active
 3. Monitor bids in real-time
 4. After auction ends, manually select winner
 5. Winner completes payment

@@ -172,6 +172,24 @@ textarea:focus {
   outline: none;
 }
 
+/* Mobile touch targets - ensure minimum 44x44px for interactive elements */
+@media (max-width: 640px) {
+  button,
+  a[role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve tap targets for links in mobile menu */
+  nav a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
 /* Error state styles */
 .error-message {
   background: rgba(239, 68, 68, 0.1);

@@ -15,7 +15,7 @@ export default async function AdminLayout({
           <h1 className="text-4xl font-bold bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] bg-clip-text text-transparent mb-2">
             Admin Dashboard
           </h1>
-          <p className="text-[var(--text-secondary)]">Manage your gem auctions</p>
+          <p className="text-[var(--text-secondary)]">Manage your auctions</p>
         </div>
 
         <nav className="mb-8 border-b border-[var(--border)]">
