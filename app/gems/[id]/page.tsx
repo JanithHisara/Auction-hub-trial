@@ -1,0 +1,105 @@
+import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+import GemDetailClient from '@/components/gems/GemDetailClient'
+
+async function getGem(id: string) {
+  const supabase = await createClient()
+  const now = new Date().toISOString()
+
+  const { data: gem } = await supabase
+    .from('gems')
+    .select('*')
+    .eq('id', id)
+    .eq('status', 'active')
+    .gte('end_time', now)
+    .single()
+
+  if (!gem) {
+    // Try to get ended/completed gems for viewing
+    const { data: endedGem } = await supabase
+      .from('gems')
+      .select('*')
+      .eq('id', id)
+      .in('status', ['ended', 'completed'])
+      .single()
+
+    if (!endedGem) {
+      return null
+    }
+
+    const { data: images } = await supabase
+      .from('gem_images')
+      .select('*')
+      .eq('gem_id', id)
+      .order('display_order')
+
+    const { data: certificates } = await supabase
+      .from('gem_certificates')
+      .select('*')
+      .eq('gem_id', id)
+
+    const { data: bids } = await supabase
+      .from('bids')
+      .select('*, user:users(email)')
+      .eq('gem_id', id)
+      .order('bid_amount', { ascending: false })
+
+    const { data: winner } = await supabase
+      .from('auction_winners')
+      .select('*, user:users(email)')
+      .eq('gem_id', id)
+      .single()
+
+    return {
+      ...endedGem,
+      images: images || [],
+      certificates: certificates || [],
+      bids: bids || [],
+      winner,
+      isActive: false,
+    }
+  }
+
+  const { data: images } = await supabase
+    .from('gem_images')
+    .select('*')
+    .eq('gem_id', id)
+    .order('display_order')
+
+  const { data: certificates } = await supabase
+    .from('gem_certificates')
+    .select('*')
+    .eq('gem_id', id)
+
+  const { data: bids } = await supabase
+    .from('bids')
+    .select('*, user:users(email)')
+    .eq('gem_id', id)
+    .order('bid_amount', { ascending: false })
+
+  return {
+    ...gem,
+    images: images || [],
+    certificates: certificates || [],
+    bids: bids || [],
+    isActive: true,
+  }
+}
+
+export default async function GemDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const gemData = await getGem(id)
+
+  if (!gemData) {
+    notFound()
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[#f5f4f0] to-[#f0ede8] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <GemDetailClient initialGem={gemData} />
+      </div>
+    </div>
+  )
+}
+
