@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Lock, Mail, ArrowRight, Loader2, UserPlus, ShieldCheck } from 'lucide-react'
 
 export default function RegisterForm() {
   const [email, setEmail] = useState('')
@@ -15,18 +16,10 @@ export default function RegisterForm() {
   const supabase = createClient()
 
   const validatePassword = (pwd: string): string | null => {
-    if (pwd.length < 8) {
-      return 'Password must be at least 8 characters'
-    }
-    if (!/[A-Z]/.test(pwd)) {
-      return 'Password must contain at least one uppercase letter'
-    }
-    if (!/[a-z]/.test(pwd)) {
-      return 'Password must contain at least one lowercase letter'
-    }
-    if (!/[0-9]/.test(pwd)) {
-      return 'Password must contain at least one number'
-    }
+    if (pwd.length < 8) return 'Minimum 8 characters required'
+    if (!/[A-Z]/.test(pwd)) return 'Uppercase character required'
+    if (!/[a-z]/.test(pwd)) return 'Lowercase character required'
+    if (!/[0-9]/.test(pwd)) return 'Numeric character required'
     return null
   }
 
@@ -35,7 +28,7 @@ export default function RegisterForm() {
     setError(null)
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError('Credentials mismatch')
       return
     }
 
@@ -62,98 +55,127 @@ export default function RegisterForm() {
         router.push('/login?registered=true')
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to register')
+      setError(err.message || 'Registration failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--background)] via-[#f5f4f0] to-[#f0ede8] p-4 sm:p-6">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white border border-[var(--border)] rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg">
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] bg-clip-text text-transparent mb-2">
-              Auction
+        <div className="glass-panel border border-[var(--border)] rounded-xl p-8 relative overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 left-0 w-16 h-16 bg-[var(--gold)]/10 rounded-br-full" />
+          
+          <div className="text-center mb-8 relative z-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-[var(--surface-elevated)] border border-[var(--border)] mb-4">
+              <UserPlus className="w-6 h-6 text-[var(--gold)]" />
+            </div>
+            <h1 className="text-2xl font-bold font-mono text-[var(--text-primary)] mb-2">
+              NEW REGISTRATION
             </h1>
-            <p className="text-sm sm:text-base text-[var(--text-secondary)]">Create your account</p>
+            <p className="text-sm text-[var(--text-secondary)]">Create secure access credentials</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm">
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded text-sm font-mono flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-[var(--text-primary)] mb-1.5 sm:mb-2">
-                Email
+              <label htmlFor="email" className="block text-xs font-mono font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
+                Identity / Email
               </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-[var(--border)] rounded-lg text-sm sm:text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
-                placeholder="your@email.com"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-4 w-4 text-[var(--text-muted)]" />
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors font-mono text-sm"
+                  placeholder="name@domain.com"
+                />
+              </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-[var(--text-primary)] mb-1.5 sm:mb-2">
-                Password
+              <label htmlFor="password" className="block text-xs font-mono font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
+                Set Security Key
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-[var(--border)] rounded-lg text-sm sm:text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
-                placeholder="••••••••"
-              />
-              <p className="mt-1 text-[10px] sm:text-xs text-[var(--text-muted)]">
-                At least 8 characters with uppercase, lowercase, and number
-              </p>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-4 w-4 text-[var(--text-muted)]" />
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors font-mono text-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="mt-2 flex gap-1 flex-wrap">
+                 {/* Password strength indicators could go here */}
+                 <span className="text-[10px] text-[var(--text-muted)] font-mono">REQ: 8+ CHARS • UPPER • LOWER • NUM</span>
+              </div>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-medium text-[var(--text-primary)] mb-1.5 sm:mb-2">
-                Confirm Password
+              <label htmlFor="confirmPassword" className="block text-xs font-mono font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
+                Confirm Security Key
               </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-[var(--border)] rounded-lg text-sm sm:text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <ShieldCheck className="h-4 w-4 text-[var(--text-muted)]" />
+                </div>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors font-mono text-sm"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] text-white font-semibold py-3 sm:py-3.5 rounded-lg hover:shadow-lg hover:shadow-[var(--gold)]/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md text-sm sm:text-base"
+              className="w-full bg-[var(--gold)] text-black font-bold font-mono py-3 rounded hover:bg-[var(--gold-light)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group mt-4"
             >
-              {loading ? 'Creating account...' : 'Sign Up'}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  INITIALIZING...
+                </>
+              ) : (
+                <>
+                  CREATE IDENTITY
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
             </button>
           </form>
 
-          <div className="mt-5 sm:mt-6 text-center">
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
-              Already have an account?{' '}
-              <Link href="/login" className="text-[var(--gold-dark)] hover:text-[var(--gold-accent)] transition-colors font-medium">
-                Sign in
-              </Link>
-            </p>
+          <div className="mt-6 text-center pt-6 border-t border-[var(--border)]">
+             <Link href="/login" className="text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors">
+                RETURN TO LOGIN
+             </Link>
           </div>
         </div>
       </div>
     </div>
   )
 }
-
