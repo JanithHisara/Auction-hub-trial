@@ -15,6 +15,10 @@ export default function Navbar({ user, role }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
 
+  if (pathname?.startsWith('/monitor')) {
+    return null
+  }
+
   useEffect(() => {
     setIsOpen(false)
   }, [pathname])

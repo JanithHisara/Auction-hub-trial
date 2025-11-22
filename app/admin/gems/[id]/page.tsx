@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import PublishButton from '@/components/admin/PublishButton'
 import SelectWinnerButton from '@/components/admin/SelectWinnerButton'
+import AdminControls from '@/components/admin/AdminControls'
 
 export default async function GemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -46,9 +47,18 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
     .single()
 
   const highestBid = bids?.[0]?.bid_amount || gem.starting_price
+  const currentPrice = gem.current_price || gem.starting_price
 
   return (
     <div className="space-y-8">
+      {/* Admin Controls Section */}
+      <AdminControls 
+        gemId={gem.id} 
+        currentPrice={currentPrice} 
+        status={gem.status}
+        roundEndTime={gem.round_end_time}
+      />
+
       <div className="flex justify-between items-start">
         <div>
           <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-2">{gem.name}</h2>
