@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import CountdownTimer from '@/components/auctions/CountdownTimer'
 import BidForm from '@/components/auctions/BidForm'
 import BidHistory from '@/components/auctions/BidHistory'
 import RealtimeBidUpdates from '@/components/auctions/RealtimeBidUpdates'
-import RealtimeGemStatus from '@/components/auctions/RealtimeGemStatus'
 import WinnerPaymentLink from '@/components/payment/WinnerPaymentLink'
 import type { Gem, Bid, GemImage, GemCertificate } from '@/types/database'
 
@@ -21,26 +22,53 @@ interface GemDetailClientProps {
 }
 
 export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
+  const router = useRouter()
   const [gem, setGem] = useState(initialGem)
   const [bids, setBids] = useState(initialGem.bids)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
+  // Listen for Gem updates (Round changes, Price changes, Status changes)
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`gem_updates:${gem.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'gems',
+          filter: `id=eq.${gem.id}`,
+        },
+        (payload) => {
+           const newGem = payload.new as Gem
+           setGem(prev => ({ ...prev, ...newGem }))
+           
+           if (newGem.status === 'ended' || newGem.status === 'completed') {
+             router.refresh()
+           }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [gem.id, router])
+
   const handleBidUpdate = (newBids: Bid[]) => {
     setBids(newBids)
-    // Update current bid display
-    const highestBid = newBids[0]?.bid_amount || gem.starting_price
-    // Trigger a visual update
-    setGem({ ...gem, bids: newBids })
+    // We don't update price from bids anymore as it is controlled by admin/system
   }
 
   const highestBid = bids?.[0]?.bid_amount || gem.starting_price
   const bidIncrease = ((highestBid - gem.starting_price) / gem.starting_price) * 100
   const mainImage = gem.images?.[selectedImageIndex]?.image_url || gem.images?.[0]?.image_url
+  const nextPrice = (gem.current_price || gem.starting_price) + gem.min_bid_increment
 
   return (
     <>
       <RealtimeBidUpdates gemId={gem.id} onBidUpdate={handleBidUpdate} />
-      {gem.isActive && <RealtimeGemStatus gemId={gem.id} />}
       
       {/* Enhanced Header Section */}
       <div className="mb-6 sm:mb-8">
@@ -131,19 +159,26 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
             {/* Current Bid - Prominent */}
             <div className="mb-4 sm:mb-6 p-4 sm:p-5 bg-gradient-to-br from-[var(--gold-light)]/20 to-[var(--gold-light)]/10 rounded-lg sm:rounded-xl border border-[var(--gold-light)]">
               <p className="text-xs font-semibold text-[var(--text-muted)] mb-1.5 sm:mb-2 uppercase tracking-wider flex items-center gap-2 flex-wrap">
-                <span>Current Bid</span>
-                {bidIncrease > 0 && (
-                  <span className="px-2 py-0.5 bg-green-50 text-green-600 text-xs font-bold rounded-full">
-                    +{bidIncrease.toFixed(0)}%
-                  </span>
-                )}
+                <span>Current Price</span>
               </p>
               <p className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] bg-clip-text text-transparent mb-1 sm:mb-2">
-                {formatCurrency(highestBid)}
+                {formatCurrency(gem.current_price || gem.starting_price)}
               </p>
               <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
-                {bids?.length || 0} {bids?.length === 1 ? 'bid' : 'bids'} placed
+                {bids?.length || 0} {bids?.length === 1 ? 'bid' : 'bids'} total
               </p>
+
+              {gem.isActive && gem.round_end_time && (
+                 <div className="mt-4 pt-4 border-t border-[var(--gold-light)]/30">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Next Round In</span>
+                      <CountdownTimer endTime={gem.round_end_time} />
+                    </div>
+                    <p className="text-xs text-[var(--text-secondary)] text-center">
+                      Price will increase to <span className="font-bold text-[var(--gold-dark)]">{formatCurrency(nextPrice)}</span>
+                    </p>
+                 </div>
+              )}
             </div>
 
             {/* Stats Grid */}
@@ -171,7 +206,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
                 </div>
                 <p className="text-sm text-[var(--text-secondary)] mb-2">Winner</p>
                 <p className="text-lg font-bold text-green-600 mb-4">
-                  {(gem.winner.user as any)?.email || 'Unknown'}
+                  {(gem.winner.user as any)?.anonymous_name || 'Anonymous'}
                 </p>
                 <WinnerPaymentLink gemId={gem.id} />
               </div>
@@ -290,4 +325,3 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
     </>
   )
 }
-

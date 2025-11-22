@@ -9,6 +9,7 @@ export interface User {
   email: string
   role: UserRole
   created_at: string
+  anonymous_name: string
 }
 
 export interface Gem {
@@ -28,6 +29,9 @@ export interface Gem {
   provenance: string | null
   created_at: string
   published_at: string | null
+  current_price: number
+  round_end_time: string | null
+  increment_interval: number
 }
 
 export interface GemImage {
@@ -54,6 +58,7 @@ export interface Bid {
   created_at: string
   user?: {
     email: string
+    anonymous_name: string
   }
 }
 
@@ -78,3 +83,9 @@ export interface AuctionWinner {
   admin_id: string
 }
 
+export interface AuctionRegistration {
+  id: string
+  gem_id: string
+  user_id: string
+  created_at: string
+}

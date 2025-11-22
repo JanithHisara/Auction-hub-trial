@@ -1,0 +1,51 @@
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const supabase = await createClient()
+
+    // Get gem details including current_price, round_end_time
+    const { data: gem } = await supabase
+      .from('gems')
+      .select('starting_price, min_bid_increment, status, end_time, current_price, round_end_time')
+      .eq('id', id)
+      .single()
+
+    if (!gem) {
+      return NextResponse.json({ error: 'Auction not found' }, { status: 404 })
+    }
+
+    // Call RPC to get stats securely (bypassing RLS)
+    const { data: stats, error: rpcError } = await supabase
+      .rpc('get_monitor_stats', { p_gem_id: id })
+      .single()
+
+    if (rpcError) throw rpcError
+
+    const totalRegistered = stats.total_registered || 0
+    const currentLevelBidders = stats.active_bidders || 0
+    const currentPrice = gem.current_price
+    
+    // Calculate stats
+    const percentageLeft = totalRegistered > 0 
+      ? Math.round((currentLevelBidders / totalRegistered) * 100) 
+      : 0
+
+    return NextResponse.json({
+      totalRegistered,
+      uniqueBidders: currentLevelBidders, // Active Bidders for this price
+      currentPrice,
+      percentageLeft,
+      status: gem.status,
+      endTime: gem.end_time,
+      roundEndTime: gem.round_end_time,
+    })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

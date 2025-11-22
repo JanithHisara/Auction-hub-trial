@@ -18,6 +18,7 @@ export default function GemForm({ gem }: GemFormProps) {
     description: gem?.description || '',
     starting_price: gem?.starting_price || 0,
     min_bid_increment: gem?.min_bid_increment || 100,
+    increment_interval: gem?.increment_interval || 60,
     start_time: gem?.start_time ? new Date(gem.start_time).toISOString().slice(0, 16) : '',
     end_time: gem?.end_time ? new Date(gem.end_time).toISOString().slice(0, 16) : '',
     carat_weight: gem?.carat_weight || '',
@@ -46,6 +47,7 @@ export default function GemForm({ gem }: GemFormProps) {
           images: formData.images.filter(url => url.trim() !== ''),
           certificates: formData.certificates.filter(cert => cert.url.trim() !== ''),
           carat_weight: formData.carat_weight ? parseFloat(formData.carat_weight.toString()) : null,
+          increment_interval: formData.increment_interval,
         }),
       })
 
@@ -153,6 +155,19 @@ export default function GemForm({ gem }: GemFormProps) {
               step="0.01"
               value={formData.min_bid_increment}
               onChange={(e) => setFormData({ ...formData, min_bid_increment: parseFloat(e.target.value) || 0 })}
+              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Increment Interval (seconds) *</label>
+            <input
+              type="number"
+              required
+              min="10"
+              step="1"
+              value={formData.increment_interval}
+              onChange={(e) => setFormData({ ...formData, increment_interval: parseInt(e.target.value) || 60 })}
               className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
             />
           </div>

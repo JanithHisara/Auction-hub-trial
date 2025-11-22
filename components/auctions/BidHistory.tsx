@@ -33,7 +33,7 @@ export default function BidHistory({ bids }: BidHistoryProps) {
                 {formatCurrency(bid.bid_amount)}
               </p>
               <p className="text-[10px] sm:text-xs lg:text-sm text-[var(--text-muted)] truncate">
-                {(bid.user as any)?.email || 'Unknown'} • {formatDate(bid.created_at)}
+                {(bid.user as any)?.anonymous_name || 'Anonymous'} • {formatDate(bid.created_at)}
               </p>
             </div>
             {index === 0 && (
@@ -47,4 +47,3 @@ export default function BidHistory({ bids }: BidHistoryProps) {
     </div>
   )
 }
-
