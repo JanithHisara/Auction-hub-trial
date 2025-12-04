@@ -15,7 +15,6 @@ async function getGem(id: string) {
     .single()
 
   if (!gem) {
-    // Try to get ended/completed gems for viewing
     const { data: endedGem } = await supabase
       .from('gems')
       .select('*')
@@ -23,9 +22,7 @@ async function getGem(id: string) {
       .in('status', ['ended', 'completed'])
       .single()
 
-    if (!endedGem) {
-      return null
-    }
+    if (!endedGem) return null
 
     const { data: images } = await supabase
       .from('gem_images')
@@ -90,14 +87,15 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   const { id } = await params
   const gemData = await getGem(id)
 
-  if (!gemData) {
-    notFound()
-  }
+  if (!gemData) notFound()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[#f5f4f0] to-[#f0ede8] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <GemDetailClient initialGem={gemData} />
+    <div className="min-h-screen bg-[var(--background)] relative">
+      <div className="fixed inset-0 bg-grid-pattern opacity-30" />
+      <div className="relative z-10 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <GemDetailClient initialGem={gemData} />
+        </div>
       </div>
     </div>
   )

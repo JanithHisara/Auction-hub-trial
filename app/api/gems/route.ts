@@ -12,6 +12,7 @@ export async function POST(request: Request) {
       .from('gems')
       .insert({
         admin_id: user.id,
+        auction_id: body.auction_id || null,
         name: body.name,
         description: body.description,
         starting_price: body.starting_price,

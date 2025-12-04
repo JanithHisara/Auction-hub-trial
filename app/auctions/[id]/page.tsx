@@ -1,0 +1,324 @@
+import { createClient } from '@/lib/supabase/server'
+import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
+import { Auction, Gem } from '@/types/database'
+import RegisterButton from '@/components/auctions/RegisterButton'
+import AuctionCountdown from '@/components/auctions/AuctionCountdown'
+
+async function getAuction(id: string) {
+  const supabase = await createClient()
+  
+  const { data: auction } = await supabase
+    .from('auctions')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (!auction) return null
+
+  // Get items
+  const { data: items } = await supabase
+    .from('gems')
+    .select(`*, gem_images(*)`)
+    .eq('auction_id', id)
+    .order('created_at', { ascending: true })
+
+  // Get registration count
+  const { count: registeredCount } = await supabase
+    .from('auction_registrations')
+    .select('*', { count: 'exact', head: true })
+    .eq('auction_id', id)
+
+  // Check if current user is registered
+  const { data: { user } } = await supabase.auth.getUser()
+  let isRegistered = false
+  let registration = null
+  
+  if (user) {
+    const { data: reg } = await supabase
+      .from('auction_registrations')
+      .select('*')
+      .eq('auction_id', id)
+      .eq('user_id', user.id)
+      .single()
+    
+    if (reg) {
+      isRegistered = true
+      registration = reg
+    }
+  }
+
+  return {
+    ...auction,
+    items: items || [],
+    registered_count: registeredCount || 0,
+    is_registered: isRegistered,
+    registration,
+    user_id: user?.id,
+  }
+}
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
+
+export default async function AuctionDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const auction = await getAuction(id)
+
+  if (!auction) {
+    notFound()
+  }
+
+  const registrationOpen = auction.status === 'registration_open'
+  const isLive = auction.status === 'live'
+  // Registration allowed when admin sets status to 'registration_open'
+  const canRegister = registrationOpen && !auction.is_registered
+
+  return (
+    <div className="min-h-screen bg-[var(--background)] relative">
+      {/* Background */}
+      <div className="fixed inset-0 bg-grid-pattern opacity-30" />
+      
+      <div className="relative z-10">
+        {/* Hero Banner */}
+        <div className="relative h-[40vh] sm:h-[50vh] overflow-hidden">
+          {auction.banner_image_url ? (
+            <img 
+              src={auction.banner_image_url}
+              alt={auction.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-[var(--surface)] via-[var(--background-secondary)] to-[var(--background)] flex items-center justify-center">
+              <span className="text-[200px] opacity-10">💎</span>
+            </div>
+          )}
+          
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-transparent" />
+          
+          {/* Back button */}
+          <Link 
+            href="/"
+            className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-full text-white hover:bg-black/60 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </Link>
+
+          {/* Status badge */}
+          <div className="absolute top-6 right-6">
+            {isLive ? (
+              <div className="live-badge">
+                <span className="live-dot" />
+                LIVE NOW
+              </div>
+            ) : registrationOpen ? (
+              <div className="px-4 py-2 bg-emerald-500 text-white rounded-full text-sm font-bold uppercase">
+                Registration Open
+              </div>
+            ) : (
+              <div className="px-4 py-2 bg-[var(--surface)] text-[var(--text-secondary)] rounded-full text-sm font-medium">
+                {auction.status}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Title Card */}
+              <div className="card-glass rounded-2xl p-8">
+                <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
+                  {auction.name}
+                </h1>
+                {auction.description && (
+                  <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
+                    {auction.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Items Preview */}
+              <div className="card-glass rounded-2xl p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-white">
+                    Items to be Auctioned
+                  </h2>
+                  <span className="px-3 py-1 bg-[var(--gold)]/20 text-[var(--gold)] rounded-full text-sm font-bold">
+                    {auction.items.length} items
+                  </span>
+                </div>
+
+                {auction.items.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {auction.items.slice(0, 6).map((item: Gem & { gem_images: { image_url: string }[] }) => (
+                      <div key={item.id} className="group relative rounded-xl overflow-hidden bg-[var(--surface)] border border-[var(--border)]">
+                        <div className="aspect-square overflow-hidden">
+                          {item.gem_images?.[0]?.image_url ? (
+                            <img 
+                              src={item.gem_images[0].image_url}
+                              alt={item.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[var(--surface-elevated)] to-[var(--background)] flex items-center justify-center">
+                              <span className="text-4xl opacity-30">💎</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform">
+                          <h3 className="font-bold text-white">{item.name}</h3>
+                          <p className="text-[var(--gold)] font-mono">
+                            Starting: {formatCurrency(item.starting_price)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-[var(--text-muted)]">
+                    Items will be revealed soon
+                  </div>
+                )}
+
+                {auction.items.length > 6 && (
+                  <p className="text-center text-[var(--text-muted)] mt-6">
+                    +{auction.items.length - 6} more items
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Countdown Card */}
+              <div className="card-glass rounded-2xl p-6 border-glow">
+                <AuctionCountdown 
+                  targetDate={isLive ? auction.auction_end : auction.auction_start}
+                  label={isLive ? 'Auction Ends In' : 'Auction Starts In'}
+                />
+              </div>
+
+              {/* Registration Card */}
+              <div className="card-glass rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">Registration</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[var(--text-muted)]">Opens</span>
+                    <span className="text-white">{formatDate(auction.registration_start)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[var(--text-muted)]">Closes</span>
+                    <span className="text-white">{formatDate(auction.registration_end)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[var(--text-muted)]">Registered</span>
+                    <span className="text-[var(--gold)] font-bold">{auction.registered_count} bidders</span>
+                  </div>
+                  {auction.max_participants && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[var(--text-muted)]">Spots Left</span>
+                      <span className="text-white">{auction.max_participants - auction.registered_count}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-[var(--border)] my-6" />
+
+                {auction.is_registered ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
+                      <span className="text-2xl">✅</span>
+                      <div>
+                        <p className="font-bold text-emerald-400">You're Registered!</p>
+                        <p className="text-sm text-[var(--text-muted)]">Check your email for access link</p>
+                      </div>
+                    </div>
+                    
+                    {isLive && auction.registration?.access_token && (
+                      <Link 
+                        href={`/auction-room/${auction.registration.access_token}`}
+                        className="btn-live w-full flex items-center justify-center gap-2"
+                      >
+                        <span className="live-dot" />
+                        Enter Auction Room
+                      </Link>
+                    )}
+                  </div>
+                ) : canRegister ? (
+                  <RegisterButton 
+                    auctionId={auction.id} 
+                    userId={auction.user_id}
+                  />
+                ) : !auction.user_id ? (
+                  <Link href="/login" className="btn-gold w-full block text-center">
+                    <span>Login to Register</span>
+                  </Link>
+                ) : (
+                  <div className="text-center text-[var(--text-muted)] py-4">
+                    Registration is currently closed
+                  </div>
+                )}
+              </div>
+
+              {/* Schedule Card */}
+              <div className="card-glass rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">Schedule</h3>
+                
+                <div className="space-y-4">
+                  <div className="relative pl-6 pb-6 border-l-2 border-[var(--border)]">
+                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[var(--gold)] border-4 border-[var(--background)]" />
+                    <p className="text-sm text-[var(--text-muted)]">Auction Starts</p>
+                    <p className="font-bold text-white">{formatDate(auction.auction_start)}</p>
+                  </div>
+                  <div className="relative pl-6 border-l-2 border-[var(--border)]">
+                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[var(--surface)] border-4 border-[var(--border)]" />
+                    <p className="text-sm text-[var(--text-muted)]">Auction Ends</p>
+                    <p className="font-bold text-white">{formatDate(auction.auction_end)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Entry Fee */}
+              {auction.entry_fee > 0 && (
+                <div className="card-glass rounded-2xl p-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[var(--text-muted)]">Entry Fee</span>
+                    <span className="text-2xl font-bold text-[var(--gold)]">
+                      {formatCurrency(auction.entry_fee)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+

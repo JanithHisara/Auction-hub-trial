@@ -4,14 +4,13 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { GemStatus } from '@/types/database'
 
-
 export default async function GemsPage() {
   const user = await requireAdmin()
   const supabase = await createClient()
 
   const { data: gems } = await supabase
     .from('gems')
-    .select('*')
+    .select('*, auction:auctions(name), gem_images(*)')
     .eq('admin_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -24,97 +23,108 @@ export default async function GemsPage() {
         .order('bid_amount', { ascending: false })
         .limit(1)
 
-      const highestBid = bids?.[0]?.bid_amount || gem.starting_price
-
       return {
         ...gem,
-        highestBid,
+        highestBid: bids?.[0]?.bid_amount || gem.starting_price,
         bidCount: bids?.length || 0,
       }
     })
   )
 
-  const statusColorsLight: Record<GemStatus, string> = {
-    draft: 'bg-gray-100 text-gray-700 border-gray-200',
-    active: 'bg-green-50 text-green-700 border-green-200',
-    ended: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-    completed: 'bg-purple-50 text-purple-700 border-purple-200',
+  const statusColors: Record<GemStatus, string> = {
+    draft: 'bg-gray-500/20 text-gray-400',
+    active: 'bg-emerald-500/20 text-emerald-400',
+    ended: 'bg-amber-500/20 text-amber-400',
+    completed: 'bg-purple-500/20 text-purple-400',
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">All Gems</h2>
-        <Link
-          href="/admin/gems/new"
-          className="px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[var(--gold)]/30 transition-all duration-200 text-sm sm:text-base shadow-md"
-        >
-          New Gem
+        <div>
+          <h1 className="text-3xl font-bold text-white">Items</h1>
+          <p className="text-[var(--text-secondary)]">{gemsWithBids.length} items total</p>
+        </div>
+        <Link href="/admin/gems/new" className="btn-gold">
+          <span>+ Add Item</span>
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {gemsWithBids.map((gem) => (
-          <Link
-            key={gem.id}
-            href={`/admin/gems/${gem.id}`}
-            className="bg-white border border-[var(--border)] rounded-xl p-5 sm:p-6 hover:border-[var(--gold-light)] hover:shadow-md transition-all card-premium"
-          >
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                  <h3 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)] truncate">{gem.name}</h3>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium border flex-shrink-0 ${statusColorsLight[gem.status as GemStatus] || 'bg-gray-100 text-gray-700 border-gray-200'}`}
-                  >
+      {gemsWithBids.length > 0 ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {gemsWithBids.map((gem) => (
+            <Link
+              key={gem.id}
+              href={`/admin/gems/${gem.id}`}
+              className="card-auction group"
+            >
+              {/* Image */}
+              <div className="aspect-square overflow-hidden bg-[var(--surface)]">
+                {gem.gem_images?.[0]?.image_url ? (
+                  <img 
+                    src={gem.gem_images[0].image_url}
+                    alt={gem.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-6xl opacity-20">💎</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <h3 className="font-bold text-white group-hover:text-[var(--gold)] transition-colors truncate">
+                    {gem.name}
+                  </h3>
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 ${statusColors[gem.status as GemStatus]}`}>
                     {gem.status}
                   </span>
                 </div>
-                <p className="text-[var(--text-secondary)] mb-4 line-clamp-2 text-sm sm:text-base">{gem.description}</p>
-                <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
-                  <div>
-                    <span className="text-[var(--text-muted)]">Starting Price: </span>
-                    <span className="text-[var(--gold-dark)] font-semibold">
-                      {formatCurrency(gem.starting_price)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[var(--text-muted)]">Highest Bid: </span>
-                    <span className="text-green-600 font-semibold">
-                      {formatCurrency(gem.highestBid)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[var(--text-muted)]">Bids: </span>
-                    <span className="text-[var(--text-primary)] font-semibold">{gem.bidCount}</span>
-                  </div>
-                  {gem.status === 'active' && (
-                    <div>
-                      <span className="text-[var(--text-muted)]">Ends: </span>
-                      <span className="text-yellow-600 font-semibold">
-                        {formatDate(gem.end_time)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
 
-        {gemsWithBids.length === 0 && (
-          <div className="text-center py-12 sm:py-16">
-            <p className="text-[var(--text-secondary)] mb-4 text-sm sm:text-base">No gems created yet</p>
-            <Link
-              href="/admin/gems/new"
-              className="inline-block px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[var(--gold)]/30 transition-all duration-200 text-sm sm:text-base shadow-md"
-            >
-              Create Your First Gem
+                {gem.auction && (
+                  <p className="text-xs text-[var(--text-muted)] mb-3 truncate">
+                    📅 {(gem.auction as { name: string }).name}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between text-sm">
+                  <div>
+                    <p className="text-[var(--text-muted)] text-xs">Starting</p>
+                    <p className="text-white font-mono">{formatCurrency(gem.starting_price)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[var(--text-muted)] text-xs">Current</p>
+                    <p className="text-[var(--gold)] font-mono font-bold">{formatCurrency(gem.highestBid)}</p>
+                  </div>
+                </div>
+
+                {gem.bidCount > 0 && (
+                  <div className="mt-3 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-muted)]">{gem.bidCount} bids</span>
+                    {gem.status === 'active' && gem.end_time && (
+                      <span className="text-amber-400">Ends {formatDate(gem.end_time)}</span>
+                    )}
+                  </div>
+                )}
+              </div>
             </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--surface)] border border-[var(--border)] mb-6">
+            <span className="text-4xl">💎</span>
           </div>
-        )}
-      </div>
+          <h3 className="text-2xl font-bold text-white mb-3">No Items Yet</h3>
+          <p className="text-[var(--text-secondary)] mb-6">Create your first auction item</p>
+          <Link href="/admin/gems/new" className="btn-gold inline-block">
+            <span>+ Add Item</span>
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
-

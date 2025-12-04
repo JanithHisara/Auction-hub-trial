@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth'
 import GemForm from '@/components/gems/GemForm'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function EditGemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -15,9 +16,7 @@ export default async function EditGemPage({ params }: { params: Promise<{ id: st
     .eq('admin_id', user.id)
     .single()
 
-  if (!gem) {
-    notFound()
-  }
+  if (!gem) notFound()
 
   const { data: images } = await supabase
     .from('gem_images')
@@ -30,11 +29,31 @@ export default async function EditGemPage({ params }: { params: Promise<{ id: st
     .select('*')
     .eq('gem_id', id)
 
+  const { data: auctions } = await supabase
+    .from('auctions')
+    .select('id, name, status')
+    .eq('admin_id', user.id)
+    .in('status', ['draft', 'upcoming', 'registration_open'])
+    .order('auction_start', { ascending: true })
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold text-gold mb-8">Edit Gem</h2>
-      <GemForm gem={{ ...gem, images: images || [], certificates: certificates || [] }} />
+    <div className="max-w-3xl mx-auto">
+      <Link 
+        href={`/admin/gems/${id}`}
+        className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-white mb-6 transition-colors"
+      >
+        ← Back to Item
+      </Link>
+
+      <div className="card-glass rounded-2xl p-8">
+        <h1 className="text-3xl font-bold text-white mb-2">Edit Item</h1>
+        <p className="text-[var(--text-secondary)] mb-8">Update item details</p>
+        
+        <GemForm 
+          gem={{ ...gem, images: images || [], certificates: certificates || [] }} 
+          auctions={auctions || []}
+        />
+      </div>
     </div>
   )
 }
-
