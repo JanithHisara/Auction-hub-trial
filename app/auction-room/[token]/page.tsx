@@ -1,0 +1,179 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import AuctionRoomClient from '@/components/auction-room/AuctionRoomClient'
+import { Gem, Bid, Auction, AuctionRegistration, UserRewards, User } from '@/types/database'
+
+type ItemWithRelations = Gem & { gem_images: { image_url: string }[]; bids: Bid[] }
+
+type ValidAccessResult = {
+  valid: true
+  auction: Auction
+  items: ItemWithRelations[]
+  user: User
+  registration: AuctionRegistration
+  rewards: UserRewards | null
+}
+
+type InvalidAccessResult = {
+  valid: false
+  reason: string
+  auction?: Auction
+}
+
+type AccessResult = ValidAccessResult | InvalidAccessResult
+
+async function validateAccess(token: string): Promise<AccessResult> {
+  const supabase = await createClient()
+  
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return { valid: false, reason: 'not_authenticated' }
+  }
+
+  // Get registration by token
+  const { data: registration } = await supabase
+    .from('auction_registrations')
+    .select(`
+      *,
+      auction:auctions(*)
+    `)
+    .eq('access_token', token)
+    .single()
+
+  if (!registration) {
+    return { valid: false, reason: 'invalid_token' }
+  }
+
+  // Verify user matches registration
+  if (registration.user_id !== user.id) {
+    return { valid: false, reason: 'user_mismatch' }
+  }
+
+  // Check if registration is active
+  if (!registration.is_active) {
+    return { valid: false, reason: 'registration_inactive' }
+  }
+
+  // Check auction status
+  const auction = registration.auction as Auction | null
+  if (!auction) {
+    return { valid: false, reason: 'auction_not_found' }
+  }
+
+  if (auction.status !== 'live') {
+    return { valid: false, reason: 'auction_not_live', auction }
+  }
+
+  // Get auction items
+  const { data: items } = await supabase
+    .from('gems')
+    .select(`
+      *,
+      gem_images(*),
+      bids(
+        id,
+        bid_amount,
+        user_id,
+        created_at,
+        user:users(anonymous_name)
+      )
+    `)
+    .eq('auction_id', auction.id)
+    .order('created_at', { ascending: true })
+
+  // Get user rewards
+  const { data: rewards } = await supabase
+    .from('user_rewards')
+    .select('*')
+    .eq('user_id', user.id)
+    .single()
+
+  // Update access tracking
+  await supabase
+    .from('auction_registrations')
+    .update({
+      access_count: registration.access_count + 1,
+      first_access_at: registration.first_access_at || new Date().toISOString(),
+      last_access_at: new Date().toISOString(),
+    })
+    .eq('id', registration.id)
+
+  return {
+    valid: true,
+    auction,
+    items: (items || []) as ItemWithRelations[],
+    user: user as unknown as User,
+    registration: registration as unknown as AuctionRegistration,
+    rewards: rewards as UserRewards | null,
+  }
+}
+
+export default async function AuctionRoomPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params
+  const result = await validateAccess(token)
+
+  if (!result.valid) {
+    // Handle different error cases
+    if (result.reason === 'not_authenticated') {
+      redirect(`/login?redirect=/auction-room/${token}`)
+    }
+
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-4">
+        <div className="card-glass rounded-2xl p-8 max-w-md w-full text-center">
+          {result.reason === 'invalid_token' && (
+            <>
+              <div className="text-6xl mb-6">🔒</div>
+              <h1 className="text-2xl font-bold text-white mb-4">Invalid Access Link</h1>
+              <p className="text-[var(--text-secondary)] mb-6">
+                This auction link is invalid or has expired. Please use the link sent to your registered email.
+              </p>
+            </>
+          )}
+          
+          {result.reason === 'user_mismatch' && (
+            <>
+              <div className="text-6xl mb-6">⚠️</div>
+              <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
+              <p className="text-[var(--text-secondary)] mb-6">
+                This auction link belongs to a different account. Please log in with the correct account.
+              </p>
+            </>
+          )}
+          
+          {result.reason === 'auction_not_live' && (
+            <>
+              <div className="text-6xl mb-6">⏰</div>
+              <h1 className="text-2xl font-bold text-white mb-4">Auction Not Live</h1>
+              <p className="text-[var(--text-secondary)] mb-6">
+                This auction is not currently live. Please wait for the scheduled start time.
+              </p>
+              {result.auction && (
+                <p className="text-sm text-[var(--gold)]">
+                  Starts: {new Date(result.auction.auction_start).toLocaleString()}
+                </p>
+              )}
+            </>
+          )}
+          
+          <a href="/" className="btn-outline inline-block mt-4">
+            Back to Auctions
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <AuctionRoomClient 
+      auction={result.auction}
+      items={result.items}
+      user={result.user}
+      registration={result.registration}
+      rewards={result.rewards}
+      token={token}
+    />
+  )
+}

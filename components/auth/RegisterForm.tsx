@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Lock, Mail, ArrowRight, Loader2, UserPlus, ShieldCheck } from 'lucide-react'
+import { Lock, Mail, ArrowRight, Loader2, ShieldCheck } from 'lucide-react'
 
 export default function RegisterForm() {
   const [email, setEmail] = useState('')
@@ -28,7 +28,7 @@ export default function RegisterForm() {
     setError(null)
 
     if (password !== confirmPassword) {
-      setError('Credentials mismatch')
+      setError('Passwords do not match')
       return
     }
 
@@ -54,45 +54,49 @@ export default function RegisterForm() {
       if (data.user) {
         router.push('/login?registered=true')
       }
-    } catch (err: any) {
-      setError(err.message || 'Registration failed')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Registration failed'
+      setError(message)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="glass-panel border border-[var(--border)] rounded-xl p-8 relative overflow-hidden">
-          {/* Decorative Elements */}
-          <div className="absolute top-0 left-0 w-16 h-16 bg-[var(--gold)]/10 rounded-br-full" />
-          
-          <div className="text-center mb-8 relative z-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-[var(--surface-elevated)] border border-[var(--border)] mb-4">
-              <UserPlus className="w-6 h-6 text-[var(--gold)]" />
+    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 bg-grid-pattern opacity-30" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-[var(--gold-accent)]/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-[var(--amethyst)]/10 rounded-full blur-3xl" />
+      
+      <div className="w-full max-w-md relative z-10">
+        <div className="card-glass rounded-2xl p-8 border-glow">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)] mb-4 glow-gold">
+              <span className="text-3xl">💎</span>
             </div>
-            <h1 className="text-2xl font-bold font-mono text-[var(--text-primary)] mb-2">
-              NEW REGISTRATION
+            <h1 className="text-2xl font-bold text-white mb-2">
+              Create Account
             </h1>
-            <p className="text-sm text-[var(--text-secondary)]">Create secure access credentials</p>
+            <p className="text-[var(--text-secondary)]">Join exclusive gem auctions</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded text-sm font-mono flex items-center gap-2">
+              <div className="error-message flex items-center gap-2 text-sm">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-xs font-mono font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
-                Identity / Email
+              <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-4 w-4 text-[var(--text-muted)]" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-[var(--text-muted)]" />
                 </div>
                 <input
                   id="email"
@@ -100,19 +104,19 @@ export default function RegisterForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors font-mono text-sm"
-                  placeholder="name@domain.com"
+                  className="w-full pl-12 pr-4 py-3.5"
+                  placeholder="you@example.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs font-mono font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
-                Set Security Key
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-4 w-4 text-[var(--text-muted)]" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-[var(--text-muted)]" />
                 </div>
                 <input
                   id="password"
@@ -120,23 +124,22 @@ export default function RegisterForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors font-mono text-sm"
+                  className="w-full pl-12 pr-4 py-3.5"
                   placeholder="••••••••"
                 />
               </div>
-              <div className="mt-2 flex gap-1 flex-wrap">
-                 {/* Password strength indicators could go here */}
-                 <span className="text-[10px] text-[var(--text-muted)] font-mono">REQ: 8+ CHARS • UPPER • LOWER • NUM</span>
-              </div>
+              <p className="text-xs text-[var(--text-muted)] mt-2">
+                Min 8 chars • Uppercase • Lowercase • Number
+              </p>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs font-mono font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
-                Confirm Security Key
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                Confirm Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <ShieldCheck className="h-4 w-4 text-[var(--text-muted)]" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <ShieldCheck className="h-5 w-5 text-[var(--text-muted)]" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -144,7 +147,7 @@ export default function RegisterForm() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors font-mono text-sm"
+                  className="w-full pl-12 pr-4 py-3.5"
                   placeholder="••••••••"
                 />
               </div>
@@ -153,27 +156,46 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[var(--gold)] text-black font-bold font-mono py-3 rounded hover:bg-[var(--gold-light)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group mt-4"
+              className="btn-gold w-full flex items-center justify-center gap-2 group mt-2"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  INITIALIZING...
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Creating account...</span>
                 </>
               ) : (
                 <>
-                  CREATE IDENTITY
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <span>Create Account</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 text-center pt-6 border-t border-[var(--border)]">
-             <Link href="/login" className="text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors">
-                RETURN TO LOGIN
-             </Link>
+          <div className="mt-8 pt-6 border-t border-[var(--border)] text-center">
+            <p className="text-[var(--text-muted)] text-sm">
+              Already have an account?{' '}
+              <Link href="/login" className="text-[var(--gold)] hover:text-[var(--gold-light)] font-medium">
+                Sign in
+              </Link>
+            </p>
           </div>
+        </div>
+
+        {/* Trust badges */}
+        <div className="flex justify-center gap-6 mt-8 text-[var(--text-muted)] text-xs">
+          <span className="flex items-center gap-1">
+            <Lock className="w-3 h-3" />
+            Secure
+          </span>
+          <span className="flex items-center gap-1">
+            <span>🔐</span>
+            Encrypted
+          </span>
+          <span className="flex items-center gap-1">
+            <span>✓</span>
+            Verified
+          </span>
         </div>
       </div>
     </div>

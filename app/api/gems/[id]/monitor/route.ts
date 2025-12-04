@@ -27,8 +27,9 @@ export async function GET(
 
     if (rpcError) throw rpcError
 
-    const totalRegistered = stats.total_registered || 0
-    const currentLevelBidders = stats.active_bidders || 0
+    const statsData = stats as { total_registered?: number; active_bidders?: number } | null
+    const totalRegistered = statsData?.total_registered || 0
+    const currentLevelBidders = statsData?.active_bidders || 0
     const currentPrice = gem.current_price
     
     // Calculate stats
@@ -45,7 +46,8 @@ export async function GET(
       endTime: gem.end_time,
       roundEndTime: gem.round_end_time,
     })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -1,21 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { formatCurrency } from '@/lib/utils'
-import type { Gem, GemImage, GemCertificate } from '@/types/database'
+import type { Gem, GemImage, GemCertificate, Auction } from '@/types/database'
+import { Loader2, Plus, X, Image, FileText, DollarSign, Clock, Sparkles } from 'lucide-react'
 
 interface GemFormProps {
   gem?: Gem & { images?: GemImage[]; certificates?: GemCertificate[] }
+  auctions?: Pick<Auction, 'id' | 'name' | 'status'>[]
+  defaultAuctionId?: string
 }
 
-export default function GemForm({ gem }: GemFormProps) {
+export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: gem?.name || '',
     description: gem?.description || '',
+    auction_id: gem?.auction_id || defaultAuctionId || '',
     starting_price: gem?.starting_price || 0,
     min_bid_increment: gem?.min_bid_increment || 100,
     increment_interval: gem?.increment_interval || 60,
@@ -44,52 +47,45 @@ export default function GemForm({ gem }: GemFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          auction_id: formData.auction_id || null,
           images: formData.images.filter(url => url.trim() !== ''),
           certificates: formData.certificates.filter(cert => cert.url.trim() !== ''),
           carat_weight: formData.carat_weight ? parseFloat(formData.carat_weight.toString()) : null,
-          increment_interval: formData.increment_interval,
         }),
       })
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to save gem')
+        throw new Error(data.error || 'Failed to save item')
       }
 
       router.push('/admin/gems')
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save'
+      setError(message)
     } finally {
       setLoading(false)
     }
   }
 
-  const addImageField = () => {
-    setFormData({ ...formData, images: [...formData.images, ''] })
-  }
-
+  const addImageField = () => setFormData({ ...formData, images: [...formData.images, ''] })
   const updateImage = (index: number, value: string) => {
     const newImages = [...formData.images]
     newImages[index] = value
     setFormData({ ...formData, images: newImages })
   }
-
   const removeImage = (index: number) => {
     const newImages = formData.images.filter((_, i) => i !== index)
     setFormData({ ...formData, images: newImages.length > 0 ? newImages : [''] })
   }
 
-  const addCertificateField = () => {
-    setFormData({ ...formData, certificates: [...formData.certificates, { url: '', type: '' }] })
-  }
-
+  const addCertificateField = () => setFormData({ ...formData, certificates: [...formData.certificates, { url: '', type: '' }] })
   const updateCertificate = (index: number, field: 'url' | 'type', value: string) => {
     const newCerts = [...formData.certificates]
     newCerts[index] = { ...newCerts[index], [field]: value }
     setFormData({ ...formData, certificates: newCerts })
   }
-
   const removeCertificate = (index: number) => {
     const newCerts = formData.certificates.filter((_, i) => i !== index)
     setFormData({ ...formData, certificates: newCerts.length > 0 ? newCerts : [{ url: '', type: '' }] })
@@ -98,43 +94,72 @@ export default function GemForm({ gem }: GemFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {error}
+        <div className="error-message flex items-center gap-2">
+          <span>⚠️</span> {error}
         </div>
       )}
 
-      <div className="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Basic Information</h2>
-        <div className="space-y-6">
+      {/* Auction Selection */}
+      {auctions.length > 0 && (
+        <Section title="Auction" icon="📅" number="1">
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Name *</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">
+              Assign to Auction
+            </label>
+            <select
+              value={formData.auction_id}
+              onChange={(e) => setFormData({ ...formData, auction_id: e.target.value })}
+              className="w-full"
+            >
+              <option value="">No auction (standalone)</option>
+              {auctions.map(auction => (
+                <option key={auction.id} value={auction.id}>
+                  {auction.name} ({auction.status})
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[var(--text-muted)] mt-1">
+              Items assigned to an auction will be available for bidding during the auction
+            </p>
+          </div>
+        </Section>
+      )}
+
+      {/* Basic Info */}
+      <Section title="Basic Information" icon="💎" number={auctions.length > 0 ? "2" : "1"}>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Name *</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              placeholder="e.g., Blue Sapphire 5.2ct"
+              className="w-full"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Description *</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Description *</label>
             <textarea
               required
-              rows={6}
+              rows={4}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              placeholder="Describe the item in detail..."
+              className="w-full resize-none"
             />
           </div>
         </div>
-      </div>
+      </Section>
 
-      <div className="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Pricing & Auction</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Pricing */}
+      <Section title="Pricing & Timing" icon="💰" number={auctions.length > 0 ? "3" : "2"}>
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Starting Price *</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" /> Starting Price *
+            </label>
             <input
               type="number"
               required
@@ -142,12 +167,11 @@ export default function GemForm({ gem }: GemFormProps) {
               step="0.01"
               value={formData.starting_price}
               onChange={(e) => setFormData({ ...formData, starting_price: parseFloat(e.target.value) || 0 })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              className="w-full"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Minimum Bid Increment *</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Min Bid Increment *</label>
             <input
               type="number"
               required
@@ -155,123 +179,114 @@ export default function GemForm({ gem }: GemFormProps) {
               step="0.01"
               value={formData.min_bid_increment}
               onChange={(e) => setFormData({ ...formData, min_bid_increment: parseFloat(e.target.value) || 0 })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              className="w-full"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Increment Interval (seconds) *</label>
-            <input
-              type="number"
-              required
-              min="10"
-              step="1"
-              value={formData.increment_interval}
-              onChange={(e) => setFormData({ ...formData, increment_interval: parseInt(e.target.value) || 60 })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Start Time *</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+              <Clock className="w-4 h-4" /> Start Time *
+            </label>
             <input
               type="datetime-local"
               required
               value={formData.start_time}
               onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              className="w-full"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">End Time *</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">End Time *</label>
             <input
               type="datetime-local"
               required
               value={formData.end_time}
               onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              className="w-full"
             />
           </div>
         </div>
-      </div>
+      </Section>
 
-      <div className="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Gem Specifications</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Specifications */}
+      <Section title="Specifications" icon="✨" number={auctions.length > 0 ? "4" : "3"}>
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Carat Weight</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Carat Weight</label>
             <input
               type="number"
               min="0"
               step="0.01"
               value={formData.carat_weight}
               onChange={(e) => setFormData({ ...formData, carat_weight: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              placeholder="e.g., 5.2"
+              className="w-full"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Cut</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Cut</label>
             <input
               type="text"
               value={formData.cut}
               onChange={(e) => setFormData({ ...formData, cut: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              placeholder="e.g., Oval, Round, Emerald"
+              className="w-full"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Color</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Color</label>
             <input
               type="text"
               value={formData.color}
               onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              placeholder="e.g., Blue, Red, Green"
+              className="w-full"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Clarity</label>
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Clarity</label>
             <input
               type="text"
               value={formData.clarity}
               onChange={(e) => setFormData({ ...formData, clarity: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+              placeholder="e.g., VS1, VVS2"
+              className="w-full"
             />
           </div>
         </div>
-
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Provenance</label>
+        <div className="mt-4">
+          <label className="block text-sm text-[var(--text-secondary)] mb-2">Provenance</label>
           <textarea
-            rows={4}
+            rows={3}
             value={formData.provenance}
             onChange={(e) => setFormData({ ...formData, provenance: e.target.value })}
-            className="w-full px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+            placeholder="Origin and history of the item..."
+            className="w-full resize-none"
           />
         </div>
-      </div>
+      </Section>
 
-      <div className="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Images</h2>
-        <div className="space-y-4">
+      {/* Images */}
+      <Section title="Images" icon="🖼️" number={auctions.length > 0 ? "5" : "4"}>
+        <div className="space-y-3">
           {formData.images.map((url, index) => (
             <div key={index} className="flex gap-2">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => updateImage(index, e.target.value)}
-                placeholder="Image URL"
-                className="flex-1 px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
-              />
+              <div className="relative flex-1">
+                <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => updateImage(index, e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full pl-10"
+                />
+              </div>
               {formData.images.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
+                  className="p-3 bg-red-500/20 border border-red-500/40 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
                 >
-                  Remove
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -279,39 +294,42 @@ export default function GemForm({ gem }: GemFormProps) {
           <button
             type="button"
             onClick={addImageField}
-            className="px-4 py-2 bg-white border border-[var(--border)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--background)] transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg hover:border-[var(--gold)]/50 transition-colors"
           >
-            Add Image
+            <Plus className="w-4 h-4" /> Add Image
           </button>
         </div>
-      </div>
+      </Section>
 
-      <div className="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Certificates</h2>
-        <div className="space-y-4">
+      {/* Certificates */}
+      <Section title="Certificates" icon="📜" number={auctions.length > 0 ? "6" : "5"}>
+        <div className="space-y-3">
           {formData.certificates.map((cert, index) => (
             <div key={index} className="flex gap-2">
-              <input
-                type="url"
-                value={cert.url}
-                onChange={(e) => updateCertificate(index, 'url', e.target.value)}
-                placeholder="Certificate URL"
-                className="flex-1 px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
-              />
+              <div className="relative flex-1">
+                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                <input
+                  type="url"
+                  value={cert.url}
+                  onChange={(e) => updateCertificate(index, 'url', e.target.value)}
+                  placeholder="Certificate URL"
+                  className="w-full pl-10"
+                />
+              </div>
               <input
                 type="text"
                 value={cert.type}
                 onChange={(e) => updateCertificate(index, 'type', e.target.value)}
-                placeholder="Type (optional)"
-                className="w-48 px-4 py-3 bg-white border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold-light)] transition-all"
+                placeholder="Type"
+                className="w-32"
               />
               {formData.certificates.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeCertificate(index)}
-                  className="px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
+                  className="p-3 bg-red-500/20 border border-red-500/40 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
                 >
-                  Remove
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -319,25 +337,33 @@ export default function GemForm({ gem }: GemFormProps) {
           <button
             type="button"
             onClick={addCertificateField}
-            className="px-4 py-2 bg-white border border-[var(--border)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--background)] transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg hover:border-[var(--gold)]/50 transition-colors"
           >
-            Add Certificate
+            <Plus className="w-4 h-4" /> Add Certificate
           </button>
         </div>
-      </div>
+      </Section>
 
-      <div className="flex gap-4">
+      {/* Actions */}
+      <div className="flex items-center gap-4 pt-6 border-t border-[var(--border)]">
         <button
           type="submit"
           disabled={loading}
-          className="px-8 py-3 bg-gradient-to-r from-[var(--gold-dark)] to-[var(--gold-accent)] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[var(--gold)]/30 transition-all duration-200 disabled:opacity-50 shadow-md"
+          className="btn-gold flex items-center gap-2"
         >
-          {loading ? 'Saving...' : gem ? 'Update Gem' : 'Create Gem'}
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <span>{gem ? 'Update Item' : 'Create Item'}</span>
+          )}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-8 py-3 bg-white border border-[var(--border)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--background)] transition-colors shadow-sm"
+          className="btn-outline"
         >
           Cancel
         </button>
@@ -346,3 +372,27 @@ export default function GemForm({ gem }: GemFormProps) {
   )
 }
 
+function Section({ 
+  title, 
+  icon, 
+  number, 
+  children 
+}: { 
+  title: string
+  icon: string
+  number: string
+  children: React.ReactNode 
+}) {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-bold text-white flex items-center gap-3">
+        <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm text-[var(--gold)]">
+          {number}
+        </span>
+        <span>{icon}</span>
+        {title}
+      </h2>
+      {children}
+    </div>
+  )
+}
