@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Lock, Mail, ArrowRight, Loader2 } from 'lucide-react'
+import Logo from '@/components/brand/Logo'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -65,14 +66,12 @@ export default function LoginForm() {
       <div className="w-full max-w-md relative z-10">
         <div className="card-glass rounded-2xl p-8 border-glow">
           {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)] mb-4 glow-gold">
-              <span className="text-3xl">💎</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-2">
+          <div className="flex flex-col items-center mb-8">
+            <Logo size="lg" showTagline />
+            <h1 className="text-xl font-bold text-white mt-6 mb-2">
               Welcome Back
             </h1>
-            <p className="text-[var(--text-secondary)]">Sign in to access exclusive auctions</p>
+            <p className="text-[var(--text-secondary)] text-sm">Sign in to access exclusive auctions</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

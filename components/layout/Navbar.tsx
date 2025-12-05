@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import LogoutButton from '@/components/auth/LogoutButton'
-import { LayoutDashboard, User, Ticket, Trophy, LogOut, Menu, X } from 'lucide-react'
+import Logo from '@/components/brand/Logo'
+import { LayoutDashboard, User, Ticket, Trophy, Menu, X } from 'lucide-react'
 
 interface NavbarProps {
   user: { id: string; email?: string } | null
@@ -29,21 +30,8 @@ export default function Navbar({ user, role }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)] rounded-xl rotate-3 group-hover:rotate-6 transition-transform duration-300" />
-              <div className="absolute inset-0.5 bg-[var(--background)] rounded-[10px] flex items-center justify-center">
-                <span className="text-xl">💎</span>
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg sm:text-xl font-black tracking-tight text-white leading-none">
-                GEM<span className="text-[var(--gold)]">BID</span>
-              </span>
-              <span className="text-[9px] tracking-[0.15em] text-[var(--text-muted)] uppercase">
-                Auction House
-              </span>
-            </div>
+          <Link href="/" className="group">
+            <Logo size="md" showTagline className="group-hover:opacity-90 transition-opacity" />
           </Link>
 
           {/* Desktop Navigation */}
