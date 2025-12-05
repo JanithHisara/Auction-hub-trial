@@ -144,9 +144,18 @@ export default async function AdminAuctionsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusColors[auction.status]}`}>
-                      {auction.status.replace('_', ' ').toUpperCase()}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold inline-block w-fit ${statusColors[auction.status]}`}>
+                        {auction.status.replace('_', ' ').toUpperCase()}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-xs inline-block w-fit ${
+                        auction.auction_type === 'fixed_increment' 
+                          ? 'bg-purple-500/20 text-purple-400' 
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`}>
+                        {auction.auction_type === 'fixed_increment' ? 'Fixed' : 'Free'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-white">{auction.items_count}</td>
                   <td className="px-6 py-4 text-white">{auction.registered_count}</td>

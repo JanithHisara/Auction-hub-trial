@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign } from 'lucide-react'
+import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp } from 'lucide-react'
 
 export default function NewAuctionPage() {
   const [loading, setLoading] = useState(false)
@@ -16,6 +16,7 @@ export default function NewAuctionPage() {
     name: '',
     description: '',
     banner_image_url: '',
+    auction_type: 'variable_increment' as 'fixed_increment' | 'variable_increment',
     registration_start: '',
     registration_end: '',
     auction_start: '',
@@ -24,7 +25,7 @@ export default function NewAuctionPage() {
     entry_fee: '0',
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
@@ -37,22 +38,6 @@ export default function NewAuctionPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Validate dates
-      const regStart = new Date(formData.registration_start)
-      const regEnd = new Date(formData.registration_end)
-      const auctionStart = new Date(formData.auction_start)
-      const auctionEnd = new Date(formData.auction_end)
-
-      if (regEnd <= regStart) {
-        throw new Error('Registration end must be after registration start')
-      }
-      if (auctionStart <= regEnd) {
-        throw new Error('Auction start must be after registration end')
-      }
-      if (auctionEnd <= auctionStart) {
-        throw new Error('Auction end must be after auction start')
-      }
-
       const { data, error: insertError } = await supabase
         .from('auctions')
         .insert({
@@ -60,6 +45,7 @@ export default function NewAuctionPage() {
           name: formData.name,
           description: formData.description || null,
           banner_image_url: formData.banner_image_url || null,
+          auction_type: formData.auction_type,
           registration_start: formData.registration_start,
           registration_end: formData.registration_end,
           auction_start: formData.auction_start,
@@ -156,10 +142,90 @@ export default function NewAuctionPage() {
             </div>
           </section>
 
-          {/* Schedule */}
+          {/* Auction Type */}
           <section className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm">2</span>
+              Auction Type
+            </h2>
+            
+            <div className="grid sm:grid-cols-2 gap-4">
+              <label 
+                className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
+                  formData.auction_type === 'variable_increment' 
+                    ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
+                    : 'border-[var(--border)] hover:border-[var(--gold)]/50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="auction_type"
+                  value="variable_increment"
+                  checked={formData.auction_type === 'variable_increment'}
+                  onChange={handleChange}
+                  className="sr-only"
+                />
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    formData.auction_type === 'variable_increment' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
+                  }`}>
+                    <TrendingUp className={`w-5 h-5 ${formData.auction_type === 'variable_increment' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">Free-form Bidding</h3>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">
+                      Bidders submit any amount above minimum increment. Highest bid wins.
+                    </p>
+                  </div>
+                </div>
+                {formData.auction_type === 'variable_increment' && (
+                  <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
+                    <span className="text-black text-xs">✓</span>
+                  </div>
+                )}
+              </label>
+
+              <label 
+                className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
+                  formData.auction_type === 'fixed_increment' 
+                    ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
+                    : 'border-[var(--border)] hover:border-[var(--gold)]/50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="auction_type"
+                  value="fixed_increment"
+                  checked={formData.auction_type === 'fixed_increment'}
+                  onChange={handleChange}
+                  className="sr-only"
+                />
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    formData.auction_type === 'fixed_increment' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
+                  }`}>
+                    <Gavel className={`w-5 h-5 ${formData.auction_type === 'fixed_increment' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">Fixed Increments</h3>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">
+                      Price increases automatically at intervals. Bidders accept or drop out.
+                    </p>
+                  </div>
+                </div>
+                {formData.auction_type === 'fixed_increment' && (
+                  <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
+                    <span className="text-black text-xs">✓</span>
+                  </div>
+                )}
+              </label>
+            </div>
+          </section>
+
+          {/* Schedule */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm">3</span>
               Schedule
             </h2>
             
@@ -226,7 +292,7 @@ export default function NewAuctionPage() {
           {/* Settings */}
           <section className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm">3</span>
+              <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm">4</span>
               Settings
             </h2>
             
@@ -289,4 +355,3 @@ export default function NewAuctionPage() {
     </div>
   )
 }
-
