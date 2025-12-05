@@ -39,23 +39,23 @@ export default async function ProfilePage() {
         <div className="grid gap-6">
           {/* User Info */}
           <div className="card-glass rounded-2xl p-6">
-            <div className="flex items-start gap-6">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)] flex items-center justify-center text-3xl">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)] flex items-center justify-center text-3xl flex-shrink-0">
                 👤
               </div>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white mb-1">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 truncate">
                   {userData?.anonymous_name || 'Anonymous Bidder'}
                 </h2>
-                <p className="text-[var(--text-muted)]">{userData?.email}</p>
-                <div className="flex items-center gap-4 mt-3">
+                <p className="text-[var(--text-muted)] truncate">{userData?.email}</p>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                     userData?.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
                   }`}>
                     {userData?.role?.toUpperCase()}
                   </span>
                   <span className="text-xs text-[var(--text-muted)]">
-                    Member since {userData?.created_at ? formatDate(userData.created_at) : 'N/A'}
+                    Since {userData?.created_at ? formatDate(userData.created_at) : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -63,9 +63,9 @@ export default async function ProfilePage() {
           </div>
 
           {/* Stats */}
-          <div className="grid sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <StatCard icon="🎯" label="Total Bids" value={bidCount || 0} />
-            <StatCard icon="🎫" label="Auctions Joined" value={registrationCount || 0} />
+            <StatCard icon="🎫" label="Auctions" value={registrationCount || 0} />
             <StatCard icon="⭐" label="Points" value={rewards?.total_points || 0} accent />
             <StatCard icon="🏆" label="Wins" value={rewards?.auctions_won || 0} />
           </div>

@@ -144,29 +144,29 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Content */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative">
-          <div className="grid lg:grid-cols-3 gap-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 sm:-mt-32 relative">
+          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Title Card */}
-              <div className="card-glass rounded-2xl p-8">
-                <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
+              <div className="card-glass rounded-2xl p-5 sm:p-8">
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white mb-3 sm:mb-4">
                   {auction.name}
                 </h1>
                 {auction.description && (
-                  <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
+                  <p className="text-sm sm:text-lg text-[var(--text-secondary)] leading-relaxed">
                     {auction.description}
                   </p>
                 )}
               </div>
 
               {/* Items Preview */}
-              <div className="card-glass rounded-2xl p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white">
-                    Items to be Auctioned
+              <div className="card-glass rounded-2xl p-5 sm:p-8">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-2xl font-bold text-white">
+                    Items to Auction
                   </h2>
-                  <span className="px-3 py-1 bg-[var(--gold)]/20 text-[var(--gold)] rounded-full text-sm font-bold">
+                  <span className="px-2 sm:px-3 py-1 bg-[var(--gold)]/20 text-[var(--gold)] rounded-full text-xs sm:text-sm font-bold">
                     {auction.items.length} items
                   </span>
                 </div>
@@ -213,7 +213,7 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Countdown Card */}
               <div className="card-glass rounded-2xl p-6 border-glow">
                 <AuctionCountdown 
@@ -223,24 +223,24 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
               </div>
 
               {/* Registration Card */}
-              <div className="card-glass rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Registration</h3>
+              <div className="card-glass rounded-2xl p-5 sm:p-6">
+                <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Registration</h3>
                 
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-[var(--text-muted)]">Opens</span>
-                    <span className="text-white">{formatDate(auction.registration_start)}</span>
+                    <span className="text-white text-right">{formatDate(auction.registration_start)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-[var(--text-muted)]">Closes</span>
-                    <span className="text-white">{formatDate(auction.registration_end)}</span>
+                    <span className="text-white text-right">{formatDate(auction.registration_end)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-[var(--text-muted)]">Registered</span>
                     <span className="text-[var(--gold)] font-bold">{auction.registered_count} bidders</span>
                   </div>
                   {auction.max_participants && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-[var(--text-muted)]">Spots Left</span>
                       <span className="text-white">{auction.max_participants - auction.registered_count}</span>
                     </div>
@@ -286,8 +286,8 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
               </div>
 
               {/* Schedule Card */}
-              <div className="card-glass rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Schedule</h3>
+              <div className="card-glass rounded-2xl p-5 sm:p-6">
+                <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Schedule</h3>
                 
                 <div className="space-y-4">
                   <div className="relative pl-6 pb-6 border-l-2 border-[var(--border)]">
