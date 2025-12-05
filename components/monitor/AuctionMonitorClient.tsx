@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Auction } from '@/types/database'
+import { AuctionHammerIcon } from '@/components/brand/Logo'
 
 interface ItemBid {
   bid_amount: number
@@ -140,12 +141,25 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
       <header className="relative z-10 bg-gradient-to-r from-[#0f0f18] via-[#1a1a2e] to-[#0f0f18] border-b border-[var(--gold)]/30">
         <div className="max-w-[1920px] mx-auto px-4 sm:px-8 py-3 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
           <div className="flex items-center gap-3 sm:gap-6 w-full sm:w-auto">
+            {/* Brand Logo */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <AuctionHammerIcon className="w-8 h-8 sm:w-12 sm:h-12" />
+              <div className="hidden sm:flex flex-col">
+                <span className="text-xl font-black tracking-tight text-white leading-none">
+                  Auxtion<span className="text-[var(--gold)]">Hub</span>
+                </span>
+                <span className="text-[8px] tracking-[0.12em] text-[var(--gold)]/60 uppercase">
+                  Where Tech Meets Trust
+                </span>
+              </div>
+            </div>
+            <div className="h-6 sm:h-10 w-px bg-[var(--gold)]/30" />
             <div className="live-indicator">
               <span className="live-dot" />
               <span className="text-sm sm:text-xl font-bold tracking-wider">LIVE</span>
             </div>
             <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/30 hidden sm:block" />
-            <h1 className="text-lg sm:text-3xl font-black tracking-wide text-white truncate flex-1">
+            <h1 className="text-lg sm:text-2xl font-black tracking-wide text-white truncate flex-1">
               {auction.name}
             </h1>
           </div>

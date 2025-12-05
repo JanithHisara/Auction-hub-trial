@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Auction } from '@/types/database'
+import Logo from '@/components/brand/Logo'
 
 async function getUpcomingAuctions() {
   const supabase = await createClient()
@@ -99,8 +100,13 @@ export default async function HomePage() {
 
       <div className="relative z-10">
         {/* Hero Section */}
-        <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+        <section className="pt-16 sm:pt-20 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center">
+            {/* Brand Logo */}
+            <div className="flex justify-center mb-10 animate-reveal">
+              <Logo size="xl" showTagline />
+            </div>
+            
             {/* Live indicator */}
             {liveAuctions.length > 0 && (
               <div className="inline-flex items-center gap-2 mb-8 px-6 py-3 bg-red-500/20 border border-red-500/40 rounded-full animate-reveal">
@@ -111,12 +117,12 @@ export default async function HomePage() {
               </div>
             )}
             
-            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-6 tracking-tight animate-reveal">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-6 tracking-tight animate-reveal">
               <span className="block text-gradient-gold">Premium</span>
               <span className="block text-white mt-2">Gem Auctions</span>
             </h1>
             
-            <p className="text-xl sm:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto mb-12 animate-reveal stagger-1">
+            <p className="text-lg sm:text-xl text-[var(--text-secondary)] max-w-3xl mx-auto mb-12 animate-reveal stagger-1">
               Exclusive access to rare gemstones. Register to bid.
               <br className="hidden sm:block" />
               <span className="text-[var(--gold)]">One link. One chance. Don't miss out.</span>

@@ -19,7 +19,7 @@ export default async function AdminLayout({
           {/* Header */}
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-4xl font-black text-white mb-1 sm:mb-2">
-              Admin <span className="text-gradient-gold">Dashboard</span>
+              Auxtion<span className="text-gradient-gold">Hub</span> Admin
             </h1>
             <p className="text-sm sm:text-base text-[var(--text-secondary)]">Manage auctions, items, and users</p>
           </div>
