@@ -155,6 +155,13 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         <h2 className="text-lg font-bold text-white mb-4">Quick Actions</h2>
         <div className="flex flex-wrap gap-3">
           <StatusUpdateForm auctionId={id} currentStatus={auction.status} />
+          <Link 
+            href={`/monitor/auction/${id}`}
+            target="_blank"
+            className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg text-sm font-bold transition-colors inline-flex items-center gap-2"
+          >
+            📺 Open Monitor Display
+          </Link>
         </div>
       </div>
 
