@@ -1,6 +1,7 @@
 export type UserRole = 'user' | 'admin'
 export type GemStatus = 'draft' | 'active' | 'ended' | 'completed'
 export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
+export type AuctionType = 'fixed_increment' | 'variable_increment'
 export type PaymentStatus = 'pending' | 'completed' | 'failed'
 
 export interface User {
@@ -27,6 +28,7 @@ export interface Auction {
   
   // Settings
   status: AuctionStatus
+  auction_type: AuctionType
   max_participants: number | null
   entry_fee: number
   

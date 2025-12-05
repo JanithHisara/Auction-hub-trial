@@ -137,6 +137,13 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           <p className="text-[var(--text-secondary)]">{auction.description || 'No description'}</p>
         </div>
         <div className="flex items-center gap-3">
+          <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${
+            auction.auction_type === 'fixed_increment' 
+              ? 'bg-purple-500/20 text-purple-400' 
+              : 'bg-emerald-500/20 text-emerald-400'
+          }`}>
+            {auction.auction_type === 'fixed_increment' ? '⏱ Fixed Rounds' : '📈 Free Bidding'}
+          </span>
           <span className={`px-4 py-2 rounded-full text-sm font-bold ${statusColors[auction.status]}`}>
             {auction.status.replace('_', ' ').toUpperCase()}
           </span>

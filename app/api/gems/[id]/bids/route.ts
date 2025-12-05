@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { id } = await params
     const supabase = await createClient()
-    // Select anonymous_name instead of email
+    
     const { data: bids, error } = await supabase
       .from('bids')
       .select('*, user:users(anonymous_name)')
@@ -19,8 +19,9 @@ export async function GET(
     if (error) throw error
 
     return NextResponse.json(bids)
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to get bids'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -32,11 +33,12 @@ export async function POST(
     const { id } = await params
     const user = await requireAuth()
     const supabase = await createClient()
+    const body = await request.json().catch(() => ({}))
     
-    // Verify gem exists and is active
+    // Get gem with auction info
     const { data: gem } = await supabase
       .from('gems')
-      .select('*')
+      .select('*, auction:auctions(auction_type)')
       .eq('id', id)
       .eq('status', 'active')
       .single()
@@ -45,17 +47,7 @@ export async function POST(
       return NextResponse.json({ error: 'Auction not found or not active' }, { status: 404 })
     }
 
-    // Check registration
-    const { data: registration } = await supabase
-      .from('auction_registrations')
-      .select('id')
-      .eq('gem_id', id)
-      .eq('user_id', user.id)
-      .single()
-
-    if (!registration) {
-      return NextResponse.json({ error: 'You must register for this auction to bid' }, { status: 403 })
-    }
+    const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'variable_increment'
 
     // Check if auction hasn't ended
     const now = new Date()
@@ -64,26 +56,60 @@ export async function POST(
       return NextResponse.json({ error: 'Auction has ended' }, { status: 400 })
     }
 
-    // Check if user already bid for THIS round price
-    const { data: existingBid } = await supabase
+    // Get highest current bid
+    const { data: highestBidData } = await supabase
       .from('bids')
-      .select('id')
+      .select('bid_amount')
       .eq('gem_id', id)
-      .eq('user_id', user.id)
-      .eq('bid_amount', gem.current_price)
+      .order('bid_amount', { ascending: false })
+      .limit(1)
       .single()
 
-    if (existingBid) {
-      return NextResponse.json({ error: 'You have already accepted this price' }, { status: 400 })
+    const currentHighestBid = highestBidData?.bid_amount || gem.starting_price
+
+    let bidAmount: number
+
+    if (auctionType === 'fixed_increment') {
+      // Fixed increment: user accepts current price
+      bidAmount = gem.current_price || gem.starting_price
+
+      // Check if user already accepted this price
+      const { data: existingBid } = await supabase
+        .from('bids')
+        .select('id')
+        .eq('gem_id', id)
+        .eq('user_id', user.id)
+        .eq('bid_amount', bidAmount)
+        .single()
+
+      if (existingBid) {
+        return NextResponse.json({ error: 'You have already accepted this price' }, { status: 400 })
+      }
+    } else {
+      // Variable increment: user submits custom amount
+      bidAmount = body.bid_amount
+
+      if (!bidAmount || typeof bidAmount !== 'number') {
+        return NextResponse.json({ error: 'Bid amount is required' }, { status: 400 })
+      }
+
+      const minBid = currentHighestBid + gem.min_bid_increment
+
+      if (bidAmount < minBid) {
+        return NextResponse.json({ 
+          error: `Bid must be at least ${minBid}`,
+          minBid 
+        }, { status: 400 })
+      }
     }
 
-    // Create bid at CURRENT price
+    // Create bid
     const { data: bid, error: bidError } = await supabase
       .from('bids')
       .insert({
         gem_id: id,
         user_id: user.id,
-        bid_amount: gem.current_price,
+        bid_amount: bidAmount,
       })
       .select()
       .single()
@@ -91,7 +117,8 @@ export async function POST(
     if (bidError) throw bidError
 
     return NextResponse.json(bid)
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to place bid'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
