@@ -36,36 +36,36 @@ export default async function PaymentPage({ params }: { params: Promise<{ gemId:
     <div className="min-h-screen bg-[var(--background)] relative">
       <div className="fixed inset-0 bg-grid-pattern opacity-30" />
       
-      <div className="relative z-10 py-12 px-4">
+      <div className="relative z-10 py-8 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <Link href="/" className="text-[var(--text-muted)] hover:text-white mb-6 inline-block">
-            ← Back to Home
+          <Link href="/" className="text-[var(--text-muted)] hover:text-white mb-4 sm:mb-6 inline-flex items-center gap-1 text-sm">
+            ← Back
           </Link>
 
-          <div className="card-glass rounded-2xl p-8">
+          <div className="card-glass rounded-2xl p-5 sm:p-8">
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto bg-[var(--gold)]/20 rounded-2xl flex items-center justify-center mb-4">
-                <span className="text-3xl">🏆</span>
+            <div className="text-center mb-6 sm:mb-8">
+              <div className="w-14 sm:w-16 h-14 sm:h-16 mx-auto bg-[var(--gold)]/20 rounded-2xl flex items-center justify-center mb-3 sm:mb-4">
+                <span className="text-2xl sm:text-3xl">🏆</span>
               </div>
-              <h1 className="text-3xl font-bold text-white mb-2">Congratulations!</h1>
-              <p className="text-[var(--text-secondary)]">Complete your payment to claim your item</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Congratulations!</h1>
+              <p className="text-sm sm:text-base text-[var(--text-secondary)]">Complete your payment to claim your item</p>
             </div>
 
             {/* Item Summary */}
-            <div className="mb-8 p-6 bg-[var(--gold)]/10 border border-[var(--gold)]/30 rounded-xl">
-              <h2 className="text-xl font-bold text-white mb-4">{gem.name as string}</h2>
+            <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-[var(--gold)]/10 border border-[var(--gold)]/30 rounded-xl">
+              <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">{gem.name as string}</h2>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-[var(--text-secondary)]">Winning Bid</span>
-                  <span className="text-[var(--gold)] font-bold text-2xl font-mono">
+                  <span className="text-sm sm:text-base text-[var(--text-secondary)]">Winning Bid</span>
+                  <span className="text-[var(--gold)] font-bold text-xl sm:text-2xl font-mono">
                     {formatCurrency(bid.bid_amount as number)}
                   </span>
                 </div>
                 <div className="pt-3 border-t border-[var(--border)]">
                   <div className="flex justify-between items-center">
-                    <span className="text-[var(--text-secondary)]">Total Due</span>
-                    <span className="text-white font-bold text-2xl font-mono">
+                    <span className="text-sm sm:text-base text-[var(--text-secondary)]">Total Due</span>
+                    <span className="text-white font-bold text-xl sm:text-2xl font-mono">
                       {formatCurrency(bid.bid_amount as number)}
                     </span>
                   </div>

@@ -59,7 +59,7 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard 
           icon="📅" 
           label="Total Auctions" 
@@ -99,9 +99,9 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="card-glass rounded-2xl p-6">
-        <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="card-glass rounded-2xl p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <QuickAction 
             href="/admin/auctions/new" 
             icon="📅" 
@@ -131,9 +131,9 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Recent Activity Placeholder */}
-      <div className="card-glass rounded-2xl p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Platform Overview</h2>
-        <div className="grid sm:grid-cols-3 gap-6">
+      <div className="card-glass rounded-2xl p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Platform Overview</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <div className="text-center p-6 bg-[var(--surface)] rounded-xl">
             <div className="text-4xl mb-2">🏆</div>
             <p className="text-2xl font-bold text-[var(--gold)]">{stats.liveAuctions}</p>
@@ -203,15 +203,15 @@ function QuickAction({
   return (
     <Link 
       href={href}
-      className={`p-4 rounded-xl border transition-all group ${
+      className={`p-3 sm:p-4 rounded-xl border transition-all group ${
         primary 
           ? 'bg-[var(--gold)] border-[var(--gold)] hover:bg-[var(--gold-light)]' 
           : 'bg-[var(--surface)] border-[var(--border)] hover:border-[var(--gold)]/50'
       }`}
     >
-      <span className="text-2xl block mb-2">{icon}</span>
-      <h3 className={`font-bold ${primary ? 'text-black' : 'text-white'}`}>{title}</h3>
-      <p className={`text-xs ${primary ? 'text-black/70' : 'text-[var(--text-muted)]'}`}>{desc}</p>
+      <span className="text-xl sm:text-2xl block mb-1 sm:mb-2">{icon}</span>
+      <h3 className={`font-bold text-sm sm:text-base ${primary ? 'text-black' : 'text-white'}`}>{title}</h3>
+      <p className={`text-[10px] sm:text-xs ${primary ? 'text-black/70' : 'text-[var(--text-muted)]'}`}>{desc}</p>
     </Link>
   )
 }

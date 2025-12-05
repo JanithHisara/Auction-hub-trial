@@ -138,30 +138,30 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
       
       {/* Header Bar */}
       <header className="relative z-10 bg-gradient-to-r from-[#0f0f18] via-[#1a1a2e] to-[#0f0f18] border-b border-[var(--gold)]/30">
-        <div className="max-w-[1920px] mx-auto px-8 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-8 py-3 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-6 w-full sm:w-auto">
             <div className="live-indicator">
               <span className="live-dot" />
-              <span className="text-xl font-bold tracking-wider">LIVE</span>
+              <span className="text-sm sm:text-xl font-bold tracking-wider">LIVE</span>
             </div>
-            <div className="h-8 w-px bg-[var(--gold)]/30" />
-            <h1 className="text-3xl font-black tracking-wide text-white">
+            <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/30 hidden sm:block" />
+            <h1 className="text-lg sm:text-3xl font-black tracking-wide text-white truncate flex-1">
               {auction.name}
             </h1>
           </div>
           
-          <div className="flex items-center gap-8">
-            <div className="text-right">
-              <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest">Auction Type</div>
-              <div className={`text-lg font-bold ${isFixedIncrement ? 'text-purple-400' : 'text-emerald-400'}`}>
-                {isFixedIncrement ? 'FIXED ROUNDS' : 'FREE BIDDING'}
+          <div className="flex items-center gap-4 sm:gap-8 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="text-left sm:text-right">
+              <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">Type</div>
+              <div className={`text-sm sm:text-lg font-bold ${isFixedIncrement ? 'text-purple-400' : 'text-emerald-400'}`}>
+                {isFixedIncrement ? 'FIXED' : 'FREE'}
               </div>
             </div>
             <div className="monitor-clock">
-              <div className="text-5xl font-mono font-bold tabular-nums text-[var(--gold)]">
+              <div className="text-2xl sm:text-5xl font-mono font-bold tabular-nums text-[var(--gold)]">
                 {currentTime.toLocaleTimeString('en-US', { hour12: false })}
               </div>
-              <div className="text-sm text-[var(--gold)]/60 text-center uppercase tracking-widest">
+              <div className="text-[10px] sm:text-sm text-[var(--gold)]/60 text-center uppercase tracking-widest hidden sm:block">
                 {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
               </div>
             </div>
@@ -170,22 +170,22 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
       </header>
 
       {/* Stats Ticker */}
-      <div className="stats-bar bg-[#12121a] border-b border-[var(--gold)]/20 py-4">
-        <div className="max-w-[1920px] mx-auto px-8 flex items-center justify-between">
-          <StatBox icon="👥" label="REGISTERED" value={auction.registeredCount} />
-          <div className="h-8 w-px bg-[var(--gold)]/20" />
+      <div className="stats-bar bg-[#12121a] border-b border-[var(--gold)]/20 py-2 sm:py-4">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-8 flex items-center justify-between gap-2 overflow-x-auto">
+          <StatBox icon="👥" label="REG" value={auction.registeredCount} />
+          <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
           <StatBox icon="💎" label="ITEMS" value={`${activeItems}/${auction.items.length}`} />
-          <div className="h-8 w-px bg-[var(--gold)]/20" />
-          <StatBox icon="🎯" label="TOTAL BIDS" value={totalBids} highlight />
-          <div className="h-8 w-px bg-[var(--gold)]/20" />
-          <StatBox icon="💰" label="TOTAL VALUE" value={formatCurrency(totalValue)} gold />
+          <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
+          <StatBox icon="🎯" label="BIDS" value={totalBids} highlight />
+          <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
+          <StatBox icon="💰" label="VALUE" value={formatCurrency(totalValue)} gold />
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[1920px] mx-auto p-8 grid grid-cols-12 gap-8">
+      <div className="max-w-[1920px] mx-auto p-4 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
         {/* Items Board - Airport Style */}
-        <div className="col-span-8">
+        <div className="lg:col-span-8">
           <div className="monitor-board">
             <div className="board-header">
               <div className="col-item">ITEM</div>
@@ -240,7 +240,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         </div>
 
         {/* Right Sidebar */}
-        <div className="col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-4 sm:space-y-6">
           {/* Top Bid */}
           <div className="highlight-card">
             <div className="highlight-label">HIGHEST BID</div>
@@ -372,7 +372,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
 
         .board-header {
-          display: grid;
+          display: none;
           grid-template-columns: 2fr 1fr 1.5fr 0.75fr 1fr;
           gap: 1rem;
           padding: 1rem 1.5rem;
@@ -384,21 +384,36 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           color: var(--gold);
         }
 
+        @media (min-width: 768px) {
+          .board-header {
+            display: grid;
+          }
+        }
+
         .board-body {
           max-height: 60vh;
           overflow-y: auto;
         }
 
         .board-row {
-          display: grid;
-          grid-template-columns: 2fr 1fr 1.5fr 0.75fr 1fr;
-          gap: 1rem;
-          padding: 1rem 1.5rem;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          padding: 1rem;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           animation: slideIn 0.5s ease-out forwards;
           opacity: 0;
           transform: translateX(-20px);
           transition: background 0.3s;
+        }
+
+        @media (min-width: 768px) {
+          .board-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr 0.75fr 1fr;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+          }
         }
 
         .board-row:hover {
@@ -424,20 +439,36 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         .col-item {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.75rem;
+          width: 100%;
+        }
+
+        @media (min-width: 768px) {
+          .col-item {
+            gap: 1rem;
+            width: auto;
+          }
         }
 
         .item-thumb {
-          width: 48px;
-          height: 48px;
+          width: 40px;
+          height: 40px;
           border-radius: 0.5rem;
           overflow: hidden;
           background: #1a1a2e;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.5rem;
+          font-size: 1.25rem;
           flex-shrink: 0;
+        }
+
+        @media (min-width: 768px) {
+          .item-thumb {
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+          }
         }
 
         .item-thumb img {
@@ -452,9 +483,20 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           color: white;
         }
 
-        .col-starting, .col-current, .col-bids, .col-status {
+        .col-starting {
+          display: none;
+        }
+
+        .col-current, .col-bids, .col-status {
           display: flex;
           align-items: center;
+        }
+
+        @media (min-width: 768px) {
+          .col-starting {
+            display: flex;
+            align-items: center;
+          }
         }
 
         .price-dim {
@@ -538,10 +580,16 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
 
         .highlight-value {
-          font-size: 3rem;
+          font-size: 2rem;
           font-weight: 800;
           color: var(--gold);
           text-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
+        }
+
+        @media (min-width: 768px) {
+          .highlight-value {
+            font-size: 3rem;
+          }
         }
 
         .animate-glow {
@@ -715,11 +763,11 @@ function StatBox({ icon, label, value, highlight = false, gold = false }: {
   gold?: boolean
 }) {
   return (
-    <div className="flex items-center gap-4">
-      <span className="text-3xl">{icon}</span>
+    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+      <span className="text-xl sm:text-3xl">{icon}</span>
       <div>
-        <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest">{label}</div>
-        <div className={`text-2xl font-bold tabular-nums ${gold ? 'text-[var(--gold)]' : highlight ? 'text-emerald-400' : 'text-white'}`}>
+        <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">{label}</div>
+        <div className={`text-lg sm:text-2xl font-bold tabular-nums ${gold ? 'text-[var(--gold)]' : highlight ? 'text-emerald-400' : 'text-white'}`}>
           {value}
         </div>
       </div>
