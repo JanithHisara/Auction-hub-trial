@@ -75,6 +75,13 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
         <div className="flex gap-3">
+          <Link 
+            href={`/monitor/${gem.id}`}
+            target="_blank"
+            className="btn-outline flex items-center gap-2"
+          >
+            📺 Monitor
+          </Link>
           {gem.status === 'draft' && (
             <>
               <Link href={`/admin/gems/${gem.id}/edit`} className="btn-outline">

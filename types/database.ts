@@ -3,6 +3,7 @@ export type GemStatus = 'draft' | 'active' | 'ended' | 'completed'
 export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
 export type AuctionType = 'fixed_increment' | 'variable_increment'
 export type PaymentStatus = 'pending' | 'completed' | 'failed'
+export type RegistrationApprovalStatus = 'pending' | 'approved' | 'rejected'
 
 export interface User {
   id: string
@@ -54,6 +55,9 @@ export interface AuctionRegistration {
   last_access_at: string | null
   access_count: number
   is_active: boolean
+  approval_status: RegistrationApprovalStatus
+  approved_at: string | null
+  approved_by: string | null
   
   // Joined
   auction?: Auction

@@ -251,15 +251,13 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
 
                 {auction.is_registered ? (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
-                      <span className="text-2xl">✅</span>
-                      <div>
-                        <p className="font-bold text-emerald-400">You're Registered!</p>
-                        <p className="text-sm text-[var(--text-muted)]">Check your email for access link</p>
-                      </div>
-                    </div>
+                    <RegisterButton 
+                      auctionId={auction.id} 
+                      userId={auction.user_id}
+                      existingStatus={auction.registration?.approval_status}
+                    />
                     
-                    {isLive && auction.registration?.access_token && (
+                    {isLive && auction.registration?.approval_status === 'approved' && auction.registration?.access_token && (
                       <Link 
                         href={`/auction-room/${auction.registration.access_token}`}
                         className="btn-live w-full flex items-center justify-center gap-2"
