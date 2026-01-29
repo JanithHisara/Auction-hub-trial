@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { sendAuctionAccessEmail } from '@/lib/email/resend'
 
 export async function POST(
   request: NextRequest,
@@ -36,33 +35,38 @@ export async function POST(
     // Check if already registered
     const { data: existing } = await supabase
       .from('auction_registrations')
-      .select('id')
+      .select('id, approval_status')
       .eq('auction_id', auctionId)
       .eq('user_id', user.id)
       .single()
 
     if (existing) {
-      return NextResponse.json({ message: 'Already registered for this auction' }, { status: 400 })
+      return NextResponse.json({ 
+        message: 'Already registered for this auction',
+        approval_status: existing.approval_status 
+      }, { status: 400 })
     }
 
-    // Check max participants
+    // Check max participants (only count approved registrations)
     if (auction.max_participants) {
       const { count } = await supabase
         .from('auction_registrations')
         .select('*', { count: 'exact', head: true })
         .eq('auction_id', auctionId)
+        .eq('approval_status', 'approved')
 
       if (count && count >= auction.max_participants) {
         return NextResponse.json({ message: 'Auction is full' }, { status: 400 })
       }
     }
 
-    // Create registration with unique access token
+    // Create registration with pending approval status (no email sent yet)
     const { data: registration, error: regError } = await supabase
       .from('auction_registrations')
       .insert({
         auction_id: auctionId,
         user_id: user.id,
+        approval_status: 'pending',
       })
       .select()
       .single()
@@ -72,41 +76,12 @@ export async function POST(
       return NextResponse.json({ message: 'Failed to register' }, { status: 500 })
     }
 
-    // Send email with access link
-    try {
-      const auctionDate = new Date(auction.auction_start).toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-
-      await sendAuctionAccessEmail({
-        to: user.email!,
-        auctionName: auction.name,
-        auctionDate,
-        accessToken: registration.access_token,
-      })
-
-      // Update email_sent_at
-      await supabase
-        .from('auction_registrations')
-        .update({ email_sent_at: new Date().toISOString() })
-        .eq('id', registration.id)
-
-    } catch (emailError) {
-      console.error('Email send error:', emailError)
-      // Don't fail registration if email fails
-    }
-
     return NextResponse.json({
       success: true,
-      message: 'Successfully registered. Check your email for access link.',
+      message: 'Registration submitted. You will receive an email once approved by admin.',
       registration: {
         id: registration.id,
-        access_token: registration.access_token,
+        approval_status: registration.approval_status,
       },
     })
 

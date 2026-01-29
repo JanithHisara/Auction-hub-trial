@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Gem, GemImage, GemCertificate, Auction } from '@/types/database'
-import { Loader2, Plus, X, Image, FileText, DollarSign, Clock, Sparkles } from 'lucide-react'
+import { Loader2, Plus, X, FileText, DollarSign, Clock } from 'lucide-react'
+import ImageUploader from './ImageUploader'
 
 interface GemFormProps {
   gem?: Gem & { images?: GemImage[]; certificates?: GemCertificate[] }
@@ -67,17 +68,6 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     } finally {
       setLoading(false)
     }
-  }
-
-  const addImageField = () => setFormData({ ...formData, images: [...formData.images, ''] })
-  const updateImage = (index: number, value: string) => {
-    const newImages = [...formData.images]
-    newImages[index] = value
-    setFormData({ ...formData, images: newImages })
-  }
-  const removeImage = (index: number) => {
-    const newImages = formData.images.filter((_, i) => i !== index)
-    setFormData({ ...formData, images: newImages.length > 0 ? newImages : [''] })
   }
 
   const addCertificateField = () => setFormData({ ...formData, certificates: [...formData.certificates, { url: '', type: '' }] })
@@ -267,38 +257,10 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
 
       {/* Images */}
       <Section title="Images" icon="🖼️" number={auctions.length > 0 ? "5" : "4"}>
-        <div className="space-y-3">
-          {formData.images.map((url, index) => (
-            <div key={index} className="flex gap-2">
-              <div className="relative flex-1">
-                <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-                <input
-                  type="url"
-                  value={url}
-                  onChange={(e) => updateImage(index, e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full pl-10"
-                />
-              </div>
-              {formData.images.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="p-3 bg-red-500/20 border border-red-500/40 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addImageField}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg hover:border-[var(--gold)]/50 transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Add Image
-          </button>
-        </div>
+        <ImageUploader
+          images={formData.images}
+          onChange={(images) => setFormData({ ...formData, images })}
+        />
       </Section>
 
       {/* Certificates */}

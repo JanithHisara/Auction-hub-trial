@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Auction, Gem, AuctionRegistration } from '@/types/database'
+import { Auction, Gem, AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
 
 async function getAuction(id: string) {
   const supabase = await createClient()
@@ -155,13 +155,6 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Quick Actions</h2>
         <div className="flex flex-col sm:flex-row flex-wrap gap-3">
           <StatusUpdateForm auctionId={id} currentStatus={auction.status} />
-          <Link 
-            href={`/monitor/auction/${id}`}
-            target="_blank"
-            className="px-4 py-2.5 sm:py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg text-sm font-bold transition-colors inline-flex items-center justify-center gap-2"
-          >
-            📺 Monitor
-          </Link>
         </div>
       </div>
 
@@ -274,7 +267,15 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
 
       {/* Registrations */}
       <div className="card-glass rounded-xl p-4 sm:p-6">
-        <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Registrations ({registrations.length})</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base sm:text-lg font-bold text-white">Registrations ({registrations.length})</h2>
+          <Link 
+            href={`/admin/auctions/${id}/registrations`}
+            className="text-sm text-[var(--gold)] hover:underline"
+          >
+            Manage →
+          </Link>
+        </div>
         
         {registrations.length > 0 ? (
           <>
@@ -285,9 +286,9 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                   <tr className="border-b border-[var(--border)]">
                     <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">User</th>
                     <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Registered</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Email Sent</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Approval</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Email</th>
                     <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Access</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
@@ -301,18 +302,24 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                         {formatDate(reg.registered_at)}
                       </td>
                       <td className="py-3 px-4">
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                          reg.approval_status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' :
+                          reg.approval_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                          'bg-amber-500/20 text-amber-400'
+                        }`}>
+                          {(reg.approval_status || 'pending').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
                         {reg.email_sent_at ? (
                           <span className="text-emerald-400 text-sm">✓ Sent</span>
-                        ) : (
+                        ) : reg.approval_status === 'approved' ? (
                           <span className="text-amber-400 text-sm">Pending</span>
+                        ) : (
+                          <span className="text-[var(--text-muted)] text-sm">—</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-white">{reg.access_count}x</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${reg.is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                          {reg.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -328,8 +335,12 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                       <p className="text-white font-medium text-sm">{reg.user?.anonymous_name || 'Anonymous'}</p>
                       <p className="text-xs text-[var(--text-muted)] truncate max-w-[200px]">{reg.user?.email}</p>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${reg.is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {reg.is_active ? 'Active' : 'Inactive'}
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                      reg.approval_status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' :
+                      reg.approval_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                      'bg-amber-500/20 text-amber-400'
+                    }`}>
+                      {(reg.approval_status || 'pending').toUpperCase()}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-3 text-xs text-[var(--text-muted)]">
