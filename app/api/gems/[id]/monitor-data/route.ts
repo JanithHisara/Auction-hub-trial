@@ -78,10 +78,14 @@ export async function GET(
         .order('bid_amount', { ascending: false })
         .limit(10)
 
-      topBidders = (topBidsWithUsers || []).map(b => ({
-        anonymous_name: (b.user as { anonymous_name: string })?.anonymous_name || 'Anonymous',
-        bid_amount: b.bid_amount,
-      }))
+      topBidders = (topBidsWithUsers || []).map(b => {
+        // Supabase returns related data that needs proper type handling
+        const userObj = b.user as unknown as { anonymous_name: string } | null
+        return {
+          anonymous_name: userObj?.anonymous_name || 'Anonymous',
+          bid_amount: b.bid_amount,
+        }
+      })
     }
 
     return NextResponse.json({
