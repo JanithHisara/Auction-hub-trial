@@ -56,10 +56,10 @@ async function getAuction(id: string) {
     })
   )
 
-  // Get registrations
+  // Get registrations (use explicit FK name due to multiple FKs to users)
   const { data: registrations } = await supabase
     .from('auction_registrations')
-    .select('*, user:users(email, anonymous_name)')
+    .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name)')
     .eq('auction_id', id)
     .order('registered_at', { ascending: false })
 

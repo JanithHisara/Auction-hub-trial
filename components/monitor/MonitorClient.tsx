@@ -81,8 +81,8 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
     const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => clearInterval(clockTimer)
   }, [gemId])
-
-  // Realtime subscriptions
+    
+    // Realtime subscriptions
   useEffect(() => {
     const channel = supabase
       .channel(`item-monitor-${gemId}`)
@@ -131,7 +131,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
       if (hours > 0) {
         setTimeLeft(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
       } else {
-        setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+      setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
       }
     }, 1000)
 
@@ -187,7 +187,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           </div>
         </div>
       </header>
-
+      
       {/* Main Content */}
       <div className="max-w-[1920px] mx-auto p-4 sm:p-8">
         {/* Item Header */}
@@ -225,7 +225,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               <StatCard label="Bidders" value={uniqueBidders.toString()} />
             </div>
           </div>
-
+          
           {/* Center: Current Price */}
           <div className="lg:col-span-4 flex flex-col items-center justify-center">
             <div className="price-display">
@@ -247,11 +247,11 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                   <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-2">
                     {item.round_end_time ? 'Round Ends In' : 'Auction Ends In'}
                   </div>
-                  <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
-                    {timeLeft}
-                  </div>
-                </div>
-              )}
+              <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
+                {timeLeft}
+              </div>
+            </div>
+          )}
 
               {isFinished && (
                 <div className="mt-8 px-6 py-3 bg-amber-500/20 border border-amber-500/40 rounded-xl">
@@ -269,19 +269,19 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                 <div className="card-header">
                   <span className="text-xl">🏆</span>
                   TOP BIDDERS
-                </div>
+        </div>
                 <div className="results-list">
                   {topBidders.length > 0 ? (
                     topBidders.map((bidder, idx) => (
                       <div key={idx} className={`result-item ${idx === 0 ? 'winner' : ''}`}>
                         <div className="result-rank">
                           {idx === 0 ? '👑' : `#${idx + 1}`}
-                        </div>
+              </div>
                         <div className="result-info">
                           <span className="result-name">{bidder.anonymous_name}</span>
                           <span className="result-amount">{formatCurrency(bidder.bid_amount)}</span>
-                        </div>
-                      </div>
+              </div>
+           </div>
                     ))
                   ) : (
                     <div className="no-bids">No bids placed</div>
@@ -315,10 +315,10 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                 </div>
               </div>
             )}
-          </div>
+           </div>
         </div>
       </div>
-
+      
       <style jsx>{`
         .monitor-display {
           font-family: 'JetBrains Mono', 'SF Mono', monospace;
@@ -552,7 +552,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           letter-spacing: 0.1em;
         }
       `}</style>
-    </div>
+         </div>
   )
 }
 

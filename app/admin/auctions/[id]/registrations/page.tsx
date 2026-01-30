@@ -32,9 +32,10 @@ async function getData(auctionId: string, status?: string) {
   if (!auction) return null
 
   // Get registrations with optional filter
+  // Use explicit FK name because there are two FKs to users table (user_id and approved_by)
   let query = adminClient
     .from('auction_registrations')
-    .select('*, user:users(email, anonymous_name)')
+    .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name)')
     .eq('auction_id', auctionId)
     .order('registered_at', { ascending: false })
 
