@@ -32,10 +32,10 @@ export async function PATCH(
       return NextResponse.json({ message: 'Invalid status' }, { status: 400 })
     }
 
-    // Get registration with user and auction info
+    // Get registration with user and auction info (use explicit FK name)
     const { data: registration, error: regError } = await supabase
       .from('auction_registrations')
-      .select('*, user:users(email, anonymous_name), auction:auctions(name, auction_start)')
+      .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name), auction:auctions(name, auction_start)')
       .eq('id', registrationId)
       .eq('auction_id', auctionId)
       .single()
