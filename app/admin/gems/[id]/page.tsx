@@ -14,7 +14,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
 
   const { data: gem } = await supabase
     .from('gems')
-    .select('*, auction:auctions(name)')
+    .select('*, auction:auctions(name, auction_type)')
     .eq('id', id)
     .eq('admin_id', user.id)
     .single()
@@ -103,6 +103,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
         minIncrement={gem.min_bid_increment}
         status={gem.status}
         roundEndTime={gem.round_end_time}
+        auctionType={(gem.auction as { auction_type?: string } | null)?.auction_type || 'variable_increment'}
       />
 
       {/* Main Content Grid */}
