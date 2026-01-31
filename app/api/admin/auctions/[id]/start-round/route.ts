@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAuth, getUserRole } from '@/lib/auth'
+import { getUserRole } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 
 export async function POST(
@@ -15,8 +15,9 @@ export async function POST(
     }
 
     const supabase = await createClient()
+    const body = await request.json().catch(() => ({}))
     
-    // Get gem
+    // Get gem with default interval
     const { data: gem } = await supabase
       .from('gems')
       .select('increment_interval')
@@ -27,8 +28,11 @@ export async function POST(
         return NextResponse.json({ error: 'Gem not found' }, { status: 404 })
     }
 
+    // Use custom duration if provided, otherwise use default increment_interval
+    const durationSeconds = body.duration || gem.increment_interval
+    
     const now = new Date()
-    const roundEnd = new Date(now.getTime() + (gem.increment_interval * 1000))
+    const roundEnd = new Date(now.getTime() + (durationSeconds * 1000))
 
     // Update round_end_time
     const { error } = await supabase
@@ -39,8 +43,9 @@ export async function POST(
     if (error) throw error
 
     return NextResponse.json({ message: 'Round started', round_end_time: roundEnd })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to start round'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

@@ -86,19 +86,41 @@ export async function POST(
         return NextResponse.json({ error: 'You have already accepted this price' }, { status: 400 })
       }
     } else {
-      // Variable increment: user submits custom amount
+      // Free-form bidding: user submits custom amount (one bid only)
+      
+      // Check if bidding round is active
+      if (!gem.round_end_time) {
+        return NextResponse.json({ error: 'Bidding has not started yet' }, { status: 400 })
+      }
+      
+      const roundEndTime = new Date(gem.round_end_time)
+      if (now >= roundEndTime) {
+        return NextResponse.json({ error: 'Bidding time has ended' }, { status: 400 })
+      }
+      
+      // Check if user already placed a bid (one bid only rule)
+      const { data: existingBid } = await supabase
+        .from('bids')
+        .select('id')
+        .eq('gem_id', id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (existingBid) {
+        return NextResponse.json({ error: 'You have already placed a bid for this item' }, { status: 400 })
+      }
+
       bidAmount = body.bid_amount
 
       if (!bidAmount || typeof bidAmount !== 'number') {
         return NextResponse.json({ error: 'Bid amount is required' }, { status: 400 })
       }
 
-      const minBid = currentHighestBid + gem.min_bid_increment
-
-      if (bidAmount < minBid) {
+      // For free-form: bid must be >= starting price (hidden bids, so no increment from current)
+      if (bidAmount < gem.starting_price) {
         return NextResponse.json({ 
-          error: `Bid must be at least ${minBid}`,
-          minBid 
+          error: `Bid must be at least ${gem.starting_price}`,
+          minBid: gem.starting_price 
         }, { status: 400 })
       }
     }

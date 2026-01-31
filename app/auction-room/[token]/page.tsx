@@ -77,11 +77,21 @@ async function validateAccess(token: string): Promise<AccessResult> {
         bid_amount,
         user_id,
         created_at,
+        points_earned,
         user:users(anonymous_name)
       )
     `)
     .eq('auction_id', auction.id)
     .order('created_at', { ascending: true })
+
+  // For free-form (variable_increment) auctions, filter bids to only show user's own
+  const isFreeForm = auction.auction_type === 'variable_increment'
+  const filteredItems = (items || []).map(item => ({
+    ...item,
+    bids: isFreeForm 
+      ? (item.bids || []).filter((b: { user_id: string }) => b.user_id === user.id)
+      : (item.bids || [])
+  }))
 
   // Get user rewards
   const { data: rewards } = await supabase
@@ -103,7 +113,7 @@ async function validateAccess(token: string): Promise<AccessResult> {
   return {
     valid: true,
     auction,
-    items: (items || []) as ItemWithRelations[],
+    items: filteredItems as ItemWithRelations[],
     user: user as unknown as User,
     registration: registration as unknown as AuctionRegistration,
     rewards: rewards as UserRewards | null,

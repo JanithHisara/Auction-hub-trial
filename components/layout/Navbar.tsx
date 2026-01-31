@@ -16,14 +16,15 @@ export default function Navbar({ user, role }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
 
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
   // Hide navbar in auction room and monitor pages
   if (pathname?.startsWith('/monitor') || pathname?.startsWith('/auction-room')) {
     return null
   }
-
-  useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--background)]/90 backdrop-blur-xl border-b border-[var(--border)]">
