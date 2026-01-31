@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
 import { Loader2, Play, SkipForward, Trophy } from 'lucide-react'
@@ -18,6 +19,11 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
   const [loading, setLoading] = useState(false)
   const [showNextRoundModal, setShowNextRoundModal] = useState(false)
   const [customIncrement, setCustomIncrement] = useState(minIncrement.toString())
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const [useCustomIncrement, setUseCustomIncrement] = useState(false)
 
   const handleAction = async (action: 'start' | 'increment' | 'end', increment?: number) => {
@@ -123,10 +129,10 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         </div>
       </div>
 
-      {/* Next Round Modal */}
-      {showNextRoundModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full">
+      {/* Next Round Modal - Portal to document.body */}
+      {mounted && showNextRoundModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
                 <SkipForward className="w-6 h-6 text-blue-400" />
@@ -230,7 +236,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
