@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { redirect } from 'next/navigation'
 
 export async function POST(
   request: NextRequest,
@@ -26,13 +25,21 @@ export async function POST(
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
-    // Get form data
-    const formData = await request.formData()
-    const status = formData.get('status') as string
+    // Get status from JSON or form data
+    let status: string
+    const contentType = request.headers.get('content-type')
+    
+    if (contentType?.includes('application/json')) {
+      const body = await request.json()
+      status = body.status
+    } else {
+      const formData = await request.formData()
+      status = formData.get('status') as string
+    }
 
     const validStatuses = ['draft', 'upcoming', 'registration_open', 'live', 'ended', 'completed']
     if (!validStatuses.includes(status)) {
-      return NextResponse.json({ message: 'Invalid status' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
     // Update auction
@@ -47,10 +54,15 @@ export async function POST(
 
     if (error) {
       console.error('Update error:', error)
-      return NextResponse.json({ message: 'Failed to update' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
     }
 
-    // Redirect back to auction page
+    // Return JSON for fetch requests, redirect for form submissions
+    if (contentType?.includes('application/json')) {
+      return NextResponse.json({ success: true, status })
+    }
+    
+    // Redirect back to auction page for form submissions
     return NextResponse.redirect(new URL(`/admin/auctions/${id}`, request.url))
 
   } catch (error) {
