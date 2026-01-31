@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Auction, Gem, Bid, UserRewards, AuctionRegistration, User } from '@/types/database'
-import { Check, Loader2 } from 'lucide-react'
+import { Check, Loader2, Trophy } from 'lucide-react'
+
+interface WinnerInfo {
+  gem_id: string
+  user_id: string
+  gem_name?: string
+}
 
 interface Props {
   auction: Auction
@@ -32,6 +38,9 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
   const [rewards, setRewards] = useState(initialRewards)
   const [newBidHighlight, setNewBidHighlight] = useState<string | null>(null)
   const [hasAcceptedPrice, setHasAcceptedPrice] = useState(false)
+  const [winners, setWinners] = useState<WinnerInfo[]>([])
+  const [showWinnerPopup, setShowWinnerPopup] = useState(false)
+  const [wonItem, setWonItem] = useState<{ name: string; amount: number } | null>(null)
   const supabase = createClient()
   const bidsContainerRef = useRef<HTMLDivElement>(null)
 
@@ -54,10 +63,33 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
     }
   }, [selectedItem, fixedPrice, user.id, isFixedIncrement])
 
-  // Subscribe to realtime updates
+  // Fetch existing winners on load
+  useEffect(() => {
+    const fetchWinners = async () => {
+      const itemIds = items.map(i => i.id)
+      if (itemIds.length === 0) return
+
+      const { data: existingWinners } = await supabase
+        .from('auction_winners')
+        .select('gem_id, user_id')
+        .in('gem_id', itemIds)
+
+      if (existingWinners?.length) {
+        const winnersWithNames = existingWinners.map(w => ({
+          ...w,
+          gem_name: items.find(i => i.id === w.gem_id)?.name
+        }))
+        setWinners(winnersWithNames)
+      }
+    }
+    fetchWinners()
+  }, [items, supabase])
+
+  // Subscribe to realtime updates for bids, items, and auction
   useEffect(() => {
     const channel = supabase
       .channel(`auction-${auction.id}`)
+      // Listen for new bids
       .on(
         'postgres_changes',
         {
@@ -113,12 +145,97 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
           }
         }
       )
+      // Listen for item updates (status, price changes)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'gems',
+          filter: `auction_id=eq.${auction.id}`,
+        },
+        (payload) => {
+          const updatedGem = payload.new as Gem
+          
+          setItems(prev => prev.map(item => {
+            if (item.id === updatedGem.id) {
+              return {
+                ...item,
+                status: updatedGem.status,
+                current_price: updatedGem.current_price,
+                round_end_time: updatedGem.round_end_time,
+              }
+            }
+            return item
+          }))
+
+          if (selectedItem?.id === updatedGem.id) {
+            setSelectedItem(prev => prev ? {
+              ...prev,
+              status: updatedGem.status,
+              current_price: updatedGem.current_price,
+              round_end_time: updatedGem.round_end_time,
+            } : prev)
+            
+            // Reset accepted price status when price changes (new round)
+            if (isFixedIncrement && updatedGem.current_price !== selectedItem.current_price) {
+              setHasAcceptedPrice(false)
+            }
+          }
+        }
+      )
+      // Listen for auction updates
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'auctions',
+          filter: `id=eq.${auction.id}`,
+        },
+        (payload) => {
+          const updatedAuction = payload.new as Auction
+          // Could trigger UI updates for auction status changes
+          if (updatedAuction.status === 'ended' || updatedAuction.status === 'completed') {
+            // Auction has ended - could show a message or redirect
+            window.location.reload()
+          }
+        }
+      )
+      // Listen for winner announcements
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'auction_winners',
+        },
+        (payload) => {
+          const newWinner = payload.new as { gem_id: string; user_id: string }
+          
+          // Check if this winner is for one of our items
+          const wonGem = items.find(i => i.id === newWinner.gem_id)
+          if (!wonGem) return
+          
+          // Add to winners list
+          setWinners(prev => [...prev, { ...newWinner, gem_name: wonGem.name }])
+          
+          // Show popup if current user is the winner
+          if (newWinner.user_id === user.id) {
+            const winningBid = wonGem.bids?.length 
+              ? Math.max(...wonGem.bids.map(b => b.bid_amount))
+              : wonGem.starting_price
+            setWonItem({ name: wonGem.name, amount: winningBid })
+            setShowWinnerPopup(true)
+          }
+        }
+      )
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [auction.id, items, selectedItem, user.id, supabase])
+  }, [auction.id, items, selectedItem, user.id, supabase, isFixedIncrement])
 
   // Variable increment bid handler
   const handleVariableBid = async (e: React.FormEvent) => {
@@ -185,12 +302,41 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
     setBidAmount(Math.round(minBid * multiplier).toString())
   }
 
+  // Check if current user won the selected item
+  const isWinnerOfSelectedItem = selectedItem && winners.some(
+    w => w.gem_id === selectedItem.id && w.user_id === user.id
+  )
+
   return (
     <div className="auction-room min-h-screen">
       {/* Points Popup */}
       {showPointsPopup && (
         <div className="points-popup text-4xl z-50" style={{ top: '30%', left: '50%', transform: 'translateX(-50%)' }}>
           +{pointsEarned} Points! 🎉
+        </div>
+      )}
+
+      {/* Winner Popup */}
+      {showWinnerPopup && wonItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f0f18] border-2 border-[var(--gold)] rounded-2xl p-8 max-w-md mx-4 text-center animate-bounce-in">
+            <div className="text-6xl mb-4">🏆</div>
+            <h2 className="text-3xl font-black text-[var(--gold)] mb-2">You Won!</h2>
+            <p className="text-xl text-white mb-4">{wonItem.name}</p>
+            <div className="p-4 bg-[var(--surface)] rounded-xl mb-6">
+              <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Winning Bid</p>
+              <p className="text-3xl font-black text-emerald-400">{formatCurrency(wonItem.amount)}</p>
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] mb-6">
+              Congratulations! You&apos;ll receive payment instructions shortly.
+            </p>
+            <button
+              onClick={() => setShowWinnerPopup(false)}
+              className="btn-gold px-8 py-3 text-lg"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       )}
 
@@ -233,19 +379,34 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
                   ? Math.max(...item.bids.map(b => b.bid_amount))
                   : item.starting_price
                 const isSelected = selectedItem?.id === item.id
+                const isItemEnded = item.status === 'ended' || item.status === 'completed'
+                const userWonThisItem = winners.some(w => w.gem_id === item.id && w.user_id === user.id)
 
                   return (
                     <button
                       key={item.id}
                       onClick={() => setSelectedItem(item)}
-                      className={`flex-shrink-0 w-[140px] lg:w-full p-3 lg:p-4 rounded-xl text-left transition-all ${
-                        isSelected 
-                          ? 'bg-[var(--gold)]/20 border-2 border-[var(--gold)]' 
-                          : 'bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--gold)]/50'
+                      className={`flex-shrink-0 w-[140px] lg:w-full p-3 lg:p-4 rounded-xl text-left transition-all relative ${
+                        userWonThisItem
+                          ? 'bg-emerald-500/20 border-2 border-emerald-500/50'
+                          : isSelected 
+                            ? 'bg-[var(--gold)]/20 border-2 border-[var(--gold)]' 
+                            : isItemEnded
+                              ? 'bg-[var(--surface)]/50 border border-amber-500/30 opacity-75'
+                              : 'bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--gold)]/50'
                       }`}
                     >
+                      {userWonThisItem ? (
+                        <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-emerald-500/30 border border-emerald-500/50 rounded text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                          <Trophy className="w-3 h-3" /> WON
+                        </div>
+                      ) : isItemEnded && (
+                        <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[10px] font-bold text-amber-400">
+                          ENDED
+                        </div>
+                      )}
                       <div className="flex flex-col lg:flex-row items-center lg:items-center gap-2 lg:gap-3">
-                        <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-lg overflow-hidden bg-[var(--background-secondary)] flex-shrink-0">
+                        <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-lg overflow-hidden bg-[var(--background-secondary)] flex-shrink-0 ${isItemEnded ? 'grayscale opacity-60' : ''}`}>
                           {item.gem_images?.[0]?.image_url ? (
                             <img 
                               src={item.gem_images[0].image_url}
@@ -258,8 +419,12 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
                         </div>
                         <div className="flex-1 min-w-0 text-center lg:text-left">
                           <h3 className="font-bold text-white truncate text-xs lg:text-base">{item.name}</h3>
-                          <p className="text-[var(--gold)] font-mono text-xs lg:text-sm">{formatCurrency(itemHighestBid)}</p>
-                          <p className="text-xs text-[var(--text-muted)]">{item.bids?.length || 0} bids</p>
+                          <p className={`font-mono text-xs lg:text-sm ${isItemEnded ? 'text-amber-400' : 'text-[var(--gold)]'}`}>
+                            {formatCurrency(itemHighestBid)}
+                          </p>
+                          <p className="text-xs text-[var(--text-muted)]">
+                            {isItemEnded ? 'Finished' : `${item.bids?.length || 0} bids`}
+                          </p>
                         </div>
                       </div>
                     </button>
@@ -309,44 +474,103 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
                   <h2 className="text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2">{selectedItem.name}</h2>
                   <p className="text-sm text-[var(--text-secondary)] mb-4 sm:mb-6 line-clamp-2">{selectedItem.description}</p>
 
-                  {isFixedIncrement ? (
-                    /* Fixed Increment UI */
+                  {/* Check if item bidding has ended */}
+                  {(selectedItem.status === 'ended' || selectedItem.status === 'completed') ? (
                     <div className="space-y-4">
-                      <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[var(--text-muted)]">Round Price</span>
-                          <span className="text-2xl font-bold text-[var(--gold)]">{formatCurrency(fixedPrice)}</span>
-                        </div>
-                        <p className="text-xs text-[var(--text-muted)]">
-                          Accept this price to stay in the auction. Price increases each round.
-                        </p>
-                      </div>
-
-                      {hasAcceptedPrice ? (
-                        <div className="flex items-center justify-center gap-3 py-4 px-6 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
-                          <Check className="w-6 h-6 text-emerald-400" />
-                          <span className="font-bold text-emerald-400">Price Accepted!</span>
+                      {isWinnerOfSelectedItem ? (
+                        /* User won this item */
+                        <div className="p-6 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-xl text-center">
+                          <div className="flex items-center justify-center gap-2 mb-3">
+                            <Trophy className="w-10 h-10 text-[var(--gold)]" />
+                          </div>
+                          <h3 className="text-2xl font-bold text-emerald-400 mb-2">You Won!</h3>
+                          <p className="text-[var(--text-secondary)] text-sm mb-4">
+                            Congratulations! This item is yours.
+                          </p>
+                          <div className="p-4 bg-[var(--surface)] rounded-lg mb-4">
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Your Winning Bid</p>
+                            <p className="text-3xl font-black text-emerald-400">{formatCurrency(currentBid)}</p>
+                          </div>
+                          <p className="text-sm text-[var(--gold)]">
+                            Check your email for payment instructions
+                          </p>
                         </div>
                       ) : (
-                        <button
-                          onClick={handleFixedBid}
-                          disabled={isSubmitting}
-                          className="btn-gold w-full py-4 text-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                              <span>Accepting...</span>
-                            </>
-                          ) : (
-                            <span>Accept {formatCurrency(fixedPrice)}</span>
-                          )}
-                        </button>
+                        /* Item ended but user didn't win */
+                        <div className="p-6 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl text-center">
+                          <div className="text-4xl mb-3">🔔</div>
+                          <h3 className="text-xl font-bold text-amber-400 mb-2">Bidding Finished</h3>
+                          <p className="text-[var(--text-secondary)] text-sm mb-4">
+                            This item&apos;s auction has ended.
+                          </p>
+                          <div className="p-4 bg-[var(--surface)] rounded-lg">
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Final Price</p>
+                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(currentBid)}</p>
+                          </div>
+                        </div>
                       )}
+                      {!isWinnerOfSelectedItem && !winners.some(w => w.gem_id === selectedItem.id) && (
+                        <p className="text-center text-xs text-[var(--text-muted)]">
+                          Winner will be announced shortly
+                        </p>
+                      )}
+                    </div>
+                  ) : isFixedIncrement ? (
+                    /* Fixed Increment UI */
+                    <div className="space-y-4">
+                      {/* Check if round has started */}
+                      {!selectedItem.round_end_time ? (
+                        /* Waiting for round to start */
+                        <div className="p-6 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl text-center">
+                          <div className="text-4xl mb-3">⏳</div>
+                          <h3 className="text-xl font-bold text-blue-400 mb-2">Waiting for Round</h3>
+                          <p className="text-[var(--text-secondary)] text-sm mb-4">
+                            The auction host will start the bidding round shortly.
+                          </p>
+                          <div className="p-4 bg-[var(--surface)] rounded-lg">
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Starting Price</p>
+                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(fixedPrice)}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[var(--text-muted)]">Round Price</span>
+                              <span className="text-2xl font-bold text-[var(--gold)]">{formatCurrency(fixedPrice)}</span>
+                            </div>
+                            <p className="text-xs text-[var(--text-muted)]">
+                              Accept this price to stay in the auction. Price increases each round.
+                            </p>
+                          </div>
 
-                      <p className="text-center text-xs text-[var(--text-muted)]">
-                        🎁 Earn 10 points for each round you accept!
-                      </p>
+                          {hasAcceptedPrice ? (
+                            <div className="flex items-center justify-center gap-3 py-4 px-6 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
+                              <Check className="w-6 h-6 text-emerald-400" />
+                              <span className="font-bold text-emerald-400">Price Accepted!</span>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={handleFixedBid}
+                              disabled={isSubmitting}
+                              className="btn-gold w-full py-4 text-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                  <span>Accepting...</span>
+                                </>
+                              ) : (
+                                <span>Accept {formatCurrency(fixedPrice)}</span>
+                              )}
+                            </button>
+                          )}
+
+                          <p className="text-center text-xs text-[var(--text-muted)]">
+                            🎁 Earn 10 points for each round you accept!
+                          </p>
+                        </>
+                      )}
                     </div>
                   ) : (
                     /* Variable Increment UI */
@@ -358,12 +582,14 @@ export default function AuctionRoomClient({ auction, items: initialItems, user, 
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
                             value={bidAmount}
-                            onChange={(e) => setBidAmount(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9]/g, '')
+                              setBidAmount(val)
+                            }}
                             placeholder={minBid.toString()}
-                            min={minBid}
-                            step="1"
                             className="w-full pl-8 pr-4 py-4 text-2xl font-bold bg-[var(--surface)] border-2 border-[var(--border)] rounded-xl focus:border-[var(--gold)] text-white"
                           />
                         </div>

@@ -1,13 +1,36 @@
 import { requireAdmin } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
-import { LayoutDashboard, Calendar, Gem, Plus } from 'lucide-react'
+import { LayoutDashboard, Calendar, Gem, Plus, UserCheck } from 'lucide-react'
+
+async function getPendingCount(adminId: string) {
+  const adminClient = createAdminClient()
+  
+  // Get auctions for this admin
+  const { data: auctions } = await adminClient
+    .from('auctions')
+    .select('id')
+    .eq('admin_id', adminId)
+
+  if (!auctions?.length) return 0
+
+  // Get pending registrations count
+  const { count } = await adminClient
+    .from('auction_registrations')
+    .select('*', { count: 'exact', head: true })
+    .in('auction_id', auctions.map(a => a.id))
+    .eq('approval_status', 'pending')
+
+  return count || 0
+}
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  await requireAdmin()
+  const user = await requireAdmin()
+  const pendingCount = await getPendingCount(user.id)
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -36,6 +59,9 @@ export default async function AdminLayout({
               <NavLink href="/admin/gems" icon={<Gem className="w-4 h-4" />}>
                 Items
               </NavLink>
+              <NavLink href="/admin/approvals" icon={<UserCheck className="w-4 h-4" />} badge={pendingCount}>
+                Approvals
+              </NavLink>
               <NavLink href="/admin/auctions/new" icon={<Plus className="w-4 h-4" />} highlight>
                 New Auction
               </NavLink>
@@ -57,12 +83,14 @@ function NavLink({
   href, 
   children, 
   icon, 
-  highlight = false 
+  highlight = false,
+  badge = 0
 }: { 
   href: string
   children: React.ReactNode
   icon?: React.ReactNode
   highlight?: boolean
+  badge?: number
 }) {
   return (
     <Link
@@ -75,6 +103,11 @@ function NavLink({
     >
       {icon}
       {children}
+      {badge > 0 && (
+        <span className="ml-1 px-2 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full min-w-[20px] text-center">
+          {badge}
+        </span>
+      )}
     </Link>
   )
 }

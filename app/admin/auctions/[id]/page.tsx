@@ -86,7 +86,8 @@ const itemStatusColors: Record<string, string> = {
   completed: 'bg-purple-500/20 text-purple-400',
 }
 
-const statusOptions = ['draft', 'upcoming', 'registration_open', 'live', 'ended', 'completed']
+import AuctionStatusActions from '@/components/admin/AuctionStatusActions'
+import AuctionDetailClient from '@/components/admin/AuctionDetailClient'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString('en-US', {
@@ -121,8 +122,10 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
   const { auction, items, registrations } = data
   const totalBids = items.reduce((sum, item) => sum + item.bidsCount, 0)
   const totalValue = items.reduce((sum, item) => sum + item.highestBid, 0)
+  const approvedCount = registrations.filter(r => r.approval_status === 'approved').length
 
   return (
+    <AuctionDetailClient auctionId={id}>
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -152,9 +155,32 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
 
       {/* Quick Actions */}
       <div className="card-glass rounded-xl p-4 sm:p-6">
-        <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Quick Actions</h2>
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-          <StatusUpdateForm auctionId={id} currentStatus={auction.status} />
+        <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Auction Controls</h2>
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
+          <AuctionStatusActions 
+            auctionId={id} 
+            currentStatus={auction.status as 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'} 
+            itemCount={items.length}
+            approvedCount={approvedCount}
+          />
+          {auction.status === 'live' && (
+            <Link 
+              href={`/monitor/auction/${id}`}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-white hover:border-[var(--gold)] transition-colors"
+              target="_blank"
+            >
+              📺 Open Monitor
+            </Link>
+          )}
+          {auction.status === 'live' && (
+            <Link 
+              href={`/monitor/auction/${id}/item`}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-white hover:border-[var(--gold)] transition-colors"
+              target="_blank"
+            >
+              🎯 Item Monitor
+            </Link>
+          )}
         </div>
       </div>
 
@@ -359,6 +385,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         )}
       </div>
     </div>
+    </AuctionDetailClient>
   )
 }
 
@@ -385,23 +412,3 @@ function ScheduleItem({ label, value }: { label: string; value: string }) {
   )
 }
 
-function StatusUpdateForm({ auctionId, currentStatus }: { auctionId: string; currentStatus: string }) {
-  return (
-    <form action={`/api/admin/auctions/${auctionId}/status`} method="POST" className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-      <select 
-        name="status" 
-        defaultValue={currentStatus}
-        className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2.5 sm:py-2 text-white text-sm flex-1 sm:flex-none"
-      >
-        {statusOptions.map(status => (
-          <option key={status} value={status}>
-            {status.replace('_', ' ').toUpperCase()}
-          </option>
-        ))}
-      </select>
-      <button type="submit" className="btn-gold text-sm py-2.5 sm:py-2 px-4">
-        <span>Update</span>
-      </button>
-    </form>
-  )
-}

@@ -99,7 +99,8 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
       {/* Admin Controls */}
       <AdminControls 
         gemId={gem.id} 
-        currentPrice={currentPrice} 
+        currentPrice={currentPrice}
+        minIncrement={gem.min_bid_increment}
         status={gem.status}
         roundEndTime={gem.round_end_time}
       />

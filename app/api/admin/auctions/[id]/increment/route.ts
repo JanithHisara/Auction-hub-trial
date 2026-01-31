@@ -49,7 +49,11 @@ export async function POST(
         }, { status: 400 })
     }
 
-    const newPrice = Number(gem.current_price) + Number(gem.min_bid_increment)
+    // Check for custom increment in request body
+    const body = await request.json().catch(() => ({}))
+    const incrementAmount = body.increment || gem.min_bid_increment
+    
+    const newPrice = Number(gem.current_price) + Number(incrementAmount)
     const now = new Date()
     const nextRoundEnd = new Date(now.getTime() + (gem.increment_interval * 1000))
     
