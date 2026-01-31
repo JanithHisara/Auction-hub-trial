@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
 import RegistrationStatusActions from '@/components/admin/RegistrationStatusActions'
+import LocalTime from '@/components/ui/LocalTime'
 
 async function getData(status?: string) {
   const supabase = await createClient()
@@ -62,15 +63,6 @@ async function getData(status?: string) {
   return { registrations: registrations || [], counts, auctions }
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 const statusColors: Record<RegistrationApprovalStatus, string> = {
   pending: 'bg-amber-500/20 text-amber-400',
@@ -147,7 +139,7 @@ export default async function ApprovalsPage({
                         </Link>
                       </td>
                       <td className="py-3 px-4 text-[var(--text-secondary)] text-sm">
-                        {formatDate(reg.registered_at)}
+                        <LocalTime date={reg.registered_at} />
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${statusColors[reg.approval_status]}`}>
@@ -184,7 +176,7 @@ export default async function ApprovalsPage({
                     <span className="text-[var(--gold)]">📅 {reg.auction.name}</span>
                   </div>
                   <div className="text-xs text-[var(--text-muted)]">
-                    Registered: {formatDate(reg.registered_at)}
+                    Registered: <LocalTime date={reg.registered_at} format="short" />
                   </div>
                   <RegistrationStatusActions 
                     auctionId={reg.auction.id} 

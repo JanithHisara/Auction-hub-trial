@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
 import RegistrationStatusActions from '@/components/admin/RegistrationStatusActions'
+import LocalTime from '@/components/ui/LocalTime'
 
 async function getData(auctionId: string, status?: string) {
   const supabase = await createClient()
@@ -65,15 +66,6 @@ async function getData(auctionId: string, status?: string) {
   return { auction, registrations: registrations || [], counts }
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 const statusColors: Record<RegistrationApprovalStatus, string> = {
   pending: 'bg-amber-500/20 text-amber-400',
@@ -156,7 +148,7 @@ export default async function AuctionRegistrationsPage({
                         <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
                       </td>
                       <td className="py-3 px-4 text-[var(--text-secondary)] text-sm">
-                        {formatDate(reg.registered_at)}
+                        <LocalTime date={reg.registered_at} />
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${statusColors[reg.approval_status]}`}>
@@ -199,7 +191,7 @@ export default async function AuctionRegistrationsPage({
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-                    <span>📅 {formatDate(reg.registered_at)}</span>
+                    <span>📅 <LocalTime date={reg.registered_at} format="short" /></span>
                     {reg.email_sent_at && <span>✉️ Sent</span>}
                   </div>
                   <RegistrationStatusActions 

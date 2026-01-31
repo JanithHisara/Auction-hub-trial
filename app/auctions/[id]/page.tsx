@@ -174,7 +174,7 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                 {auction.items.length > 0 ? (
                   <div className="grid sm:grid-cols-2 gap-4">
                     {auction.items.slice(0, 6).map((item: Gem & { gem_images: { image_url: string }[] }) => (
-                      <div key={item.id} className="group relative rounded-xl overflow-hidden bg-[var(--surface)] border border-[var(--border)]">
+                      <div key={item.id} className="group relative rounded-xl overflow-hidden bg-[var(--surface)] border border-[var(--border)] cursor-pointer">
                         <div className="aspect-square overflow-hidden">
                           {item.gem_images?.[0]?.image_url ? (
                             <img 
@@ -188,12 +188,21 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                             </div>
                           )}
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform">
-                          <h3 className="font-bold text-white">{item.name}</h3>
-                          <p className="text-[var(--gold)] font-mono">
+                          <h3 className="font-bold text-white mb-1">{item.name}</h3>
+                          {item.description && (
+                            <p className="text-xs text-white/70 line-clamp-2 mb-2">
+                              {item.description}
+                            </p>
+                          )}
+                          <p className="text-[var(--gold)] font-mono text-sm">
                             Starting: {formatCurrency(item.starting_price)}
                           </p>
+                        </div>
+                        {/* Always visible name badge */}
+                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent group-hover:opacity-0 transition-opacity">
+                          <h3 className="font-bold text-white text-sm truncate">{item.name}</h3>
                         </div>
                       </div>
                     ))}
