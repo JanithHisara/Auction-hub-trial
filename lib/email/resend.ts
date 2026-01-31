@@ -32,7 +32,7 @@ export async function sendAuctionAccessEmail({
   }
 
   const { data, error } = await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || 'GemBid <onboarding@resend.dev>',
+    from: process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>',
     to,
     subject: `🎫 Your Access Pass: ${auctionName}`,
     html: generateAuctionEmailHtml({
@@ -158,7 +158,7 @@ function generateAuctionEmailHtml({
           <tr>
             <td style="padding: 24px 40px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08);">
               <p style="margin: 0; color: #71717a; font-size: 13px;">
-                GemBid Auction House
+                Auctionhub
               </p>
               <p style="margin: 8px 0 0; color: #52525b; font-size: 12px;">
                 Premium gem auctions for discerning collectors

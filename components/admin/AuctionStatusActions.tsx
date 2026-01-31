@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Loader2, Play, Users, Radio, StopCircle, CheckCircle, AlertTriangle } from 'lucide-react'
 
@@ -61,7 +62,12 @@ const statusFlow: Record<AuctionStatus, { next: AuctionStatus | null; label: str
 export default function AuctionStatusActions({ auctionId, currentStatus, itemCount, approvedCount }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const current = statusFlow[currentStatus]
   const nextStatus = current.next
@@ -122,10 +128,10 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
         <span>{current.label}</span>
       </button>
 
-      {/* Confirmation Modal */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full">
+      {/* Confirmation Modal - Portal to document.body */}
+      {mounted && showConfirm && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl">
             <div className="text-center mb-6">
               <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${current.color.split(' ')[0]}/20`}>
                 {current.icon}
@@ -210,7 +216,8 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
