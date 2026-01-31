@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction, Gem, AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
+import LocalTime from '@/components/ui/LocalTime'
 
 async function getAuction(id: string) {
   const supabase = await createClient()
@@ -325,7 +326,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                         <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
                       </td>
                       <td className="py-3 px-4 text-[var(--text-secondary)] text-sm">
-                        {formatDate(reg.registered_at)}
+                        <LocalTime date={reg.registered_at} />
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-bold ${
@@ -370,7 +371,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-3 text-xs text-[var(--text-muted)]">
-                    <span>📅 {formatDate(reg.registered_at)}</span>
+                    <span>📅 <LocalTime date={reg.registered_at} format="short" /></span>
                     <span>{reg.email_sent_at ? '✉️ Sent' : '⏳ Pending'}</span>
                     <span>👁 {reg.access_count}x</span>
                   </div>
