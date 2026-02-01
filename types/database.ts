@@ -1,5 +1,5 @@
 export type UserRole = 'user' | 'admin'
-export type GemStatus = 'draft' | 'active' | 'ended' | 'completed'
+export type GemStatus = 'draft' | 'pending' | 'active' | 'ended' | 'completed'
 export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
 export type AuctionType = 'fixed_increment' | 'variable_increment'
 export type PaymentStatus = 'pending' | 'completed' | 'failed'

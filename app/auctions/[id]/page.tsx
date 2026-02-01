@@ -23,11 +23,9 @@ async function getAuction(id: string) {
     .eq('auction_id', id)
     .order('created_at', { ascending: true })
 
-  // Get registration count
-  const { count: registeredCount } = await supabase
-    .from('auction_registrations')
-    .select('*', { count: 'exact', head: true })
-    .eq('auction_id', id)
+  // Get approved registration count
+  const { data: registeredCount } = await supabase
+    .rpc('get_auction_registration_count', { auction_uuid: id })
 
   // Check if current user is registered
   const { data: { user } } = await supabase.auth.getUser()

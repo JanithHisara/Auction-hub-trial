@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import Decimal from 'decimal.js'
 
 export async function GET(
   request: Request,
@@ -110,10 +111,15 @@ export async function POST(
         return NextResponse.json({ error: 'You have already placed a bid for this item' }, { status: 400 })
       }
 
-      bidAmount = body.bid_amount
-
-      if (!bidAmount || typeof bidAmount !== 'number') {
+      if (!body.bid_amount || (typeof body.bid_amount !== 'number' && typeof body.bid_amount !== 'string')) {
         return NextResponse.json({ error: 'Bid amount is required' }, { status: 400 })
+      }
+
+      // Use Decimal.js for precise number handling
+      try {
+        bidAmount = new Decimal(body.bid_amount).toNumber()
+      } catch {
+        return NextResponse.json({ error: 'Invalid bid amount' }, { status: 400 })
       }
 
       // For free-form: bid must be >= starting price (hidden bids, so no increment from current)

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAuth, getUserRole } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import Decimal from 'decimal.js'
 
 // Create new route to increment price (Admin only)
 export async function POST(
@@ -53,7 +54,8 @@ export async function POST(
     const body = await request.json().catch(() => ({}))
     const incrementAmount = body.increment || gem.min_bid_increment
     
-    const newPrice = Number(gem.current_price) + Number(incrementAmount)
+    // Use Decimal.js for precise calculation to avoid floating-point issues
+    const newPrice = new Decimal(gem.current_price).plus(new Decimal(incrementAmount)).toNumber()
     const now = new Date()
     const nextRoundEnd = new Date(now.getTime() + (gem.increment_interval * 1000))
     

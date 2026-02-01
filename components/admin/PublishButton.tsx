@@ -8,23 +8,25 @@ export default function PublishButton({ gemId }: { gemId: string }) {
   const [loading, setLoading] = useState(false)
 
   const handlePublish = async () => {
-    if (!confirm('Are you sure you want to publish this gem? It will become available for bidding.')) {
+    if (!confirm('Are you sure you want to publish this item? It will be queued for auction.')) {
       return
     }
 
     setLoading(true)
     try {
+      // Set to 'pending' - item is published but waiting for its turn
+      // Admin will manually activate when ready to auction this item
       const response = await fetch(`/api/gems/${gemId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'active' }),
+        body: JSON.stringify({ status: 'pending' }),
       })
 
       if (!response.ok) throw new Error('Failed to publish')
 
       router.refresh()
     } catch (error) {
-      alert('Failed to publish gem')
+      alert('Failed to publish item')
     } finally {
       setLoading(false)
     }

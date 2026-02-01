@@ -1,6 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 
 export default async function ProfilePage() {
@@ -28,6 +28,22 @@ export default async function ProfilePage() {
     .from('auction_registrations')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
+
+  // Fetch user's wins
+  const { data: wins } = await supabase
+    .from('auction_winners')
+    .select(`
+      id,
+      selected_at,
+      winning_bid:bids(bid_amount),
+      gem:gems(
+        id,
+        name,
+        gem_images(image_url)
+      )
+    `)
+    .eq('user_id', user.id)
+    .order('selected_at', { ascending: false })
 
   return (
     <div className="min-h-screen bg-[var(--background)] relative">
@@ -69,6 +85,58 @@ export default async function ProfilePage() {
             <StatCard icon="⭐" label="Points" value={rewards?.total_points || 0} accent />
             <StatCard icon="🏆" label="Wins" value={rewards?.auctions_won || 0} />
           </div>
+
+          {/* My Wins */}
+          {wins && wins.length > 0 && (
+            <div className="card-glass rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span>🏆</span> My Wins
+              </h3>
+              <div className="space-y-3">
+                {wins.map((win) => {
+                  const gem = win.gem as { id: string; name: string; gem_images: { image_url: string }[] } | null
+                  const winningBid = win.winning_bid as { bid_amount: number } | null
+                  
+                  return (
+                    <Link
+                      key={win.id}
+                      href={`/payment/${gem?.id}`}
+                      className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-xl hover:border-emerald-500/40 transition-all group"
+                    >
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-[var(--surface)] flex-shrink-0">
+                        {gem?.gem_images?.[0]?.image_url ? (
+                          <img 
+                            src={gem.gem_images[0].image_url}
+                            alt={gem.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">💎</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-white truncate">{gem?.name || 'Item'}</h4>
+                        <p className="text-sm text-[var(--text-muted)]">
+                          Won on {win.selected_at ? formatDate(win.selected_at) : 'N/A'}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-lg font-bold text-emerald-400">
+                          {winningBid?.bid_amount ? formatCurrency(winningBid.bid_amount) : 'N/A'}
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">Winning Bid</p>
+                      </div>
+                      <div className="text-[var(--text-muted)] group-hover:text-emerald-400 transition-colors">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Rewards */}
           {rewards && (
