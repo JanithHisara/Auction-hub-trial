@@ -37,7 +37,13 @@ async function getUserRewards() {
     .eq('user_id', user.id)
     .single()
 
-  return rewards
+  // Get actual wins count from auction_winners (source of truth)
+  const { count: winsCount } = await supabase
+    .from('auction_winners')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
+  return rewards ? { ...rewards, auctions_won: winsCount || 0 } : null
 }
 
 function formatDate(dateStr: string) {

@@ -80,6 +80,20 @@ export async function POST(
       .update({ status: 'completed' })
       .eq('id', id)
 
+    // Increment winner's auctions_won count in user_rewards
+    const { data: existingRewards } = await supabase
+      .from('user_rewards')
+      .select('auctions_won')
+      .eq('user_id', winningBid.user_id)
+      .single()
+
+    if (existingRewards) {
+      await supabase
+        .from('user_rewards')
+        .update({ auctions_won: (existingRewards.auctions_won || 0) + 1 })
+        .eq('user_id', winningBid.user_id)
+    }
+
     // Auto-activate next pending item in the auction
     if (gem.auction_id) {
       const { data: nextPendingItem } = await supabase
