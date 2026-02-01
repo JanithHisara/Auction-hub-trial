@@ -4,7 +4,6 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import PublishButton from '@/components/admin/PublishButton'
-import SelectWinnerButton from '@/components/admin/SelectWinnerButton'
 import AdminControls from '@/components/admin/AdminControls'
 
 export default async function GemDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -44,7 +43,13 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
     .eq('gem_id', id)
     .single()
 
-  const highestBid = bids?.[0]?.bid_amount || gem.starting_price
+  const topBid = bids?.[0]
+  const highestBidInfo = topBid ? {
+    amount: topBid.bid_amount,
+    bidderName: (topBid.user as { anonymous_name?: string; email?: string } | null)?.anonymous_name || 
+                (topBid.user as { anonymous_name?: string; email?: string } | null)?.email || 
+                'Anonymous'
+  } : null
   const currentPrice = gem.current_price || gem.starting_price
 
   const statusColors: Record<string, string> = {
@@ -91,9 +96,6 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
               <PublishButton gemId={gem.id} />
             </>
           )}
-          {gem.status === 'ended' && !winner && (
-            <SelectWinnerButton gemId={gem.id} bids={bids || []} />
-          )}
         </div>
       </div>
 
@@ -105,6 +107,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
         status={gem.status}
         roundEndTime={gem.round_end_time}
         auctionType={(gem.auction as { auction_type?: string } | null)?.auction_type || 'variable_increment'}
+        highestBid={highestBidInfo}
       />
 
       {/* Main Content Grid */}
@@ -146,7 +149,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
           <div className="space-y-6">
             <div>
               <label className="text-xs text-[var(--text-muted)] uppercase">Current Highest Bid</label>
-              <p className="text-4xl font-bold text-[var(--gold)] mt-1">{formatCurrency(highestBid)}</p>
+              <p className="text-4xl font-bold text-[var(--gold)] mt-1">{formatCurrency(highestBidInfo?.amount || gem.starting_price)}</p>
             </div>
             <div>
               <label className="text-xs text-[var(--text-muted)] uppercase">Total Bids</label>
