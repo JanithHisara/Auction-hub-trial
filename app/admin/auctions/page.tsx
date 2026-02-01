@@ -30,10 +30,8 @@ async function getAuctions() {
         .select('*', { count: 'exact', head: true })
         .eq('auction_id', auction.id)
 
-      const { count: registeredCount } = await supabase
-        .from('auction_registrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('auction_id', auction.id)
+      const { data: registeredCount } = await supabase
+        .rpc('get_auction_registration_count', { auction_uuid: auction.id })
 
       return {
         ...auction,

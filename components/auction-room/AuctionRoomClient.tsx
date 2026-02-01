@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Auction, Gem, Bid, UserRewards, AuctionRegistration, User } from '@/types/database'
 import { Check, Loader2, Trophy } from 'lucide-react'
+import Decimal from 'decimal.js'
 
 interface WinnerInfo {
   gem_id: string
   user_id: string
   gem_name?: string
+  winning_amount?: number
 }
 
 interface Props {
@@ -91,14 +93,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     ? Math.round((currentPriceBidders / registeredCount) * 100) 
     : 0
 
-  // Fetch registered count for percentage calculation
+  // Fetch registered count for percentage calculation (using RPC to bypass RLS)
   useEffect(() => {
     const fetchRegisteredCount = async () => {
-      const { count } = await supabase
-        .from('auction_registrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('auction_id', auction.id)
-        .eq('approval_status', 'approved')
+      const { data: count } = await supabase
+        .rpc('get_auction_registration_count', { auction_uuid: auction.id })
       
       setRegisteredCount(count || 0)
     }
@@ -158,7 +157,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     return () => clearInterval(interval)
   }, [isFreeForm, selectedItem?.round_end_time])
 
-  // Fetch existing winners on load
+  // Fetch existing winners on load (with winning amount from bid)
   useEffect(() => {
     const fetchWinners = async () => {
       const itemIds = items.map(i => i.id)
@@ -166,14 +165,23 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
 
       const { data: existingWinners } = await supabase
         .from('auction_winners')
-        .select('gem_id, user_id')
+        .select('gem_id, user_id, winning_bid:bids(bid_amount)')
         .in('gem_id', itemIds)
 
       if (existingWinners?.length) {
-        const winnersWithNames = existingWinners.map(w => ({
-          ...w,
-          gem_name: items.find(i => i.id === w.gem_id)?.name
-        }))
+        const winnersWithNames = existingWinners.map(w => {
+          // winning_bid could be object or array depending on relationship type
+          const winningBid = w.winning_bid as unknown
+          const bidAmount = Array.isArray(winningBid) 
+            ? (winningBid[0] as { bid_amount: number } | undefined)?.bid_amount
+            : (winningBid as { bid_amount: number } | null)?.bid_amount
+          return {
+            gem_id: w.gem_id,
+            user_id: w.user_id,
+            gem_name: items.find(i => i.id === w.gem_id)?.name,
+            winning_amount: bidAmount
+          }
+        })
         setWinners(winnersWithNames)
       }
     }
@@ -334,22 +342,37 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           schema: 'public',
           table: 'auction_winners',
         },
-        (payload) => {
-          const newWinner = payload.new as { gem_id: string; user_id: string }
+        async (payload) => {
+          const newWinner = payload.new as { gem_id: string; user_id: string; winning_bid_id: string }
           
           // Check if this winner is for one of our items
           const wonGem = items.find(i => i.id === newWinner.gem_id)
           if (!wonGem) return
           
-          // Add to winners list
-          setWinners(prev => [...prev, { ...newWinner, gem_name: wonGem.name }])
+          // Fetch the winning bid amount
+          let winningAmount = wonGem.starting_price
+          if (newWinner.winning_bid_id) {
+            const { data: winningBid } = await supabase
+              .from('bids')
+              .select('bid_amount')
+              .eq('id', newWinner.winning_bid_id)
+              .single()
+            if (winningBid) {
+              winningAmount = winningBid.bid_amount
+            }
+          }
+          
+          // Add to winners list with winning amount
+          setWinners(prev => [...prev, { 
+            gem_id: newWinner.gem_id, 
+            user_id: newWinner.user_id, 
+            gem_name: wonGem.name,
+            winning_amount: winningAmount
+          }])
           
           // Show popup if current user is the winner
           if (newWinner.user_id === user.id) {
-            const winningBid = wonGem.bids?.length 
-              ? Math.max(...wonGem.bids.map(b => b.bid_amount))
-              : wonGem.starting_price
-            setWonItem({ name: wonGem.name, amount: winningBid })
+            setWonItem({ name: wonGem.name, amount: winningAmount })
             setShowWinnerPopup(true)
           }
         }
@@ -366,7 +389,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     e.preventDefault()
     if (!selectedItem || isSubmitting || hasPlacedBid) return
 
-    const amount = parseFloat(bidAmount)
+    // Use Decimal.js for precise number handling
+    const amount = new Decimal(bidAmount || '0').toNumber()
     if (isNaN(amount) || amount < minBid) {
       alert(`Minimum bid is ${formatCurrency(minBid)}`)
       return
@@ -429,10 +453,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     setBidAmount(Math.round(minBid * multiplier).toString())
   }
 
-  // Check if current user won the selected item
-  const isWinnerOfSelectedItem = selectedItem && winners.some(
+  // Check if current user won the selected item and get winning amount
+  const winnerInfo = selectedItem && winners.find(
     w => w.gem_id === selectedItem.id && w.user_id === user.id
   )
+  const isWinnerOfSelectedItem = !!winnerInfo
+  const selectedItemWinningAmount = winnerInfo?.winning_amount || currentBid
 
   // Status badge config
   const statusConfig: Record<string, { color: string; text: string; icon: string }> = {
@@ -702,7 +728,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           </p>
                           <div className="p-4 bg-[var(--surface)] rounded-lg mb-4">
                             <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Your Winning Bid</p>
-                            <p className="text-3xl font-black text-emerald-400">{formatCurrency(currentBid)}</p>
+                            <p className="text-3xl font-black text-emerald-400">{formatCurrency(selectedItemWinningAmount)}</p>
                           </div>
                           <p className="text-sm text-[var(--gold)]">
                             Check your email for payment instructions
@@ -905,7 +931,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                                 <span>Placing Bid...</span>
                               </>
                             ) : (
-                              <span>Place Bid {bidAmount ? formatCurrency(parseFloat(bidAmount)) : ''}</span>
+                              <span>Place Bid {bidAmount ? formatCurrency(new Decimal(bidAmount).toNumber()) : ''}</span>
                             )}
                           </button>
 

@@ -58,11 +58,9 @@ export default async function AuctionMonitorPage({ params }: { params: Promise<{
     })
   )
 
-  // Get registration count
-  const { count: registeredCount } = await supabase
-    .from('auction_registrations')
-    .select('*', { count: 'exact', head: true })
-    .eq('auction_id', id)
+  // Get approved registration count
+  const { data: registeredCount } = await supabase
+    .rpc('get_auction_registration_count', { auction_uuid: id })
 
   return (
     <AuctionMonitorClient 

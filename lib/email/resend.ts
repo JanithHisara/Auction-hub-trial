@@ -188,4 +188,268 @@ function generateAuctionEmailHtml({
   `
 }
 
+// Winner notification email
+export interface WinnerEmailParams {
+  to: string
+  userName?: string
+  gemName: string
+  gemImageUrl?: string
+  winningAmount: number
+  auctionName: string
+  paymentUrl?: string
+}
+
+export async function sendWinnerEmail({
+  to,
+  userName,
+  gemName,
+  gemImageUrl,
+  winningAmount,
+  auctionName,
+  paymentUrl,
+}: WinnerEmailParams) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const profileUrl = `${appUrl}/profile`
+  const finalPaymentUrl = paymentUrl || profileUrl
+
+  // Format currency
+  const formattedAmount = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+  }).format(winningAmount)
+
+  // If Resend is not configured, log and return
+  if (!resend) {
+    console.log('📧 Winner email would be sent to:', to)
+    console.log('🏆 Winner of:', gemName, 'for', formattedAmount)
+    console.log('⚠️  Resend API key not configured - email not sent')
+    return { id: 'mock-email-id' }
+  }
+
+  const { data, error } = await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>',
+    to,
+    subject: `🏆 Congratulations! You Won: ${gemName}`,
+    html: generateWinnerEmailHtml({
+      userName,
+      gemName,
+      gemImageUrl,
+      winningAmount: formattedAmount,
+      auctionName,
+      paymentUrl: finalPaymentUrl,
+      profileUrl,
+    }),
+  })
+
+  if (error) {
+    console.error('Failed to send winner email:', error)
+    throw error
+  }
+
+  return data
+}
+
+function generateWinnerEmailHtml({
+  userName,
+  gemName,
+  gemImageUrl,
+  winningAmount,
+  auctionName,
+  paymentUrl,
+  profileUrl,
+}: {
+  userName?: string
+  gemName: string
+  gemImageUrl?: string
+  winningAmount: string
+  auctionName: string
+  paymentUrl: string
+  profileUrl: string
+}) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You Won!</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0f; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" max-width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background: linear-gradient(145deg, #1a1a24 0%, #12121a 100%); border-radius: 24px; border: 1px solid rgba(212, 175, 55, 0.3); overflow: hidden;">
+          
+          <!-- Trophy Banner -->
+          <tr>
+            <td style="padding: 48px 40px 24px; text-align: center; background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(160, 130, 61, 0.08) 100%);">
+              <div style="font-size: 72px; margin-bottom: 16px;">🏆</div>
+              <h1 style="margin: 0; color: #d4af37; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">
+                Congratulations!
+              </h1>
+              <p style="margin: 12px 0 0; color: #f5f5f7; font-size: 20px; font-weight: 600;">
+                You are the winning bidder!
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Greeting -->
+          <tr>
+            <td style="padding: 32px 40px 16px;">
+              <p style="margin: 0; color: #f5f5f7; font-size: 16px; line-height: 1.6;">
+                ${userName ? `Dear ${userName},` : 'Hello,'}
+              </p>
+              <p style="margin: 16px 0 0; color: #a1a1aa; font-size: 16px; line-height: 1.6;">
+                Great news! You've won an item in the <strong style="color: #f5f5f7;">${auctionName}</strong> auction. Here are the details:
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Won Item Card -->
+          <tr>
+            <td style="padding: 16px 40px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 20px; overflow: hidden;">
+                ${gemImageUrl ? `
+                <tr>
+                  <td style="padding: 0;">
+                    <img src="${gemImageUrl}" alt="${gemName}" style="width: 100%; height: 200px; object-fit: cover;">
+                  </td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 24px;">
+                    <p style="margin: 0 0 8px; color: #10b981; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">
+                      🎉 You Won
+                    </p>
+                    <h2 style="margin: 0 0 20px; color: #f5f5f7; font-size: 26px; font-weight: 700;">
+                      ${gemName}
+                    </h2>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(0, 0, 0, 0.2); border-radius: 12px;">
+                      <tr>
+                        <td style="padding: 16px 20px;">
+                          <p style="margin: 0 0 4px; color: #71717a; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">
+                            Winning Bid
+                          </p>
+                          <p style="margin: 0; color: #10b981; font-size: 32px; font-weight: 800;">
+                            ${winningAmount}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Next Steps -->
+          <tr>
+            <td style="padding: 0 40px 24px;">
+              <h3 style="margin: 0 0 16px; color: #f5f5f7; font-size: 18px; font-weight: 600;">
+                📋 Next Steps
+              </h3>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding: 12px 16px; background: rgba(255, 255, 255, 0.03); border-radius: 12px 12px 0 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="width: 32px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: rgba(212, 175, 55, 0.2); color: #d4af37; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">1</span>
+                        </td>
+                        <td style="color: #a1a1aa; font-size: 14px; line-height: 1.5;">
+                          <strong style="color: #f5f5f7;">Complete Payment</strong><br>
+                          Pay within 48 hours to secure your item
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="width: 32px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: rgba(212, 175, 55, 0.2); color: #d4af37; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">2</span>
+                        </td>
+                        <td style="color: #a1a1aa; font-size: 14px; line-height: 1.5;">
+                          <strong style="color: #f5f5f7;">Shipping Details</strong><br>
+                          We'll contact you for delivery arrangements
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background: rgba(255, 255, 255, 0.03); border-radius: 0 0 12px 12px;">
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="width: 32px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: rgba(212, 175, 55, 0.2); color: #d4af37; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">3</span>
+                        </td>
+                        <td style="color: #a1a1aa; font-size: 14px; line-height: 1.5;">
+                          <strong style="color: #f5f5f7;">Receive Your Item</strong><br>
+                          Securely packaged and insured delivery
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding: 0 40px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${paymentUrl}" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);">
+                      Complete Payment →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 20px 0 0; text-align: center;">
+                <a href="${profileUrl}" style="color: #d4af37; font-size: 14px; text-decoration: none;">
+                  View in My Profile
+                </a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px; text-align: center; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <p style="margin: 0; color: #71717a; font-size: 13px;">
+                Thank you for participating in our auction!
+              </p>
+              <p style="margin: 12px 0 0; color: #52525b; font-size: 12px;">
+                Auctionhub • Premium gem auctions
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+        
+        <!-- Help Text -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin-top: 24px;">
+          <tr>
+            <td align="center">
+              <p style="margin: 0; color: #52525b; font-size: 12px;">
+                Questions about your purchase? Reply to this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `
+}
+
 export { resend }

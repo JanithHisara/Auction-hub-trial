@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import { sendWinnerEmail } from '@/lib/email/resend'
 
 export async function POST(
   request: Request,
@@ -11,10 +12,19 @@ export async function POST(
     const user = await requireAdmin()
     const supabase = await createClient()
 
-    // Verify admin owns this gem
+    // Get gem with auction info
     const { data: gem } = await supabase
       .from('gems')
-      .select('admin_id, status, current_price')
+      .select(`
+        id,
+        name,
+        admin_id, 
+        status, 
+        current_price,
+        auction_id,
+        gem_images(image_url),
+        auction:auctions(name)
+      `)
       .eq('id', id)
       .single()
 
@@ -70,8 +80,59 @@ export async function POST(
       .update({ status: 'completed' })
       .eq('id', id)
 
+    // Auto-activate next pending item in the auction
+    if (gem.auction_id) {
+      const { data: nextPendingItem } = await supabase
+        .from('gems')
+        .select('id, name')
+        .eq('auction_id', gem.auction_id)
+        .eq('status', 'pending')
+        .order('start_time', { ascending: true })
+        .limit(1)
+        .single()
+
+      if (nextPendingItem) {
+        await supabase
+          .from('gems')
+          .update({ status: 'active' })
+          .eq('id', nextPendingItem.id)
+        
+        console.log(`Auto-activated next item: ${nextPendingItem.name}`)
+      }
+    }
+
+    // Get winner's user info for email
+    const { data: winnerUser } = await supabase
+      .from('users')
+      .select('email, anonymous_name')
+      .eq('id', winningBid.user_id)
+      .single()
+
+    // Send winner notification email
+    if (winnerUser?.email) {
+      try {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const gemImages = gem.gem_images as { image_url: string }[] | null
+        const auctionData = gem.auction as { name: string } | null
+        
+        await sendWinnerEmail({
+          to: winnerUser.email,
+          userName: winnerUser.anonymous_name || undefined,
+          gemName: gem.name,
+          gemImageUrl: gemImages?.[0]?.image_url,
+          winningAmount: winningBid.bid_amount,
+          auctionName: auctionData?.name || 'Auction',
+          paymentUrl: `${appUrl}/payment/${gem.id}`,
+        })
+      } catch (emailError) {
+        // Log email error but don't fail the winner selection
+        console.error('Failed to send winner email:', emailError)
+      }
+    }
+
     return NextResponse.json(winner)
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to select winner'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

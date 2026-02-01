@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
 import { Loader2, Play, SkipForward, Trophy, Square, Clock } from 'lucide-react'
+import Decimal from 'decimal.js'
 
 interface AdminControlsProps {
   gemId: string
@@ -67,11 +68,12 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
     return () => clearInterval(interval)
   }, [roundEndTime, router])
 
-  const handleAction = async (action: 'start' | 'increment' | 'end' | 'end-round', options?: { duration?: number; increment?: number }) => {
+  const handleAction = async (action: 'start' | 'increment' | 'end' | 'end-round' | 'activate', options?: { duration?: number; increment?: number }) => {
     setLoading(true)
     try {
       let endpoint = ''
       let body: Record<string, unknown> = {}
+      let method = 'POST'
 
       if (action === 'start') {
         endpoint = `/api/admin/auctions/${gemId}/start-round`
@@ -87,10 +89,15 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         endpoint = `/api/admin/auctions/${gemId}/select-winner`
       } else if (action === 'end-round') {
         endpoint = `/api/admin/auctions/${gemId}/end-round`
+      } else if (action === 'activate') {
+        // Activate this item (set status to 'active')
+        endpoint = `/api/gems/${gemId}`
+        body = { status: 'active' }
+        method = 'PATCH'
       }
 
       const res = await fetch(endpoint, {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body) 
       })
@@ -112,7 +119,13 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
   }
 
   const handleNextRound = () => {
-    const increment = useCustomIncrement ? parseFloat(customIncrement) : minIncrement
+    let increment: number
+    try {
+      increment = useCustomIncrement ? new Decimal(customIncrement || '0').toNumber() : minIncrement
+    } catch {
+      alert('Please enter a valid increment amount')
+      return
+    }
     if (isNaN(increment) || increment <= 0) {
       alert('Please enter a valid increment amount')
       return
@@ -181,6 +194,22 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         </div>
 
         <div className="flex flex-wrap gap-3">
+          {/* ACTIVATE BUTTON - For pending items */}
+          {status === 'pending' && (
+            <button
+              onClick={() => {
+                if (confirm('Activate this item? It will become the current active item for bidding.')) {
+                  handleAction('activate')
+                }
+              }}
+              disabled={loading}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              Activate Item
+            </button>
+          )}
+
           {/* FREE-FORM CONTROLS */}
           {isFreeForm && (
             <>
@@ -375,14 +404,14 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[var(--text-muted)]">Increment</span>
                 <span className="text-xl font-bold text-blue-400">
-                  +{formatCurrency(useCustomIncrement ? parseFloat(customIncrement) || 0 : minIncrement)}
+                  +{formatCurrency(useCustomIncrement ? new Decimal(customIncrement || '0').toNumber() : minIncrement)}
                 </span>
               </div>
               <div className="border-t border-[var(--border)] pt-2 mt-2">
                 <div className="flex justify-between items-center">
                   <span className="text-[var(--text-muted)]">New Price</span>
                   <span className="text-2xl font-bold text-[var(--gold)]">
-                    {formatCurrency(currentPrice + (useCustomIncrement ? parseFloat(customIncrement) || 0 : minIncrement))}
+                    {formatCurrency(new Decimal(currentPrice).plus(useCustomIncrement ? new Decimal(customIncrement || '0') : minIncrement).toNumber())}
                   </span>
                 </div>
               </div>

@@ -33,6 +33,7 @@ export default async function GemsPage() {
 
   const statusColors: Record<GemStatus, string> = {
     draft: 'bg-gray-500/20 text-gray-400',
+    pending: 'bg-blue-500/20 text-blue-400',
     active: 'bg-emerald-500/20 text-emerald-400',
     ended: 'bg-amber-500/20 text-amber-400',
     completed: 'bg-purple-500/20 text-purple-400',

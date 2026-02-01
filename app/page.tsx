@@ -19,13 +19,11 @@ async function getUpcomingAuctions() {
 
   if (!auctions) return []
 
-  // Get registration counts
+  // Get approved registration counts
   const auctionsWithCounts = await Promise.all(
     auctions.map(async (auction) => {
-      const { count } = await supabase
-        .from('auction_registrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('auction_id', auction.id)
+      const { data: count } = await supabase
+        .rpc('get_auction_registration_count', { auction_uuid: auction.id })
 
       return {
         ...auction,
