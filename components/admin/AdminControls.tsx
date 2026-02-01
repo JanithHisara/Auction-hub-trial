@@ -14,13 +14,15 @@ interface AdminControlsProps {
   status: string
   roundEndTime: string | null
   auctionType: string
+  highestBid?: { amount: number; bidderName: string } | null
 }
 
-export default function AdminControls({ gemId, currentPrice, minIncrement, status, roundEndTime, auctionType }: AdminControlsProps) {
+export default function AdminControls({ gemId, currentPrice, minIncrement, status, roundEndTime, auctionType, highestBid }: AdminControlsProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showNextRoundModal, setShowNextRoundModal] = useState(false)
   const [showStartBiddingModal, setShowStartBiddingModal] = useState(false)
+  const [showAnnounceWinnerModal, setShowAnnounceWinnerModal] = useState(false)
   const [customIncrement, setCustomIncrement] = useState(minIncrement.toString())
   const [biddingDuration, setBiddingDuration] = useState('300') // 5 minutes default
   const [mounted, setMounted] = useState(false)
@@ -237,12 +239,12 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
 
               {(status === 'active' || status === 'ended') && !isRoundActive && (
                 <button
-                  onClick={() => handleAction('end')}
+                  onClick={() => setShowAnnounceWinnerModal(true)}
                   disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                  Select Winner
+                  Announce Winner
                 </button>
               )}
             </>
@@ -275,18 +277,73 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
 
               {(status === 'active' || status === 'ended') && (
                 <button
-                  onClick={() => handleAction('end')}
+                  onClick={() => setShowAnnounceWinnerModal(true)}
                   disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                  End & Select Winner
+                  Announce Winner
                 </button>
               )}
             </>
           )}
         </div>
       </div>
+
+      {/* Announce Winner Modal */}
+      {mounted && showAnnounceWinnerModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Announce Winner</h3>
+                <p className="text-sm text-[var(--text-muted)]">Review and confirm the winner</p>
+              </div>
+            </div>
+
+            {/* Winner Preview */}
+            {highestBid ? (
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl mb-6">
+                <p className="text-xs text-emerald-400 uppercase mb-2">Winner (Highest Bid)</p>
+                <p className="text-3xl font-bold text-emerald-400 mb-1">{formatCurrency(highestBid.amount)}</p>
+                <p className="text-sm text-[var(--text-secondary)]">{highestBid.bidderName}</p>
+              </div>
+            ) : (
+              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-6">
+                <p className="text-amber-400 text-center">No bids found</p>
+              </div>
+            )}
+
+            <p className="text-sm text-[var(--text-muted)] mb-6">
+              This will mark the item as completed, notify the winner via email, and move to the next item if available.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAnnounceWinnerModal(false)}
+                className="flex-1 px-4 py-3 bg-[var(--surface)] text-white font-bold rounded-xl hover:bg-[var(--surface-elevated)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowAnnounceWinnerModal(false)
+                  handleAction('end')
+                }}
+                disabled={loading || !highestBid}
+                className="flex-1 px-4 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
+                Announce
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Start Bidding Modal (Free-form) */}
       {mounted && showStartBiddingModal && createPortal(
