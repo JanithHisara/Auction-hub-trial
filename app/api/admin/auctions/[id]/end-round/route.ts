@@ -23,7 +23,11 @@ export async function POST(
       .eq('id', id)
       .single()
 
-    const auctionType = (gem?.auction as { auction_type: string } | null)?.auction_type
+    // Handle auction join - could be object or array
+    const auctionData = gem?.auction as unknown
+    const auctionType = Array.isArray(auctionData)
+      ? (auctionData[0] as { auction_type: string } | undefined)?.auction_type
+      : (auctionData as { auction_type: string } | null)?.auction_type
     const isFreeForm = auctionType === 'variable_increment'
 
     // For free-form: end round AND set status to 'ended'
