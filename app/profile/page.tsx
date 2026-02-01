@@ -83,7 +83,7 @@ export default async function ProfilePage() {
             <StatCard icon="🎯" label="Total Bids" value={bidCount || 0} />
             <StatCard icon="🎫" label="Auctions" value={registrationCount || 0} />
             <StatCard icon="⭐" label="Points" value={rewards?.total_points || 0} accent />
-            <StatCard icon="🏆" label="Wins" value={rewards?.auctions_won || 0} />
+            <StatCard icon="🏆" label="Wins" value={wins?.length || 0} />
           </div>
 
           {/* My Wins */}
