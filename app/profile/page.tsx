@@ -94,8 +94,15 @@ export default async function ProfilePage() {
               </h3>
               <div className="space-y-3">
                 {wins.map((win) => {
-                  const gem = win.gem as { id: string; name: string; gem_images: { image_url: string }[] } | null
-                  const winningBid = win.winning_bid as { bid_amount: number } | null
+                  // Handle joins - could be object or array
+                  const gemRaw = win.gem as unknown
+                  const gem = Array.isArray(gemRaw)
+                    ? (gemRaw[0] as { id: string; name: string; gem_images: { image_url: string }[] } | undefined)
+                    : (gemRaw as { id: string; name: string; gem_images: { image_url: string }[] } | null)
+                  const bidRaw = win.winning_bid as unknown
+                  const winningBid = Array.isArray(bidRaw)
+                    ? (bidRaw[0] as { bid_amount: number } | undefined)
+                    : (bidRaw as { bid_amount: number } | null)
                   
                   return (
                     <Link

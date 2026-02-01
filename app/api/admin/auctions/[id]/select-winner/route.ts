@@ -113,7 +113,11 @@ export async function POST(
       try {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
         const gemImages = gem.gem_images as { image_url: string }[] | null
-        const auctionData = gem.auction as { name: string } | null
+        // Handle auction join - could be object or array
+        const auctionRaw = gem.auction as unknown
+        const auctionData = Array.isArray(auctionRaw)
+          ? (auctionRaw[0] as { name: string } | undefined)
+          : (auctionRaw as { name: string } | null)
         
         await sendWinnerEmail({
           to: winnerUser.email,
