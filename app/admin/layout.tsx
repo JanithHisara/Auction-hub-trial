@@ -65,9 +65,6 @@ export default async function AdminLayout({
               <NavLink href="/admin/auctions/new" icon={<Plus className="w-4 h-4" />} highlight>
                 New Auction
               </NavLink>
-              <NavLink href="/admin/approve" icon={<LayoutDashboard className="w-4 h-4" />}>
-                Approve
-              </NavLink>
             </div>
           </nav>
 
