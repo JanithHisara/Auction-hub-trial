@@ -29,8 +29,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
   const [useCustomIncrement, setUseCustomIncrement] = useState(false)
   const [countdown, setCountdown] = useState('')
 
-  const isFixedIncrement = auctionType === 'fixed_increment'
-  const isFreeForm = !isFixedIncrement
+  const isProgressiveElimination = auctionType === 'progressive_elimination_auction'
+  const isTenderBaseFixedBid = !isProgressiveElimination
   const isRoundActive = !!roundEndTime && new Date(roundEndTime) > new Date()
 
   useEffect(() => {
@@ -162,11 +162,11 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <div className="p-4 bg-[var(--surface)] rounded-xl">
             <div className="text-xs text-[var(--text-muted)] uppercase mb-1">
-              {isFreeForm ? 'Starting Price' : 'Current Price'}
+              {isTenderBaseFixedBid ? 'Starting Price' : 'Current Price'}
             </div>
             <div className="text-2xl font-bold text-[var(--gold)]">{formatCurrency(currentPrice)}</div>
           </div>
-          {isFixedIncrement && (
+          {isProgressiveElimination && (
             <div className="p-4 bg-[var(--surface)] rounded-xl">
               <div className="text-xs text-[var(--text-muted)] uppercase mb-1">Default Increment</div>
               <div className="text-2xl font-bold text-white">{formatCurrency(minIncrement)}</div>
@@ -189,9 +189,9 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         {/* Auction Type Badge */}
         <div className="mb-4">
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-            isFixedIncrement ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
+            isProgressiveElimination ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
           }`}>
-            {isFixedIncrement ? '⏱ Fixed Increment Rounds' : '📈 Free-form Bidding'}
+            {isProgressiveElimination ? '⏱ Progressive Elimination Auction' : '📈 Tender Base / Fixed Bid'}
           </span>
         </div>
 
@@ -212,8 +212,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
             </button>
           )}
 
-          {/* FREE-FORM CONTROLS */}
-          {isFreeForm && (
+          {/* TENDER BASE / FIXED BID CONTROLS */}
+          {isTenderBaseFixedBid && (
             <>
               {status === 'active' && !roundEndTime && (
                 <button
@@ -250,8 +250,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
             </>
           )}
 
-          {/* FIXED INCREMENT CONTROLS */}
-          {isFixedIncrement && (
+          {/* PROGRESSIVE ELIMINATION CONTROLS */}
+          {isProgressiveElimination && (
             <>
               {status === 'active' && !roundEndTime && (
                 <button
@@ -345,7 +345,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         document.body
       )}
 
-      {/* Start Bidding Modal (Free-form) */}
+      {/* Start Bidding Modal (Tender Base / Fixed Bid) */}
       {mounted && showStartBiddingModal && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl">
@@ -438,7 +438,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         document.body
       )}
 
-      {/* Next Round Modal (Fixed Increment) */}
+      {/* Next Round Modal (Progressive Elimination) */}
       {mounted && showNextRoundModal && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl">

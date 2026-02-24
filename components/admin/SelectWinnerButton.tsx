@@ -16,6 +16,7 @@ export default function SelectWinnerButton({ gemId, bids }: { gemId: string; bid
     : null
 
   const handleSelectWinner = async () => {
+    if (loading) return
     if (!confirm('Select the highest bidder as winner? This action cannot be undone.')) {
       return
     }

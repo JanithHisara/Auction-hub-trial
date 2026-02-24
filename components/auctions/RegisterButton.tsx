@@ -41,6 +41,7 @@ export default function RegisterButton({ auctionId, userId, existingStatus }: Pr
   const router = useRouter()
 
   const handleRegister = async () => {
+    if (isLoading) return
     if (!userId) {
       router.push('/login')
       return

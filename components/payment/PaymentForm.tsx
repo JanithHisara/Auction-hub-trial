@@ -23,6 +23,7 @@ export default function PaymentForm({ gemId, amount }: PaymentFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setError(null)
     setLoading(true)
 
@@ -52,6 +53,7 @@ export default function PaymentForm({ gemId, amount }: PaymentFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <fieldset disabled={loading} className="border-0 p-0 m-0 min-w-0 space-y-6">
       {error && (
         <div className="error-message text-sm">
           {error}
@@ -155,6 +157,7 @@ export default function PaymentForm({ gemId, amount }: PaymentFormProps) {
           Your payment is secure and encrypted
         </p>
       </div>
+      </fieldset>
     </form>
   )
 }

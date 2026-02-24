@@ -36,7 +36,7 @@ async function getData(auctionId: string, status?: string) {
   // Use explicit FK name because there are two FKs to users table (user_id and approved_by)
   let query = adminClient
     .from('auction_registrations')
-    .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name)')
+    .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name, phone, display_name)')
     .eq('auction_id', auctionId)
     .order('registered_at', { ascending: false })
 
@@ -74,7 +74,7 @@ const statusColors: Record<RegistrationApprovalStatus, string> = {
 }
 
 type RegistrationWithUser = AuctionRegistration & { 
-  user: { email: string; anonymous_name?: string } 
+  user: { email: string; anonymous_name?: string; phone?: string | null; display_name?: string | null } 
 }
 
 export default async function AuctionRegistrationsPage({ 
@@ -133,20 +133,25 @@ export default async function AuctionRegistrationsPage({
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[var(--border)]">
-                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">User</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Name</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Display Name</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Phone</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Email</th>
                     <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Registered</th>
                     <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Status</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Email</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Link Sent</th>
                     <th className="text-right py-3 px-4 text-xs font-medium text-[var(--text-muted)] uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
-                  {registrations.map((reg: RegistrationWithUser) => (
+                    {registrations.map((reg: RegistrationWithUser) => (
                     <tr key={reg.id} className="hover:bg-[var(--surface-elevated)]">
                       <td className="py-3 px-4">
-                        <p className="text-white font-medium">{reg.user?.anonymous_name || 'Anonymous'}</p>
-                        <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
+                        <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
                       </td>
+                      <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.display_name || '—'}</td>
+                      <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.phone || '—'}</td>
+                      <td className="py-3 px-4 text-[var(--text-muted)] text-sm">{reg.user?.email}</td>
                       <td className="py-3 px-4 text-[var(--text-secondary)] text-sm">
                         <LocalTime date={reg.registered_at} />
                       </td>
@@ -183,8 +188,11 @@ export default async function AuctionRegistrationsPage({
                 <div key={reg.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-white font-medium">{reg.user?.anonymous_name || 'Anonymous'}</p>
+                      <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
                       <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
+                      {reg.user?.phone && (
+                        <p className="text-xs text-[var(--text-muted)] mt-1">{reg.user.phone}</p>
+                      )}
                     </div>
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${statusColors[reg.approval_status]}`}>
                       {reg.approval_status.toUpperCase()}
