@@ -106,7 +106,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
         minIncrement={gem.min_bid_increment}
         status={gem.status}
         roundEndTime={gem.round_end_time}
-        auctionType={(gem.auction as { auction_type?: string } | null)?.auction_type || 'variable_increment'}
+        auctionType={(gem.auction as { auction_type?: string } | null)?.auction_type || 'tender_base_fixed_bid'}
         highestBid={highestBidInfo}
       />
 

@@ -147,11 +147,11 @@ export default async function AdminAuctionsPage() {
                           {auction.status.replace('_', ' ').toUpperCase()}
                         </span>
                         <span className={`px-2 py-0.5 rounded text-xs inline-block w-fit ${
-                          auction.auction_type === 'fixed_increment' 
+                          auction.auction_type === 'progressive_elimination_auction' 
                             ? 'bg-purple-500/20 text-purple-400' 
                             : 'bg-emerald-500/20 text-emerald-400'
                         }`}>
-                          {auction.auction_type === 'fixed_increment' ? 'Fixed' : 'Free'}
+                          {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
                         </span>
                       </div>
                     </td>
@@ -202,11 +202,11 @@ export default async function AdminAuctionsPage() {
                         {auction.status.replace('_', ' ').toUpperCase()}
                       </span>
                       <span className={`px-2 py-0.5 rounded text-xs ${
-                        auction.auction_type === 'fixed_increment' 
+                        auction.auction_type === 'progressive_elimination_auction' 
                           ? 'bg-purple-500/20 text-purple-400' 
                           : 'bg-emerald-500/20 text-emerald-400'
                       }`}>
-                        {auction.auction_type === 'fixed_increment' ? 'Fixed' : 'Free'}
+                        {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
                       </span>
                     </div>
                   </div>

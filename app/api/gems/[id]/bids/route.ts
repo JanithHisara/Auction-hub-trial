@@ -48,7 +48,7 @@ export async function POST(
       return NextResponse.json({ error: 'Auction not found or not active' }, { status: 404 })
     }
 
-    const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'variable_increment'
+    const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'tender_base_fixed_bid'
 
     // Check if auction hasn't ended
     const now = new Date()
@@ -70,8 +70,8 @@ export async function POST(
 
     let bidAmount: number
 
-    if (auctionType === 'fixed_increment') {
-      // Fixed increment: user accepts current price
+    if (auctionType === 'progressive_elimination_auction') {
+      // Progressive elimination: user accepts current price
       bidAmount = gem.current_price || gem.starting_price
 
       // Check if user already accepted this price
@@ -87,7 +87,7 @@ export async function POST(
         return NextResponse.json({ error: 'You have already accepted this price' }, { status: 400 })
       }
     } else {
-      // Free-form bidding: user submits custom amount (one bid only)
+      // Tender base / fixed bid: user submits custom amount (one bid only)
       
       // Check if bidding round is active
       if (!gem.round_end_time) {
@@ -122,7 +122,7 @@ export async function POST(
         return NextResponse.json({ error: 'Invalid bid amount' }, { status: 400 })
       }
 
-      // For free-form: bid must be >= starting price (hidden bids, so no increment from current)
+      // For tender base: bid must be >= starting price (hidden bids, so no increment from current)
       if (bidAmount < gem.starting_price) {
         return NextResponse.json({ 
           error: `Bid must be at least ${gem.starting_price}`,

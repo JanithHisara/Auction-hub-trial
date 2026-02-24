@@ -72,7 +72,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     }
   }, [items, selectedItem])
 
-  const isFixedIncrement = auction.auction_type === 'fixed_increment'
+  const isFixedIncrement = auction.auction_type === 'progressive_elimination_auction'
   const isFreeForm = !isFixedIncrement
   const isBiddingActive = isFreeForm && selectedItem?.round_end_time && new Date(selectedItem.round_end_time) > new Date()
 
@@ -568,7 +568,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
             <span className={`hidden sm:inline px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
               isFixedIncrement ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
             }`}>
-              {isFixedIncrement ? 'Fixed Price Rounds' : 'Free Bidding'}
+              {isFixedIncrement ? 'Progressive Elimination Auction' : 'Tender Base / Fixed Bid'}
             </span>
           </div>
           
@@ -792,7 +792,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                             <button
                               onClick={handleFixedBid}
                               disabled={isSubmitting}
-                              className="btn-gold w-full py-4 text-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                              className="btn-gold w-full py-4 text-lg flex items-center justify-center gap-2"
                             >
                               {isSubmitting ? (
                                 <>
@@ -887,6 +887,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ) : (
                         /* Bid form for new bidders */
                         <form onSubmit={handleVariableBid} className="space-y-4">
+                          <fieldset disabled={isSubmitting} className="border-0 p-0 m-0 min-w-0 space-y-4">
                           {/* Countdown timer */}
                           {biddingCountdown && (
                             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
@@ -938,6 +939,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           <p className="text-center text-xs text-[var(--text-muted)]">
                             🔒 Sealed bid - others cannot see your bid
                           </p>
+                          </fieldset>
                         </form>
                       )}
                     </div>

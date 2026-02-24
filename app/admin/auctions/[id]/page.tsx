@@ -60,7 +60,7 @@ async function getAuction(id: string) {
   // Get registrations (use explicit FK name due to multiple FKs to users)
   const { data: registrations } = await supabase
     .from('auction_registrations')
-    .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name)')
+    .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name, phone, display_name)')
     .eq('auction_id', id)
     .order('registered_at', { ascending: false })
 
@@ -143,11 +143,11 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         </div>
         <div className="flex items-center gap-3">
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-            auction.auction_type === 'fixed_increment' 
+            auction.auction_type === 'progressive_elimination_auction' 
               ? 'bg-purple-500/20 text-purple-400' 
               : 'bg-emerald-500/20 text-emerald-400'
           }`}>
-            {auction.auction_type === 'fixed_increment' ? '⏱ Fixed Rounds' : '📈 Free Bidding'}
+            {auction.auction_type === 'progressive_elimination_auction' ? '⏱ Progressive Elimination' : '📈 Tender / Fixed Bid'}
           </span>
           <span className={`px-4 py-2 rounded-full text-sm font-bold ${statusColors[auction.status]}`}>
             {auction.status.replace('_', ' ').toUpperCase()}
@@ -323,8 +323,9 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                   {registrations.map((reg: AuctionRegistration & { user: { email: string; anonymous_name?: string } }) => (
                     <tr key={reg.id} className="hover:bg-[var(--surface-elevated)]">
                       <td className="py-3 px-4">
-                        <p className="text-white font-medium">{reg.user?.anonymous_name || 'Anonymous'}</p>
+                        <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
                         <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
+                        {reg.user?.phone && <p className="text-xs text-[var(--text-muted)]">{reg.user.phone}</p>}
                       </td>
                       <td className="py-3 px-4 text-[var(--text-secondary)] text-sm">
                         <LocalTime date={reg.registered_at} />
@@ -360,8 +361,9 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                 <div key={reg.id} className="p-3 bg-[var(--surface)] rounded-lg border border-[var(--border)]">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <p className="text-white font-medium text-sm">{reg.user?.anonymous_name || 'Anonymous'}</p>
+                      <p className="text-white font-medium text-sm">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
                       <p className="text-xs text-[var(--text-muted)] truncate max-w-[200px]">{reg.user?.email}</p>
+                      {reg.user?.phone && <p className="text-xs text-[var(--text-muted)]">{reg.user.phone}</p>}
                     </div>
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                       reg.approval_status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' :

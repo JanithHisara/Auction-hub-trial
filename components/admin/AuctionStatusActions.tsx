@@ -73,7 +73,7 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
   const nextStatus = current.next
 
   const handleAction = async () => {
-    if (!nextStatus) return
+    if (!nextStatus || isLoading) return
     
     setIsLoading(true)
     try {

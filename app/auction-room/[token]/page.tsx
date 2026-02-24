@@ -84,11 +84,11 @@ async function validateAccess(token: string): Promise<AccessResult> {
     .eq('auction_id', auction.id)
     .order('created_at', { ascending: true })
 
-  // For free-form (variable_increment) auctions, filter bids to only show user's own
-  const isFreeForm = auction.auction_type === 'variable_increment'
+  // For tender base / fixed bid auctions, filter bids to only show user's own
+  const isTenderBaseFixedBid = auction.auction_type === 'tender_base_fixed_bid'
   const filteredItems = (items || []).map(item => ({
     ...item,
-    bids: isFreeForm 
+    bids: isTenderBaseFixedBid 
       ? (item.bids || []).filter((b: { user_id: string }) => b.user_id === user.id)
       : (item.bids || [])
   }))
