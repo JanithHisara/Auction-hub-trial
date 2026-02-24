@@ -61,7 +61,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
   const totalBids = auction.items.reduce((sum, item) => sum + item.bidCount, 0)
   const totalValue = auction.items.reduce((sum, item) => sum + item.highestBid, 0)
   const activeItems = auction.items.filter(i => i.status === 'active').length
-  const isFixedIncrement = auction.auction_type === 'fixed_increment'
+  const isProgressiveElimination = auction.auction_type === 'progressive_elimination_auction'
 
   // Update clock
   useEffect(() => {
@@ -167,8 +167,8 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           <div className="flex items-center gap-4 sm:gap-8 w-full sm:w-auto justify-between sm:justify-end">
             <div className="text-left sm:text-right">
               <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">Type</div>
-              <div className={`text-sm sm:text-lg font-bold ${isFixedIncrement ? 'text-purple-400' : 'text-emerald-400'}`}>
-                {isFixedIncrement ? 'FIXED' : 'FREE'}
+              <div className={`text-sm sm:text-lg font-bold ${isProgressiveElimination ? 'text-purple-400' : 'text-emerald-400'}`}>
+                {isProgressiveElimination ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
               </div>
             </div>
             <div className="monitor-clock">

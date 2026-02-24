@@ -16,7 +16,7 @@ export default function NewAuctionPage() {
     name: '',
     description: '',
     banner_image_url: '',
-    auction_type: 'variable_increment' as 'fixed_increment' | 'variable_increment',
+    auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid',
     registration_start: '',
     registration_end: '',
     auction_start: '',
@@ -31,6 +31,7 @@ export default function NewAuctionPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setError(null)
     setLoading(true)
 
@@ -90,6 +91,7 @@ export default function NewAuctionPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
+          <fieldset disabled={loading} className="border-0 p-0 m-0 min-w-0 space-y-8">
           {/* Basic Info */}
           <section className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -152,7 +154,7 @@ export default function NewAuctionPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <label 
                 className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
-                  formData.auction_type === 'variable_increment' 
+                  formData.auction_type === 'tender_base_fixed_bid' 
                     ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
                     : 'border-[var(--border)] hover:border-[var(--gold)]/50'
                 }`}
@@ -160,25 +162,25 @@ export default function NewAuctionPage() {
                 <input
                   type="radio"
                   name="auction_type"
-                  value="variable_increment"
-                  checked={formData.auction_type === 'variable_increment'}
+                  value="tender_base_fixed_bid"
+                  checked={formData.auction_type === 'tender_base_fixed_bid'}
                   onChange={handleChange}
                   className="sr-only"
                 />
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    formData.auction_type === 'variable_increment' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
+                    formData.auction_type === 'tender_base_fixed_bid' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
                   }`}>
-                    <TrendingUp className={`w-5 h-5 ${formData.auction_type === 'variable_increment' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
+                    <TrendingUp className={`w-5 h-5 ${formData.auction_type === 'tender_base_fixed_bid' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Free-form Bidding</h3>
+                    <h3 className="font-bold text-white">Tender Base / Fixed Bid</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
                       Bidders submit any amount above minimum increment. Highest bid wins.
                     </p>
                   </div>
                 </div>
-                {formData.auction_type === 'variable_increment' && (
+                {formData.auction_type === 'tender_base_fixed_bid' && (
                   <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
                     <span className="text-black text-xs">✓</span>
                   </div>
@@ -187,7 +189,7 @@ export default function NewAuctionPage() {
 
               <label 
                 className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
-                  formData.auction_type === 'fixed_increment' 
+                  formData.auction_type === 'progressive_elimination_auction' 
                     ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
                     : 'border-[var(--border)] hover:border-[var(--gold)]/50'
                 }`}
@@ -195,25 +197,25 @@ export default function NewAuctionPage() {
                 <input
                   type="radio"
                   name="auction_type"
-                  value="fixed_increment"
-                  checked={formData.auction_type === 'fixed_increment'}
+                  value="progressive_elimination_auction"
+                  checked={formData.auction_type === 'progressive_elimination_auction'}
                   onChange={handleChange}
                   className="sr-only"
                 />
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    formData.auction_type === 'fixed_increment' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
+                    formData.auction_type === 'progressive_elimination_auction' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
                   }`}>
-                    <Gavel className={`w-5 h-5 ${formData.auction_type === 'fixed_increment' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
+                    <Gavel className={`w-5 h-5 ${formData.auction_type === 'progressive_elimination_auction' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Fixed Increments</h3>
+                    <h3 className="font-bold text-white">Progressive Elimination Auction</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
                       Price increases automatically at intervals. Bidders accept or drop out.
                     </p>
                   </div>
                 </div>
-                {formData.auction_type === 'fixed_increment' && (
+                {formData.auction_type === 'progressive_elimination_auction' && (
                   <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
                     <span className="text-black text-xs">✓</span>
                   </div>
@@ -350,6 +352,7 @@ export default function NewAuctionPage() {
               Cancel
             </Link>
           </div>
+          </fieldset>
         </form>
       </div>
     </div>

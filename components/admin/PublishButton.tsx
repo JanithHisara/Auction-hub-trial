@@ -8,6 +8,7 @@ export default function PublishButton({ gemId }: { gemId: string }) {
   const [loading, setLoading] = useState(false)
 
   const handlePublish = async () => {
+    if (loading) return
     if (!confirm('Are you sure you want to publish this item? It will be queued for auction.')) {
       return
     }

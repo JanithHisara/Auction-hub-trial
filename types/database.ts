@@ -1,7 +1,7 @@
 export type UserRole = 'user' | 'admin'
 export type GemStatus = 'draft' | 'pending' | 'active' | 'ended' | 'completed'
 export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
-export type AuctionType = 'fixed_increment' | 'variable_increment'
+export type AuctionType = 'progressive_elimination_auction' | 'tender_base_fixed_bid'
 export type PaymentStatus = 'pending' | 'completed' | 'failed'
 export type RegistrationApprovalStatus = 'pending' | 'approved' | 'rejected'
 
@@ -11,6 +11,8 @@ export interface User {
   role: UserRole
   created_at: string
   anonymous_name?: string
+  phone?: string | null
+  display_name?: string | null
 }
 
 // New: Auction (parent container)

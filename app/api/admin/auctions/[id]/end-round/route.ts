@@ -28,10 +28,10 @@ export async function POST(
     const auctionType = Array.isArray(auctionData)
       ? (auctionData[0] as { auction_type: string } | undefined)?.auction_type
       : (auctionData as { auction_type: string } | null)?.auction_type
-    const isFreeForm = auctionType === 'variable_increment'
+    const isFreeForm = auctionType === 'tender_base_fixed_bid'
 
-    // For free-form: end round AND set status to 'ended'
-    // For fixed increment: just clear round_end_time
+    // For tender base / fixed bid: end round AND set status to 'ended'
+    // For progressive elimination: just clear round_end_time
     const updateData: { round_end_time: null; status?: string } = { 
       round_end_time: null 
     }

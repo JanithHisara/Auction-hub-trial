@@ -36,6 +36,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setError(null)
     setLoading(true)
 
@@ -83,6 +84,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      <fieldset disabled={loading} className="border-0 p-0 m-0 min-w-0 space-y-8">
       {error && (
         <div className="error-message flex items-center gap-2">
           <span>⚠️</span> {error}
@@ -330,6 +332,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
           Cancel
         </button>
       </div>
+      </fieldset>
     </form>
   )
 }

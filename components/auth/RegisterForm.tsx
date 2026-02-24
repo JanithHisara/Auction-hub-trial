@@ -26,6 +26,7 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setError(null)
 
     if (password !== confirmPassword) {
@@ -82,6 +83,7 @@ export default function RegisterForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            <fieldset disabled={loading} className="border-0 p-0 m-0 min-w-0 space-y-5">
             {error && (
               <div className="error-message flex items-center gap-2 text-sm">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -169,6 +171,7 @@ export default function RegisterForm() {
                 </>
               )}
             </button>
+            </fieldset>
           </form>
 
           <div className="mt-8 pt-6 border-t border-[var(--border)] text-center">

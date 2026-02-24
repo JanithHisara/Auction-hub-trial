@@ -68,11 +68,13 @@ export default function BidForm({ gem, currentBid }: BidFormProps) {
   }
 
   const handleRegister = async () => {
+    if (loading) return
     setLoading(true)
     setError(null)
     
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
+      setLoading(false)
       router.push('/login')
       return
     }
@@ -98,12 +100,14 @@ export default function BidForm({ gem, currentBid }: BidFormProps) {
   }
 
   const handleAcceptPrice = async () => {
+    if (loading) return
     setLoading(true)
     setError(null)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
+        setLoading(false)
         router.push('/login')
         return
       }
@@ -158,7 +162,7 @@ export default function BidForm({ gem, currentBid }: BidFormProps) {
           <button
             onClick={handleRegister}
             disabled={loading}
-            className="btn-gold w-full flex items-center justify-center gap-2"
+            className="btn-gold w-full flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -186,7 +190,7 @@ export default function BidForm({ gem, currentBid }: BidFormProps) {
             <button
               onClick={handleAcceptPrice}
               disabled={loading}
-              className="btn-gold w-full flex items-center justify-center gap-2"
+              className="btn-gold w-full flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
