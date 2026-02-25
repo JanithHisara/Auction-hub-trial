@@ -40,12 +40,12 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
           filter: `id=eq.${gem.id}`,
         },
         (payload) => {
-           const newGem = payload.new as Gem
-           setGem(prev => ({ ...prev, ...newGem }))
-           
-           if (newGem.status === 'ended' || newGem.status === 'completed') {
-             router.refresh()
-           }
+          const newGem = payload.new as Gem
+          setGem(prev => ({ ...prev, ...newGem }))
+
+          if (newGem.status === 'ended' || newGem.status === 'completed') {
+            router.refresh()
+          }
         }
       )
       .subscribe()
@@ -66,7 +66,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
   return (
     <>
       <RealtimeBidUpdates gemId={gem.id} onBidUpdate={handleBidUpdate} />
-      
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
         <a href="/" className="hover:text-white transition-colors">Home</a>
@@ -110,18 +110,17 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
                   </div>
                 )}
               </div>
-              
+
               {gem.images.length > 1 && (
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                   {gem.images.map((img, index) => (
                     <button
                       key={img.id}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImageIndex === index
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === index
                           ? 'border-[var(--gold)] shadow-gold'
                           : 'border-[var(--border)] hover:border-[var(--gold)]/50'
-                      }`}
+                        }`}
                     >
                       <img
                         src={img.image_url}
@@ -147,7 +146,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
           {/* Price Card */}
           <div className="card-glass rounded-2xl p-6">
             <h2 className="text-xl font-bold text-white mb-6">Auction Details</h2>
-            
+
             <div className="mb-6 p-5 bg-gradient-to-br from-[var(--gold)]/20 to-[var(--gold)]/5 rounded-xl border border-[var(--gold)]/30">
               <p className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-2">Current Price</p>
               <p className="text-4xl font-bold text-[var(--gold)] mb-2">
@@ -200,14 +199,12 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
           </div>
 
           {/* Specs */}
-          {(gem.carat_weight || gem.cut || gem.color || gem.clarity) && (
+          {(gem.carat_weight || gem.color) && (
             <div className="card-glass rounded-2xl p-6">
               <h2 className="text-lg font-bold text-white mb-4">Specifications</h2>
               <div className="space-y-2">
                 {gem.carat_weight && <SpecRow label="Carat" value={`${gem.carat_weight} ct`} />}
-                {gem.cut && <SpecRow label="Cut" value={gem.cut} />}
                 {gem.color && <SpecRow label="Color" value={gem.color} />}
-                {gem.clarity && <SpecRow label="Clarity" value={gem.clarity} />}
               </div>
             </div>
           )}
