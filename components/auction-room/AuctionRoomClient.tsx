@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Auction, Gem, Bid, UserRewards, AuctionRegistration, User } from '@/types/database'
-import { Check, Loader2, Trophy } from 'lucide-react'
+import { Check, Loader2, Trophy, LogOut } from 'lucide-react'
 import Decimal from 'decimal.js'
 
 interface WinnerInfo {
@@ -49,6 +49,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const [registeredCount, setRegisteredCount] = useState(0) // For % calculation
   const [biddingCountdown, setBiddingCountdown] = useState('') // For free-form countdown
   const [biddingTimeExpired, setBiddingTimeExpired] = useState(false) // Track when timer hits 0
+  const [showLeavePopup, setShowLeavePopup] = useState(false)
   const supabase = createClient()
   const bidsContainerRef = useRef<HTMLDivElement>(null)
   const selectedItemIdRef = useRef<string | null>(selectedItem?.id || null)
@@ -77,10 +78,10 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const isBiddingActive = isFreeForm && selectedItem?.round_end_time && new Date(selectedItem.round_end_time) > new Date()
 
   // Calculate current bid and next minimum
-  const currentBid = selectedItem?.bids?.length 
+  const currentBid = selectedItem?.bids?.length
     ? Math.max(...selectedItem.bids.map(b => b.bid_amount))
     : selectedItem?.starting_price || 0
-  const minBid = isFreeForm 
+  const minBid = isFreeForm
     ? selectedItem?.starting_price || 0  // Free-form: just starting price
     : currentBid + (selectedItem?.min_bid_increment || 100)
   const fixedPrice = selectedItem?.current_price || selectedItem?.starting_price || 0
@@ -89,8 +90,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const currentPriceBidders = isFixedIncrement && selectedItem?.bids
     ? selectedItem.bids.filter(b => b.bid_amount === fixedPrice).length
     : 0
-  const bidderPercentage = registeredCount > 0 
-    ? Math.round((currentPriceBidders / registeredCount) * 100) 
+  const bidderPercentage = registeredCount > 0
+    ? Math.round((currentPriceBidders / registeredCount) * 100)
     : 0
 
   // Fetch registered count for percentage calculation (using RPC to bypass RLS)
@@ -98,7 +99,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     const fetchRegisteredCount = async () => {
       const { data: count } = await supabase
         .rpc('get_auction_registration_count', { auction_uuid: auction.id })
-      
+
       setRegisteredCount(count || 0)
     }
     fetchRegisteredCount()
@@ -172,7 +173,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         const winnersWithNames = existingWinners.map(w => {
           // winning_bid could be object or array depending on relationship type
           const winningBid = w.winning_bid as unknown
-          const bidAmount = Array.isArray(winningBid) 
+          const bidAmount = Array.isArray(winningBid)
             ? (winningBid[0] as { bid_amount: number } | undefined)?.bid_amount
             : (winningBid as { bid_amount: number } | null)?.bid_amount
           return {
@@ -203,21 +204,21 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         },
         async (payload) => {
           const newBid = payload.new as Bid
-          
+
           // For free-form auctions, only process own bids (others are hidden)
           if (isFreeForm && newBid.user_id !== user.id) {
             return // Don't show other users' bids in free-form
           }
-          
+
           const { data: bidUser } = await supabase
             .from('users')
             .select('anonymous_name, email')
             .eq('id', newBid.user_id)
             .single()
 
-          const bidWithUser: Bid = { 
-            ...newBid, 
-            user: bidUser ? { email: bidUser.email || '', anonymous_name: bidUser.anonymous_name } : undefined 
+          const bidWithUser: Bid = {
+            ...newBid,
+            user: bidUser ? { email: bidUser.email || '', anonymous_name: bidUser.anonymous_name } : undefined
           }
 
           // For fixed increment, update bids list as normal
@@ -249,12 +250,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               setHasPlacedBid(true)
               setUserBidAmount(newBid.bid_amount)
             }
-            
+
             if (newBid.points_earned > 0) {
               setPointsEarned(newBid.points_earned)
               setShowPointsPopup(true)
               setTimeout(() => setShowPointsPopup(false), 2000)
-              
+
               setRewards(prev => prev ? {
                 ...prev,
                 total_points: prev.total_points + newBid.points_earned,
@@ -275,7 +276,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         },
         (payload) => {
           const updatedGem = payload.new as Gem
-          
+
           // Update items array
           setItems(prev => prev.map(item => {
             if (item.id === updatedGem.id) {
@@ -293,17 +294,17 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           if (selectedItemIdRef.current === updatedGem.id) {
             setSelectedItem(prev => {
               if (!prev) return prev
-              
+
               // Reset accepted price status when price changes (new round) - for fixed increment
               if (prev.current_price !== updatedGem.current_price) {
                 setHasAcceptedPrice(false)
               }
-              
+
               // Reset bidding expired state when round_end_time changes (new round started)
               if (prev.round_end_time !== updatedGem.round_end_time) {
                 setBiddingTimeExpired(false)
               }
-              
+
               return {
                 ...prev,
                 status: updatedGem.status,
@@ -344,11 +345,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         },
         async (payload) => {
           const newWinner = payload.new as { gem_id: string; user_id: string; winning_bid_id: string }
-          
+
           // Check if this winner is for one of our items
           const wonGem = items.find(i => i.id === newWinner.gem_id)
           if (!wonGem) return
-          
+
           // Fetch the winning bid amount
           let winningAmount = wonGem.starting_price
           if (newWinner.winning_bid_id) {
@@ -361,15 +362,15 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               winningAmount = winningBid.bid_amount
             }
           }
-          
+
           // Add to winners list with winning amount
-          setWinners(prev => [...prev, { 
-            gem_id: newWinner.gem_id, 
-            user_id: newWinner.user_id, 
+          setWinners(prev => [...prev, {
+            gem_id: newWinner.gem_id,
+            user_id: newWinner.user_id,
             gem_name: wonGem.name,
             winning_amount: winningAmount
           }])
-          
+
           // Show popup if current user is the winner
           if (newWinner.user_id === user.id) {
             setWonItem({ name: wonGem.name, amount: winningAmount })
@@ -555,6 +556,32 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         </div>
       )}
 
+      {/* Leave Auction Popup */}
+      {showLeavePopup && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl animate-bounce-in">
+            <h3 className="text-xl font-bold text-white mb-2">Leave Auction?</h3>
+            <p className="text-[var(--text-secondary)] text-sm mb-6">
+              Are you sure you want to leave? You can always rejoin using your access link if the auction is still active.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLeavePopup(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-[var(--border)] text-white hover:bg-[var(--background)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => window.location.href = '/my-auctions'}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-colors"
+              >
+                Yes, Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--background)]/90 backdrop-blur-xl border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
@@ -565,22 +592,28 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               <span className="hidden sm:inline">{currentStatus.text}</span>
             </div>
             <h1 className="text-base sm:text-xl font-bold text-white truncate">{auction.name}</h1>
-            <span className={`hidden sm:inline px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
-              isFixedIncrement ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
-            }`}>
+            <span className={`hidden sm:inline px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${isFixedIncrement ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
+              }`}>
               {isFixedIncrement ? 'Progressive Elimination Auction' : 'Tender Base / Fixed Bid'}
             </span>
           </div>
-          
-          {rewards && (
-            <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            {rewards && (
               <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[var(--surface)] rounded-full">
                 <span className="text-base sm:text-xl">🔥</span>
                 <span className="font-bold text-[var(--gold)] text-sm sm:text-base">{rewards.total_points}</span>
                 <span className="text-xs sm:text-sm text-[var(--text-muted)] hidden sm:inline">pts</span>
               </div>
-            </div>
-          )}
+            )}
+            <button
+              onClick={() => setShowLeavePopup(true)}
+              className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-full transition-colors text-sm font-medium border border-red-500/30"
+              title="Leave Auction"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Leave</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -592,7 +625,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
             <div className="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-y-auto lg:max-h-[calc(100vh-200px)] pb-2 lg:pb-0 lg:pr-2 -mx-3 px-3 lg:mx-0 lg:px-0">
               {items.map((item) => {
                 // For free-form: only show starting price. For fixed: show current round price
-                const displayPrice = isFreeForm 
+                const displayPrice = isFreeForm
                   ? item.starting_price
                   : (item.current_price || item.starting_price)
                 const isSelected = selectedItem?.id === item.id
@@ -604,68 +637,67 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 const biddingStarted = !!item.round_end_time
                 const biddingActive = biddingStarted && new Date(item.round_end_time!) > new Date()
 
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setSelectedItem(item)}
-                      className={`flex-shrink-0 w-[140px] lg:w-full p-3 lg:p-4 rounded-xl text-left transition-all relative ${
-                        userWonThisItem
-                          ? 'bg-emerald-500/20 border-2 border-emerald-500/50'
-                          : isSelected 
-                            ? 'bg-[var(--gold)]/20 border-2 border-[var(--gold)]' 
-                            : isItemEnded
-                              ? 'bg-[var(--surface)]/50 border border-amber-500/30 opacity-75'
-                              : 'bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--gold)]/50'
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedItem(item)}
+                    className={`flex-shrink-0 w-[140px] lg:w-full p-3 lg:p-4 rounded-xl text-left transition-all relative ${userWonThisItem
+                        ? 'bg-emerald-500/20 border-2 border-emerald-500/50'
+                        : isSelected
+                          ? 'bg-[var(--gold)]/20 border-2 border-[var(--gold)]'
+                          : isItemEnded
+                            ? 'bg-[var(--surface)]/50 border border-amber-500/30 opacity-75'
+                            : 'bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--gold)]/50'
                       }`}
-                    >
-                      {userWonThisItem ? (
-                        <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-emerald-500/30 border border-emerald-500/50 rounded text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                          <Trophy className="w-3 h-3" /> WON
-                        </div>
-                      ) : isItemEnded ? (
-                        <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[10px] font-bold text-amber-400">
-                          ENDED
-                        </div>
-                      ) : userBidOnItem && (
-                        <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/40 rounded text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                          <Check className="w-3 h-3" /> BID
-                        </div>
-                      )}
-                      <div className="flex flex-col lg:flex-row items-center lg:items-center gap-2 lg:gap-3">
-                        <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-lg overflow-hidden bg-[var(--background-secondary)] flex-shrink-0 ${isItemEnded ? 'grayscale opacity-60' : ''}`}>
-                          {item.gem_images?.[0]?.image_url ? (
-                            <img 
-                              src={item.gem_images[0].image_url}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xl lg:text-2xl opacity-30">💎</div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0 text-center lg:text-left">
-                          <h3 className="font-bold text-white truncate text-xs lg:text-base">{item.name}</h3>
-                          <p className={`font-mono text-xs lg:text-sm ${isItemEnded ? 'text-amber-400' : 'text-[var(--gold)]'}`}>
-                            {formatCurrency(displayPrice)}
-                          </p>
-                          <p className="text-xs text-[var(--text-muted)]">
-                            {isItemEnded 
-                              ? 'Finished' 
-                              : isFreeForm 
-                                ? (!biddingStarted 
-                                    ? '⏳ Not started' 
-                                    : userBidOnItem 
-                                      ? 'Bid placed' 
-                                      : biddingActive 
-                                        ? '🔴 Open' 
-                                        : 'Closed')
-                                : `${item.bids?.filter(b => b.bid_amount === (item.current_price || item.starting_price)).length || 0} accepted`
-                            }
-                          </p>
-                        </div>
+                  >
+                    {userWonThisItem ? (
+                      <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-emerald-500/30 border border-emerald-500/50 rounded text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                        <Trophy className="w-3 h-3" /> WON
                       </div>
-                    </button>
-                  )
+                    ) : isItemEnded ? (
+                      <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[10px] font-bold text-amber-400">
+                        ENDED
+                      </div>
+                    ) : userBidOnItem && (
+                      <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/40 rounded text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                        <Check className="w-3 h-3" /> BID
+                      </div>
+                    )}
+                    <div className="flex flex-col lg:flex-row items-center lg:items-center gap-2 lg:gap-3">
+                      <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-lg overflow-hidden bg-[var(--background-secondary)] flex-shrink-0 ${isItemEnded ? 'grayscale opacity-60' : ''}`}>
+                        {item.gem_images?.[0]?.image_url ? (
+                          <img
+                            src={item.gem_images[0].image_url}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xl lg:text-2xl opacity-30">💎</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 text-center lg:text-left">
+                        <h3 className="font-bold text-white truncate text-xs lg:text-base">{item.name}</h3>
+                        <p className={`font-mono text-xs lg:text-sm ${isItemEnded ? 'text-amber-400' : 'text-[var(--gold)]'}`}>
+                          {formatCurrency(displayPrice)}
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">
+                          {isItemEnded
+                            ? 'Finished'
+                            : isFreeForm
+                              ? (!biddingStarted
+                                ? '⏳ Not started'
+                                : userBidOnItem
+                                  ? 'Bid placed'
+                                  : biddingActive
+                                    ? '🔴 Open'
+                                    : 'Closed')
+                              : `${item.bids?.filter(b => b.bid_amount === (item.current_price || item.starting_price)).length || 0} accepted`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                )
               })}
             </div>
           </div>
@@ -677,7 +709,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 {/* Item Image */}
                 <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
                   {selectedItem.gem_images?.[0]?.image_url ? (
-                    <img 
+                    <img
                       src={selectedItem.gem_images[0].image_url}
                       alt={selectedItem.name}
                       className="w-full h-full object-cover"
@@ -687,7 +719,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       <span className="text-6xl sm:text-8xl opacity-20">💎</span>
                     </div>
                   )}
-                  
+
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 sm:p-6">
                     <div className="flex items-end justify-between gap-4">
                       <div>
@@ -888,57 +920,57 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                         /* Bid form for new bidders */
                         <form onSubmit={handleVariableBid} className="space-y-4">
                           <fieldset disabled={isSubmitting} className="border-0 p-0 m-0 min-w-0 space-y-4">
-                          {/* Countdown timer */}
-                          {biddingCountdown && (
-                            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
-                              <p className="text-xs text-red-400 uppercase mb-1">Time remaining</p>
-                              <p className="text-3xl font-mono font-bold text-red-400">{biddingCountdown}</p>
-                            </div>
-                          )}
-                          <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                            <p className="text-sm text-blue-300 text-center">
-                              ⚠️ You can only place <strong>one bid</strong>. Make it count!
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm text-[var(--text-muted)] mb-2">
-                              Your Bid (min: {formatCurrency(minBid)})
-                            </label>
-                            <div className="relative">
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                value={bidAmount}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '')
-                                  setBidAmount(val)
-                                }}
-                                placeholder={minBid.toString()}
-                                className="w-full pl-8 pr-4 py-4 text-2xl font-bold bg-[var(--surface)] border-2 border-[var(--border)] rounded-xl focus:border-[var(--gold)] text-white"
-                              />
-                            </div>
-                          </div>
-
-                          <button
-                            type="submit"
-                            disabled={isSubmitting || !bidAmount}
-                            className="btn-gold w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                          >
-                            {isSubmitting ? (
-                              <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                <span>Placing Bid...</span>
-                              </>
-                            ) : (
-                              <span>Place Bid {bidAmount ? formatCurrency(new Decimal(bidAmount).toNumber()) : ''}</span>
+                            {/* Countdown timer */}
+                            {biddingCountdown && (
+                              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
+                                <p className="text-xs text-red-400 uppercase mb-1">Time remaining</p>
+                                <p className="text-3xl font-mono font-bold text-red-400">{biddingCountdown}</p>
+                              </div>
                             )}
-                          </button>
+                            <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                              <p className="text-sm text-blue-300 text-center">
+                                ⚠️ You can only place <strong>one bid</strong>. Make it count!
+                              </p>
+                            </div>
 
-                          <p className="text-center text-xs text-[var(--text-muted)]">
-                            🔒 Sealed bid - others cannot see your bid
-                          </p>
+                            <div>
+                              <label className="block text-sm text-[var(--text-muted)] mb-2">
+                                Your Bid (min: {formatCurrency(minBid)})
+                              </label>
+                              <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={bidAmount}
+                                  onChange={(e) => {
+                                    const val = e.target.value.replace(/[^0-9]/g, '')
+                                    setBidAmount(val)
+                                  }}
+                                  placeholder={minBid.toString()}
+                                  className="w-full pl-8 pr-4 py-4 text-2xl font-bold bg-[var(--surface)] border-2 border-[var(--border)] rounded-xl focus:border-[var(--gold)] text-white"
+                                />
+                              </div>
+                            </div>
+
+                            <button
+                              type="submit"
+                              disabled={isSubmitting || !bidAmount}
+                              className="btn-gold w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                  <span>Placing Bid...</span>
+                                </>
+                              ) : (
+                                <span>Place Bid {bidAmount ? formatCurrency(new Decimal(bidAmount).toNumber()) : ''}</span>
+                              )}
+                            </button>
+
+                            <p className="text-center text-xs text-[var(--text-muted)]">
+                              🔒 Sealed bid - others cannot see your bid
+                            </p>
                           </fieldset>
                         </form>
                       )}
@@ -962,7 +994,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">
                   Accepted This Round
                 </h2>
-                
+
                 {/* Participation stats */}
                 <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)] mb-4">
                   <div className="flex items-center justify-between mb-2">
@@ -970,7 +1002,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                     <span className="text-xl font-bold text-[var(--gold)]">{bidderPercentage}%</span>
                   </div>
                   <div className="w-full bg-[var(--background)] rounded-full h-3 mb-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-[var(--gold)] to-amber-500 h-3 rounded-full transition-all duration-500"
                       style={{ width: `${bidderPercentage}%` }}
                     />
@@ -980,7 +1012,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                   </p>
                 </div>
 
-                <div 
+                <div
                   ref={bidsContainerRef}
                   className="bid-ticker max-h-[40vh] lg:max-h-[calc(100vh-300px)] overflow-y-auto"
                 >
@@ -988,8 +1020,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                     selectedItem.bids
                       .filter(b => b.bid_amount === fixedPrice)
                       .map((bid) => (
-                        <div 
-                          key={bid.id} 
+                        <div
+                          key={bid.id}
                           className={`bid-item ${newBidHighlight === bid.id ? 'animate-bid-flash' : ''}`}
                         >
                           <div className="flex-1">
@@ -1027,7 +1059,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       All bids are private. You cannot see other participants&apos; bids.
                     </p>
                   </div>
-                  
+
                   <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-2xl">📋</span>
