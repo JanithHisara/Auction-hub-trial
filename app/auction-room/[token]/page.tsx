@@ -12,6 +12,8 @@ type ValidAccessResult = {
   user: User
   registration: AuctionRegistration
   rewards: UserRewards | null
+  isHeld: boolean
+  adminPhone: string | null
 }
 
 type InvalidAccessResult = {
@@ -100,6 +102,20 @@ async function validateAccess(token: string): Promise<AccessResult> {
     .eq('user_id', user.id)
     .single()
 
+  // Check hold status
+  const { data: activeHold } = await supabase
+    .from('bidder_holds')
+    .select('*, admin:users!bidder_holds_admin_id_fkey(phone)')
+    .eq('auction_id', auction.id)
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .single()
+
+  const isHeld = !!activeHold
+  const adminPhone = activeHold
+    ? (activeHold.admin as { phone?: string | null } | null)?.phone || null
+    : null
+
   // Update access tracking
   await supabase
     .from('auction_registrations')
@@ -117,6 +133,8 @@ async function validateAccess(token: string): Promise<AccessResult> {
     user: user as unknown as User,
     registration: registration as unknown as AuctionRegistration,
     rewards: rewards as UserRewards | null,
+    isHeld,
+    adminPhone,
   }
 }
 
@@ -184,6 +202,8 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
       registration={result.registration}
       rewards={result.rewards}
       token={token}
+      initialIsHeld={result.isHeld}
+      adminPhone={result.adminPhone}
     />
   )
 }

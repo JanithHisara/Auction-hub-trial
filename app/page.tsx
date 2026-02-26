@@ -14,7 +14,6 @@ async function getUpcomingAuctions() {
       gems:gems(count)
     `)
     .in('status', ['upcoming', 'registration_open', 'live'])
-    .gte('auction_end', now)
     .order('auction_start', { ascending: true })
 
   if (!auctions) return []

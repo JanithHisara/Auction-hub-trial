@@ -265,14 +265,28 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
               )}
 
               {status === 'active' && roundEndTime && (
-                <button
-                  onClick={() => setShowNextRoundModal(true)}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SkipForward className="w-4 h-4" />}
-                  Next Round
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Start default round with +${formatCurrency(minIncrement)} increment?`)) {
+                        handleAction('increment', { increment: minIncrement })
+                      }
+                    }}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SkipForward className="w-4 h-4" />}
+                    Default Round ({formatCurrency(minIncrement)})
+                  </button>
+                  <button
+                    onClick={() => setShowNextRoundModal(true)}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SkipForward className="w-4 h-4" />}
+                    Custom Round
+                  </button>
+                </>
               )}
 
               {(status === 'active' || status === 'ended') && (

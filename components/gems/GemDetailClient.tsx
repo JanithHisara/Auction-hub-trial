@@ -9,6 +9,7 @@ import BidForm from '@/components/auctions/BidForm'
 import BidHistory from '@/components/auctions/BidHistory'
 import RealtimeBidUpdates from '@/components/auctions/RealtimeBidUpdates'
 import WinnerPaymentLink from '@/components/payment/WinnerPaymentLink'
+
 import type { Gem, Bid, GemImage, GemCertificate } from '@/types/database'
 
 interface GemDetailClientProps {
@@ -60,7 +61,9 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
   }
 
   const highestBid = bids?.[0]?.bid_amount || gem.starting_price
-  const mainImage = gem.images?.[selectedImageIndex]?.image_url || gem.images?.[0]?.image_url
+  const imageOnly = gem.images?.filter(img => img.media_type !== 'video') || []
+  const videoOnly = gem.images?.filter(img => img.media_type === 'video') || []
+  const mainImage = imageOnly[selectedImageIndex]?.image_url || imageOnly[0]?.image_url
   const nextPrice = (gem.current_price || gem.starting_price) + gem.min_bid_increment
 
   return (
@@ -92,12 +95,12 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
 
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 mb-8">
         {/* Image Gallery */}
-        <div className="lg:col-span-2">
-          {gem.images && gem.images.length > 0 ? (
+        <div className="lg:col-span-2 space-y-6">
+          {imageOnly.length > 0 ? (
             <div className="card-glass rounded-2xl p-4 sm:p-6">
               <div className="relative aspect-square mb-4 rounded-xl overflow-hidden bg-[var(--surface)] group">
                 <img
-                  src={mainImage}
+                  src={mainImage!}
                   alt={gem.name}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -111,9 +114,9 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
                 )}
               </div>
               
-              {gem.images.length > 1 && (
+              {imageOnly.length > 1 && (
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {gem.images.map((img, index) => (
+                  {imageOnly.map((img, index) => (
                     <button
                       key={img.id}
                       onClick={() => setSelectedImageIndex(index)}
@@ -133,10 +136,32 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
                 </div>
               )}
             </div>
-          ) : (
+          ) : !videoOnly.length ? (
             <div className="card-glass rounded-2xl p-12">
               <div className="flex items-center justify-center aspect-square bg-[var(--surface)] rounded-xl">
                 <span className="text-6xl opacity-30">💎</span>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Videos */}
+          {videoOnly.length > 0 && (
+            <div className="card-glass rounded-2xl p-4 sm:p-6">
+              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span>🎬</span> Videos
+              </h2>
+              <div className="space-y-4">
+                {videoOnly.map((vid) => (
+                  <div key={vid.id} className="rounded-xl overflow-hidden border border-[var(--border)] bg-black">
+                    <video
+                      src={vid.image_url}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="w-full aspect-video object-contain"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
