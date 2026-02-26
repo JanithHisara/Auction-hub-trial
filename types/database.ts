@@ -95,11 +95,14 @@ export interface Gem {
   images?: GemImage[]
 }
 
+export type MediaType = 'image' | 'gif' | 'video'
+
 export interface GemImage {
   id: string
   gem_id: string
   image_url: string
   display_order: number
+  media_type: MediaType
   created_at: string
 }
 
@@ -167,6 +170,19 @@ export interface Badge {
   icon: string
   description: string
   earned_at: string
+}
+
+export interface BidderHold {
+  id: string
+  auction_id: string
+  user_id: string
+  admin_id: string
+  reason: string | null
+  held_at: string
+  released_at: string | null
+  is_active: boolean
+  user?: User
+  admin?: User
 }
 
 // Utility types for API responses

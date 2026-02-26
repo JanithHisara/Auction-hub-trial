@@ -1,11 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024   // 5MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024  // 50MB
+
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const GIF_TYPES = ['image/gif']
+const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
+const ALL_ALLOWED_TYPES = [...IMAGE_TYPES, ...GIF_TYPES, ...VIDEO_TYPES]
+
+function getMediaType(mimeType: string): 'image' | 'gif' | 'video' {
+  if (VIDEO_TYPES.includes(mimeType)) return 'video'
+  if (GIF_TYPES.includes(mimeType)) return 'gif'
+  return 'image'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Verify admin
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
@@ -28,23 +41,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ message: 'Invalid file type' }, { status: 400 })
+    if (!ALL_ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ message: 'Invalid file type. Allowed: JPG, PNG, WebP, GIF, MP4, WebM, MOV' }, { status: 400 })
     }
 
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ message: 'File too large (max 5MB)' }, { status: 400 })
+    const mediaType = getMediaType(file.type)
+    const maxSize = mediaType === 'video' ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
+    const maxLabel = mediaType === 'video' ? '50MB' : '5MB'
+
+    if (file.size > maxSize) {
+      return NextResponse.json({ message: `File too large (max ${maxLabel})` }, { status: 400 })
     }
 
-    // Generate unique filename
     const ext = file.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
-    const filePath = `gems/${fileName}`
+    const filePath = mediaType === 'video' ? `gems/videos/${fileName}` : `gems/${fileName}`
 
-    // Upload to Supabase Storage
     const { data, error } = await supabase.storage
       .from('gem-images')
       .upload(filePath, file, {
@@ -57,7 +69,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Upload failed' }, { status: 500 })
     }
 
-    // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from('gem-images')
       .getPublicUrl(data.path)
@@ -66,6 +77,7 @@ export async function POST(request: NextRequest) {
       success: true,
       url: publicUrl,
       path: data.path,
+      media_type: mediaType,
     })
 
   } catch (error) {

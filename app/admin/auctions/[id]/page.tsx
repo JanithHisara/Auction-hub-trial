@@ -90,6 +90,7 @@ const itemStatusColors: Record<string, string> = {
 
 import AuctionStatusActions from '@/components/admin/AuctionStatusActions'
 import AuctionDetailClient from '@/components/admin/AuctionDetailClient'
+import BidderHoldManager from '@/components/admin/BidderHoldManager'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString('en-US', {
@@ -165,6 +166,12 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
             itemCount={items.length}
             approvedCount={approvedCount}
           />
+          <Link 
+            href={`/admin/auctions/${id}/edit`}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[var(--gold)]/20 border border-[var(--gold)]/30 rounded-lg text-[var(--gold)] hover:bg-[var(--gold)]/30 transition-colors"
+          >
+            ✏️ Edit Auction
+          </Link>
           {auction.status === 'live' && (
             <Link 
               href={`/monitor/auction/${id}`}
@@ -388,6 +395,18 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           </div>
         )}
       </div>
+      {/* Bidder Hold Management */}
+      {(auction.status === 'live' || auction.status === 'registration_open') && (
+        <BidderHoldManager
+          auctionId={id}
+          registrations={registrations.map(r => ({
+            id: r.id,
+            user_id: r.user_id,
+            approval_status: r.approval_status || 'pending',
+            user: r.user as { email: string; anonymous_name?: string; display_name?: string | null } | undefined,
+          }))}
+        />
+      )}
     </div>
     </AuctionDetailClient>
   )

@@ -78,7 +78,7 @@ export default async function MyAuctionsPage() {
   }
 
   const liveAuctions = registrations.filter(r => r.auction?.status === 'live')
-  const upcomingAuctions = registrations.filter(r => r.auction?.status !== 'live' && r.auction?.status !== 'ended')
+  const upcomingAuctions = registrations.filter(r => r.auction?.status !== 'live' && r.auction?.status !== 'ended' && r.auction?.status !== 'completed')
   const pastAuctions = registrations.filter(r => r.auction?.status === 'ended' || r.auction?.status === 'completed')
 
   return (
@@ -162,15 +162,25 @@ export default async function MyAuctionsPage() {
               </section>
             )}
 
-            {/* Past */}
+            {/* Past — collapsed by default */}
             {pastAuctions.length > 0 && (
               <section>
-                <h2 className="text-2xl font-bold text-white mb-6">Past Auctions</h2>
-                <div className="grid gap-4">
-                  {pastAuctions.map((reg) => (
-                    <AuctionCard key={reg.id} registration={reg} />
-                  ))}
-                </div>
+                <details className="group">
+                  <summary className="flex items-center gap-3 cursor-pointer list-none mb-6 select-none">
+                    <h2 className="text-2xl font-bold text-white">Auction History</h2>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]">
+                      {pastAuctions.length} ended
+                    </span>
+                    <span className="ml-auto text-[var(--text-muted)] text-sm group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="grid gap-4">
+                    {pastAuctions.map((reg) => (
+                      <AuctionCard key={reg.id} registration={reg} />
+                    ))}
+                  </div>
+                </details>
               </section>
             )}
           </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Gem, GemImage, GemCertificate, Auction } from '@/types/database'
+import type { Gem, GemImage, GemCertificate, Auction, MediaType } from '@/types/database'
 import { Loader2, Plus, X, FileText, DollarSign, Clock } from 'lucide-react'
 import ImageUploader from './ImageUploader'
 
@@ -31,6 +31,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     clarity: gem?.clarity || '',
     provenance: gem?.provenance || '',
     images: gem?.images?.map(img => img.image_url) || [''],
+    media_types: (gem?.images?.map(img => img.media_type) || ['image']) as MediaType[],
     certificates: gem?.certificates?.map(cert => ({ url: cert.certificate_url, type: cert.certificate_type || '' })) || [{ url: '', type: '' }],
   })
 
@@ -51,6 +52,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
           ...formData,
           auction_id: formData.auction_id || null,
           images: formData.images.filter(url => url.trim() !== ''),
+          media_types: formData.media_types.filter((_, i) => formData.images[i]?.trim() !== ''),
           certificates: formData.certificates.filter(cert => cert.url.trim() !== ''),
           carat_weight: formData.carat_weight ? parseFloat(formData.carat_weight.toString()) : null,
         }),
@@ -258,10 +260,11 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
       </Section>
 
       {/* Images */}
-      <Section title="Images" icon="🖼️" number={auctions.length > 0 ? "5" : "4"}>
+      <Section title="Images & Videos" icon="🖼️" number={auctions.length > 0 ? "5" : "4"}>
         <ImageUploader
           images={formData.images}
-          onChange={(images) => setFormData({ ...formData, images })}
+          mediaTypes={formData.media_types}
+          onChange={(images, mediaTypes) => setFormData({ ...formData, images, media_types: mediaTypes })}
         />
       </Section>
 
