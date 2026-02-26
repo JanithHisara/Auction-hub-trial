@@ -50,12 +50,7 @@ export async function POST(
 
     const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'tender_base_fixed_bid'
 
-    // Check if auction hasn't ended
     const now = new Date()
-    const endTime = new Date(gem.end_time)
-    if (now >= endTime) {
-      return NextResponse.json({ error: 'Auction has ended' }, { status: 400 })
-    }
 
     // Get highest current bid
     const { data: highestBidData } = await supabase
@@ -147,6 +142,85 @@ export async function POST(
     return NextResponse.json(bid)
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to place bid'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const user = await requireAuth()
+    const supabase = await createClient()
+    const body = await request.json()
+
+    const { data: gem } = await supabase
+      .from('gems')
+      .select('*, auction:auctions(auction_type)')
+      .eq('id', id)
+      .eq('status', 'active')
+      .single()
+
+    if (!gem) {
+      return NextResponse.json({ error: 'Item not found or not active' }, { status: 404 })
+    }
+
+    const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'tender_base_fixed_bid'
+
+    if (auctionType !== 'tender_base_fixed_bid') {
+      return NextResponse.json({ error: 'Bid editing is only available for Tender Base / Fixed Bid auctions' }, { status: 400 })
+    }
+
+    if (!gem.round_end_time) {
+      return NextResponse.json({ error: 'Bidding has not started' }, { status: 400 })
+    }
+
+    const now = new Date()
+    if (now >= new Date(gem.round_end_time)) {
+      return NextResponse.json({ error: 'Bidding time has ended. Bid is locked.' }, { status: 400 })
+    }
+
+    const { data: existingBid } = await supabase
+      .from('bids')
+      .select('id')
+      .eq('gem_id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!existingBid) {
+      return NextResponse.json({ error: 'No existing bid found to edit' }, { status: 404 })
+    }
+
+    if (!body.bid_amount) {
+      return NextResponse.json({ error: 'Bid amount is required' }, { status: 400 })
+    }
+
+    let newAmount: number
+    try {
+      newAmount = new Decimal(body.bid_amount).toNumber()
+    } catch {
+      return NextResponse.json({ error: 'Invalid bid amount' }, { status: 400 })
+    }
+
+    if (newAmount < gem.starting_price) {
+      return NextResponse.json({ error: `Bid must be at least ${gem.starting_price}` }, { status: 400 })
+    }
+
+    const { data: updatedBid, error: updateError } = await supabase
+      .from('bids')
+      .update({ bid_amount: newAmount })
+      .eq('id', existingBid.id)
+      .eq('user_id', user.id)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+
+    return NextResponse.json(updatedBid)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update bid'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

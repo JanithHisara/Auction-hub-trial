@@ -31,12 +31,13 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // Handle images if provided
     if (body.images && body.images.length > 0) {
+      const mediaTypes: string[] = body.media_types || []
       const images = body.images.map((url: string, index: number) => ({
         gem_id: gem.id,
         image_url: url,
         display_order: index,
+        media_type: mediaTypes[index] || 'image',
       }))
 
       await supabase.from('gem_images').insert(images)

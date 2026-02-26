@@ -65,18 +65,24 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <Link href="/admin/gems" className="text-sm text-[var(--text-muted)] hover:text-white mb-2 inline-block">
-            ← Back to Items
-          </Link>
+          {gem.auction_id ? (
+            <Link href={`/admin/auctions/${gem.auction_id}`} className="text-sm text-[var(--text-muted)] hover:text-white mb-2 inline-block">
+              ← Back to Auction
+            </Link>
+          ) : (
+            <Link href="/admin/gems" className="text-sm text-[var(--text-muted)] hover:text-white mb-2 inline-block">
+              ← Back to Items
+            </Link>
+          )}
           <h1 className="text-3xl font-bold text-white mb-2">{gem.name}</h1>
           <div className="flex items-center gap-3">
             <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusColors[gem.status]}`}>
               {gem.status.toUpperCase()}
             </span>
             {gem.auction && (
-              <span className="text-sm text-[var(--text-muted)]">
+              <Link href={`/admin/auctions/${gem.auction_id}`} className="text-sm text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors">
                 📅 {(gem.auction as { name: string }).name}
-              </span>
+              </Link>
             )}
           </div>
         </div>
@@ -88,13 +94,11 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
           >
             📺 Monitor
           </Link>
+          <Link href={`/admin/gems/${gem.id}/edit`} className="btn-outline">
+            ✏️ Edit
+          </Link>
           {gem.status === 'draft' && (
-            <>
-              <Link href={`/admin/gems/${gem.id}/edit`} className="btn-outline">
-                Edit
-              </Link>
-              <PublishButton gemId={gem.id} />
-            </>
+            <PublishButton gemId={gem.id} />
           )}
         </div>
       </div>
@@ -169,17 +173,39 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Images */}
-      {images && images.length > 0 && (
+      {images && images.filter(img => img.media_type !== 'video').length > 0 && (
         <div className="card-glass rounded-xl p-6">
           <h2 className="text-lg font-bold text-white mb-4">Images</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {images.map((img) => (
+            {images.filter(img => img.media_type !== 'video').map((img) => (
               <img
                 key={img.id}
                 src={img.image_url}
                 alt={gem.name}
                 className="w-full aspect-square object-cover rounded-xl border border-[var(--border)]"
               />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Videos */}
+      {images && images.filter(img => img.media_type === 'video').length > 0 && (
+        <div className="card-glass rounded-xl p-6">
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <span>🎬</span> Videos
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {images.filter(img => img.media_type === 'video').map((vid) => (
+              <div key={vid.id} className="rounded-xl overflow-hidden border border-[var(--border)] bg-black">
+                <video
+                  src={vid.image_url}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full aspect-video object-contain"
+                />
+              </div>
             ))}
           </div>
         </div>
