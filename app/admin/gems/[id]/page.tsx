@@ -46,9 +46,9 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   const topBid = bids?.[0]
   const highestBidInfo = topBid ? {
     amount: topBid.bid_amount,
-    bidderName: (topBid.user as { anonymous_name?: string; email?: string } | null)?.anonymous_name || 
-                (topBid.user as { anonymous_name?: string; email?: string } | null)?.email || 
-                'Anonymous'
+    bidderName: (topBid.user as { anonymous_name?: string; email?: string } | null)?.anonymous_name ||
+      (topBid.user as { anonymous_name?: string; email?: string } | null)?.email ||
+      'Anonymous'
   } : null
   const currentPrice = gem.current_price || gem.starting_price
 
@@ -87,7 +87,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
         <div className="flex gap-3">
-          <Link 
+          <Link
             href={`/monitor/${gem.id}`}
             target="_blank"
             className="btn-outline flex items-center gap-2"
@@ -104,8 +104,8 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Admin Controls */}
-      <AdminControls 
-        gemId={gem.id} 
+      <AdminControls
+        gemId={gem.id}
         currentPrice={currentPrice}
         minIncrement={gem.min_bid_increment}
         status={gem.status}
@@ -133,9 +133,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
             {gem.carat_weight && (
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[var(--border)]">
                 <InfoItem label="Carat Weight" value={`${gem.carat_weight} ct`} />
-                {gem.cut && <InfoItem label="Cut" value={gem.cut} />}
                 {gem.color && <InfoItem label="Color" value={gem.color} />}
-                {gem.clarity && <InfoItem label="Clarity" value={gem.clarity} />}
               </div>
             )}
             {gem.provenance && (
@@ -163,8 +161,8 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
               <div className="p-4 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
                 <label className="text-xs text-emerald-400 uppercase">Winner</label>
                 <p className="text-emerald-300 font-bold mt-1">
-                  {(winner.user as { anonymous_name?: string; email: string })?.anonymous_name || 
-                   (winner.user as { email: string })?.email || 'Unknown'}
+                  {(winner.user as { anonymous_name?: string; email: string })?.anonymous_name ||
+                    (winner.user as { email: string })?.email || 'Unknown'}
                 </p>
               </div>
             )}
@@ -240,17 +238,16 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
             {bids.map((bid, idx) => (
               <div
                 key={bid.id}
-                className={`flex justify-between items-center p-4 rounded-xl border ${
-                  idx === 0 ? 'bg-[var(--gold)]/10 border-[var(--gold)]/30' : 'bg-[var(--surface)] border-[var(--border)]'
-                }`}
+                className={`flex justify-between items-center p-4 rounded-xl border ${idx === 0 ? 'bg-[var(--gold)]/10 border-[var(--gold)]/30' : 'bg-[var(--surface)] border-[var(--border)]'
+                  }`}
               >
                 <div>
                   <p className={`font-bold font-mono ${idx === 0 ? 'text-[var(--gold)]' : 'text-white'}`}>
                     {formatCurrency(bid.bid_amount)}
                   </p>
                   <p className="text-xs text-[var(--text-muted)]">
-                    {(bid.user as { anonymous_name?: string; email: string })?.anonymous_name || 
-                     (bid.user as { email: string })?.email || 'Unknown'}
+                    {(bid.user as { anonymous_name?: string; email: string })?.anonymous_name ||
+                      (bid.user as { email: string })?.email || 'Unknown'}
                   </p>
                 </div>
                 <div className="text-right">
