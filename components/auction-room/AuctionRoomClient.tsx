@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Auction, Gem, Bid, UserRewards, AuctionRegistration, User } from '@/types/database'
 import { Check, Loader2, Trophy, Pencil, LogOut } from 'lucide-react'
+import AuctionChatWidget from '@/components/chat/AuctionChatWidget'
 import MediaRenderer from '@/components/gems/MediaRenderer'
 import Decimal from 'decimal.js'
 
@@ -1316,6 +1317,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           </div>
         </div>
       </div>
+
+      {/* Chat Widget */}
+      {isAuctionLive && (
+        <AuctionChatWidget auctionId={auction.id} userId={user.id} />
+      )}
     </div>
   )
 }
