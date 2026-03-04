@@ -91,6 +91,7 @@ const itemStatusColors: Record<string, string> = {
 import AuctionStatusActions from '@/components/admin/AuctionStatusActions'
 import AuctionDetailClient from '@/components/admin/AuctionDetailClient'
 import BidderHoldManager from '@/components/admin/BidderHoldManager'
+import AuctionChatButton from '@/components/admin/AuctionChatButton'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString('en-US', {
@@ -189,6 +190,9 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
             >
               🎯 Item Monitor
             </Link>
+          )}
+          {auction.status === 'live' && (
+            <AuctionChatButton auctionId={id} />
           )}
         </div>
       </div>

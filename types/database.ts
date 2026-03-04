@@ -185,6 +185,34 @@ export interface BidderHold {
   admin?: User
 }
 
+// Chat
+export type ChatConversationStatus = 'open' | 'active' | 'waiting' | 'resolved'
+
+export interface ChatConversation {
+  id: string
+  auction_id: string
+  user_id: string
+  assigned_admin_id: string | null
+  status: ChatConversationStatus
+  created_at: string
+  last_message_at: string
+  unread_by_user: number
+  unread_by_admin: number
+  user?: User
+  assigned_admin?: User
+  last_message?: ChatMessage
+}
+
+export interface ChatMessage {
+  id: string
+  conversation_id: string
+  sender_id: string
+  sender_role: 'user' | 'admin'
+  content: string
+  created_at: string
+  sender?: User
+}
+
 // Utility types for API responses
 export interface AuctionWithItems extends Auction {
   items: Gem[]
