@@ -56,7 +56,7 @@ export async function POST(
       .eq('id', user.id)
       .single()
 
-    const isAdmin = userData?.role === 'admin'
+    const isAdmin = userData?.role === 'admin' || userData?.role === 'super_admin' || userData?.role === 'moderator'
     const senderRole = isAdmin ? 'admin' : 'user'
 
     if (!isAdmin && conversation.user_id !== user.id) {

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getUserRole } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
 
 export async function POST(
@@ -8,16 +9,11 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const role = await getUserRole()
-    
-    if (role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    await requirePermission(PERMISSIONS.CONTROL_BIDDING)
 
     const supabase = await createClient()
     const body = await request.json().catch(() => ({}))
     
-    // Get gem with default interval
     const { data: gem } = await supabase
       .from('gems')
       .select('increment_interval')
@@ -28,13 +24,11 @@ export async function POST(
         return NextResponse.json({ error: 'Gem not found' }, { status: 404 })
     }
 
-    // Use custom duration if provided, otherwise use default increment_interval
     const durationSeconds = body.duration || gem.increment_interval
     
     const now = new Date()
     const roundEnd = new Date(now.getTime() + (durationSeconds * 1000))
 
-    // Update round_end_time
     const { error } = await supabase
       .from('gems')
       .update({ round_end_time: roundEnd.toISOString() })
@@ -48,4 +42,3 @@ export async function POST(
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
-

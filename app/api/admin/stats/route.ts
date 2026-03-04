@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const user = await requireAdmin()
+    const user = await requirePermission(PERMISSIONS.VIEW_DASHBOARD)
     const supabase = await createClient()
 
     const { data: gems } = await supabase

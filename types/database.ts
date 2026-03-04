@@ -1,4 +1,4 @@
-export type UserRole = 'user' | 'admin'
+export type UserRole = 'user' | 'moderator' | 'admin' | 'super_admin'
 export type GemStatus = 'draft' | 'pending' | 'active' | 'ended' | 'completed'
 export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
 export type AuctionType = 'progressive_elimination_auction' | 'tender_base_fixed_bid'
@@ -222,4 +222,22 @@ export interface AuctionAccessPayload {
   auction_id: string
   user_id: string
   access_token: string
+}
+
+// RBAC
+export interface Permission {
+  id: string
+  key: string
+  name: string
+  description: string
+  group_name: string
+  created_at: string
+}
+
+export interface RolePermission {
+  id: string
+  role: UserRole
+  permission_id: string
+  created_at: string
+  permission?: Permission
 }

@@ -4,20 +4,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AuctionRegistration } from '@/types/database'
 import ApprovalsClient from '@/components/admin/ApprovalsClient'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 
 async function getData(status?: string) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (userData?.role !== 'admin') redirect('/')
+  const user = await requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS)
 
   const adminClient = createAdminClient()
 

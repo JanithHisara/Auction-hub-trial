@@ -1,20 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
-
-async function getAdminUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (userData?.role !== 'admin') return null
-  return user
-}
 
 export async function GET(
   request: Request,
@@ -22,10 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const user = await getAdminUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    await requirePermission(PERMISSIONS.MANAGE_AUCTIONS)
 
     const supabase = await createClient()
     const { data: auction, error } = await supabase
@@ -51,10 +35,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const user = await getAdminUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = await requirePermission(PERMISSIONS.MANAGE_AUCTIONS)
 
     const supabase = await createClient()
     const body = await request.json()

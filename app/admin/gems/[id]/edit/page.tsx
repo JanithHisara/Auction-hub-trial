@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import GemForm from '@/components/gems/GemForm'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
 export default async function EditGemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const user = await requireAdmin()
+  const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
   const supabase = await createClient()
 
   const { data: gem } = await supabase

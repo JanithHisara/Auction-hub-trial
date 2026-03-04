@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getUserRole } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
 
 export async function POST(
@@ -8,30 +9,22 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const role = await getUserRole()
-    
-    if (role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    await requirePermission(PERMISSIONS.CONTROL_BIDDING)
 
     const supabase = await createClient()
     
-    // Get current gem to check auction type
     const { data: gem } = await supabase
       .from('gems')
       .select('auction_id, auction:auctions(auction_type)')
       .eq('id', id)
       .single()
 
-    // Handle auction join - could be object or array
     const auctionData = gem?.auction as unknown
     const auctionType = Array.isArray(auctionData)
       ? (auctionData[0] as { auction_type: string } | undefined)?.auction_type
       : (auctionData as { auction_type: string } | null)?.auction_type
     const isFreeForm = auctionType === 'tender_base_fixed_bid'
 
-    // For tender base / fixed bid: end round AND set status to 'ended'
-    // For progressive elimination: just clear round_end_time
     const updateData: { round_end_time: null; status?: string } = { 
       round_end_time: null 
     }

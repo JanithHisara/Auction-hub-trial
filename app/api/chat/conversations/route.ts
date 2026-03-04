@@ -59,7 +59,8 @@ export async function GET(request: Request) {
       .eq('id', user.id)
       .single()
 
-    if (userData?.role === 'admin') {
+    const isAdminRole = userData?.role === 'admin' || userData?.role === 'super_admin' || userData?.role === 'moderator'
+    if (isAdminRole) {
       const { data: conversations, error } = await supabase
         .from('chat_conversations')
         .select(`

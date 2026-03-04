@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 
 async function getStats() {
-  const user = await requireAdmin()
+  const user = await requirePermission(PERMISSIONS.VIEW_DASHBOARD)
   const supabase = await createClient()
 
   // Get auctions

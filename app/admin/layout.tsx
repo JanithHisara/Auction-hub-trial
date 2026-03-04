@@ -1,12 +1,13 @@
-import { requireAdmin } from '@/lib/auth'
+import { requireAdmin, getUserPermissions, getCurrentUser } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { LayoutDashboard, Calendar, Gem, Plus, UserCheck } from 'lucide-react'
+import { LayoutDashboard, Calendar, Gem, Plus, UserCheck, Shield, Users } from 'lucide-react'
+import { PERMISSIONS } from '@/lib/permissions'
 
 async function getPendingCount(adminId: string) {
   const adminClient = createAdminClient()
   
-  // Get auctions for this admin
   const { data: auctions } = await adminClient
     .from('auctions')
     .select('id')
@@ -14,7 +15,6 @@ async function getPendingCount(adminId: string) {
 
   if (!auctions?.length) return 0
 
-  // Get pending registrations count
   const { count } = await adminClient
     .from('auction_registrations')
     .select('*', { count: 'exact', head: true })
@@ -31,6 +31,9 @@ export default async function AdminLayout({
 }) {
   const user = await requireAdmin()
   const pendingCount = await getPendingCount(user.id)
+  const permissions = await getUserPermissions(user.id)
+
+  const hasPermission = (key: string) => permissions.includes(key)
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -50,21 +53,41 @@ export default async function AdminLayout({
           {/* Navigation */}
           <nav className="mb-6 sm:mb-8 -mx-4 px-4 overflow-x-auto">
             <div className="flex gap-2 pb-3 sm:pb-4 border-b border-[var(--border)] min-w-max">
-              <NavLink href="/admin" icon={<LayoutDashboard className="w-4 h-4" />}>
-                Overview
-              </NavLink>
-              <NavLink href="/admin/auctions" icon={<Calendar className="w-4 h-4" />}>
-                Auctions
-              </NavLink>
-              <NavLink href="/admin/gems" icon={<Gem className="w-4 h-4" />}>
-                Items
-              </NavLink>
-              <NavLink href="/admin/approvals" icon={<UserCheck className="w-4 h-4" />} badge={pendingCount}>
-                Approvals
-              </NavLink>
-              <NavLink href="/admin/auctions/new" icon={<Plus className="w-4 h-4" />} highlight>
-                New Auction
-              </NavLink>
+              {hasPermission(PERMISSIONS.VIEW_DASHBOARD) && (
+                <NavLink href="/admin" icon={<LayoutDashboard className="w-4 h-4" />}>
+                  Overview
+                </NavLink>
+              )}
+              {hasPermission(PERMISSIONS.MANAGE_AUCTIONS) && (
+                <NavLink href="/admin/auctions" icon={<Calendar className="w-4 h-4" />}>
+                  Auctions
+                </NavLink>
+              )}
+              {hasPermission(PERMISSIONS.MANAGE_ITEMS) && (
+                <NavLink href="/admin/gems" icon={<Gem className="w-4 h-4" />}>
+                  Items
+                </NavLink>
+              )}
+              {hasPermission(PERMISSIONS.MANAGE_REGISTRATIONS) && (
+                <NavLink href="/admin/approvals" icon={<UserCheck className="w-4 h-4" />} badge={pendingCount}>
+                  Approvals
+                </NavLink>
+              )}
+              {hasPermission(PERMISSIONS.MANAGE_USERS) && (
+                <NavLink href="/admin/users" icon={<Users className="w-4 h-4" />}>
+                  Users
+                </NavLink>
+              )}
+              {hasPermission(PERMISSIONS.MANAGE_PERMISSIONS) && (
+                <NavLink href="/admin/access-control" icon={<Shield className="w-4 h-4" />}>
+                  Access Control
+                </NavLink>
+              )}
+              {hasPermission(PERMISSIONS.MANAGE_AUCTIONS) && (
+                <NavLink href="/admin/auctions/new" icon={<Plus className="w-4 h-4" />} highlight>
+                  New Auction
+                </NavLink>
+              )}
             </div>
           </nav>
 

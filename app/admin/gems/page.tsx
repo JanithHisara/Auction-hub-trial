@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { GemStatus } from '@/types/database'
 
 export default async function GemsPage() {
-  const user = await requireAdmin()
+  const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
   const supabase = await createClient()
 
   const { data: gems } = await supabase
