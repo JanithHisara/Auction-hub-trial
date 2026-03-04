@@ -74,7 +74,7 @@ export default function Navbar({ user, role }: NavbarProps) {
                   My Bids
                 </Link>
 
-                {role === 'admin' && (
+                {(role === 'admin' || role === 'super_admin' || role === 'moderator') && (
                   <Link
                     href="/admin"
                     className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
@@ -172,7 +172,7 @@ export default function Navbar({ user, role }: NavbarProps) {
                   Profile
                 </Link>
 
-                {role === 'admin' && (
+                {(role === 'admin' || role === 'super_admin' || role === 'moderator') && (
                   <Link
                     href="/admin"
                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface)] rounded-lg transition-all"

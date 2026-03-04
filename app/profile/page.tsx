@@ -66,9 +66,12 @@ export default async function ProfilePage() {
                 <p className="text-[var(--text-muted)] truncate">{userData?.email}</p>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    userData?.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
+                    userData?.role === 'super_admin' ? 'bg-[var(--gold)]/20 text-[var(--gold)]' :
+                    userData?.role === 'admin' ? 'bg-purple-500/20 text-purple-400' :
+                    userData?.role === 'moderator' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-emerald-500/20 text-emerald-400'
                   }`}>
-                    {userData?.role?.toUpperCase()}
+                    {userData?.role === 'super_admin' ? 'SUPER ADMIN' : userData?.role?.toUpperCase()}
                   </span>
                   <span className="text-xs text-[var(--text-muted)]">
                     Since {userData?.created_at ? formatDate(userData.created_at) : 'N/A'}

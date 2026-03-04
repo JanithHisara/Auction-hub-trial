@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendAuctionAccessEmail } from '@/lib/email/resend'
 
@@ -9,30 +11,14 @@ export async function PATCH(
   try {
     const { id: auctionId, registrationId } = await params
     const { approval_status } = await request.json()
+
+    const user = await requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS)
     const supabase = await createClient()
 
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userData?.role !== 'admin') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
-    }
-
-    // Validate status
     if (!['approved', 'rejected'].includes(approval_status)) {
       return NextResponse.json({ message: 'Invalid status' }, { status: 400 })
     }
 
-    // Get registration with user and auction info (use explicit FK name)
     const { data: registration, error: regError } = await supabase
       .from('auction_registrations')
       .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name), auction:auctions(name, auction_start)')
@@ -44,7 +30,6 @@ export async function PATCH(
       return NextResponse.json({ message: 'Registration not found' }, { status: 404 })
     }
 
-    // Check max participants before approving
     if (approval_status === 'approved') {
       const { data: auction } = await supabase
         .from('auctions')
@@ -65,7 +50,6 @@ export async function PATCH(
       }
     }
 
-    // Update registration status
     const { error: updateError } = await supabase
       .from('auction_registrations')
       .update({
@@ -80,7 +64,6 @@ export async function PATCH(
       return NextResponse.json({ message: 'Failed to update' }, { status: 500 })
     }
 
-    // Send email only when approved
     if (approval_status === 'approved' && registration.user?.email) {
       try {
         const auctionDate = new Date(registration.auction.auction_start).toLocaleDateString('en-US', {
@@ -99,7 +82,6 @@ export async function PATCH(
           accessToken: registration.access_token,
         })
 
-        // Update email_sent_at
         await supabase
           .from('auction_registrations')
           .update({ email_sent_at: new Date().toISOString() })

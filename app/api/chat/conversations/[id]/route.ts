@@ -18,7 +18,7 @@ export async function PATCH(
       .eq('id', user.id)
       .single()
 
-    const isAdmin = userData?.role === 'admin'
+    const isAdmin = userData?.role === 'admin' || userData?.role === 'super_admin' || userData?.role === 'moderator'
 
     if (body.action === 'resolve') {
       if (!isAdmin) {

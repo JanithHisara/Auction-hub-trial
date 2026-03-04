@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
 import { sendWinnerEmail } from '@/lib/email/resend'
 
@@ -9,7 +10,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const user = await requireAdmin()
+    const user = await requirePermission(PERMISSIONS.CONTROL_BIDDING)
     const supabase = await createClient()
 
     // Get gem with auction info

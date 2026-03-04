@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import GemForm from '@/components/gems/GemForm'
 import Link from 'next/link'
 
 async function getAuctions() {
-  const user = await requireAdmin()
+  const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
   const supabase = await createClient()
 
   const { data: auctions } = await supabase

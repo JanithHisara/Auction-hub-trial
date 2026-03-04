@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(
@@ -7,25 +9,9 @@ export async function POST(
 ) {
   try {
     const { id } = await params
+    const user = await requirePermission(PERMISSIONS.MANAGE_AUCTIONS)
     const supabase = await createClient()
 
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userData?.role !== 'admin') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
-    }
-
-    // Get status from JSON or form data
     let status: string
     const contentType = request.headers.get('content-type')
     
@@ -42,7 +28,6 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    // Update auction
     const { error } = await supabase
       .from('auctions')
       .update({ 
@@ -57,12 +42,10 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
     }
 
-    // Return JSON for fetch requests, redirect for form submissions
     if (contentType?.includes('application/json')) {
       return NextResponse.json({ success: true, status })
     }
     
-    // Redirect back to auction page for form submissions
     return NextResponse.redirect(new URL(`/admin/auctions/${id}`, request.url))
 
   } catch (error) {
@@ -70,4 +53,3 @@ export async function POST(
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }
-

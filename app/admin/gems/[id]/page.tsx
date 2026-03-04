@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -8,7 +9,7 @@ import AdminControls from '@/components/admin/AdminControls'
 
 export default async function GemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const user = await requireAdmin()
+  const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
   const supabase = await createClient()
 
   const { data: gem } = await supabase

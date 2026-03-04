@@ -42,7 +42,7 @@ export default function LoginForm() {
         // Redirect to original destination or role-based default
         if (redirectUrl) {
           router.push(redirectUrl)
-        } else if (userData?.role === 'admin') {
+        } else if (userData?.role === 'admin' || userData?.role === 'super_admin' || userData?.role === 'moderator') {
           router.push('/admin')
         } else {
           router.push('/')

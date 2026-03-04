@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { requirePermission } from '@/lib/auth'
+import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024   // 5MB
@@ -17,22 +19,8 @@ function getMediaType(mimeType: string): 'image' | 'gif' | 'video' {
 
 export async function POST(request: NextRequest) {
   try {
+    await requirePermission(PERMISSIONS.UPLOAD_FILES)
     const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userData?.role !== 'admin') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
-    }
 
     const formData = await request.formData()
     const file = formData.get('file') as File
