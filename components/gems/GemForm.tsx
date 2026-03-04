@@ -26,9 +26,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     start_time: gem?.start_time ? new Date(gem.start_time).toISOString().slice(0, 16) : '',
     end_time: gem?.end_time ? new Date(gem.end_time).toISOString().slice(0, 16) : '',
     carat_weight: gem?.carat_weight || '',
-    cut: gem?.cut || '',
     color: gem?.color || '',
-    clarity: gem?.clarity || '',
     provenance: gem?.provenance || '',
     images: gem?.images?.map(img => img.image_url) || [''],
     media_types: (gem?.images?.map(img => img.media_type) || ['image']) as MediaType[],
@@ -87,177 +85,157 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <fieldset disabled={loading} className="border-0 p-0 m-0 min-w-0 space-y-8">
-      {error && (
-        <div className="error-message flex items-center gap-2">
-          <span>⚠️</span> {error}
-        </div>
-      )}
+        {error && (
+          <div className="error-message flex items-center gap-2">
+            <span>⚠️</span> {error}
+          </div>
+        )}
 
-      {/* Auction Selection */}
-      {auctions.length > 0 && (
-        <Section title="Auction" icon="📅" number="1">
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">
-              Assign to Auction
-            </label>
-            <select
-              value={formData.auction_id}
-              onChange={(e) => setFormData({ ...formData, auction_id: e.target.value })}
-              className="w-full"
-            >
-              <option value="">No auction (standalone)</option>
-              {auctions.map(auction => (
-                <option key={auction.id} value={auction.id}>
-                  {auction.name} ({auction.status})
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-[var(--text-muted)] mt-1">
-              Items assigned to an auction will be available for bidding during the auction
-            </p>
+        {/* Auction Selection */}
+        {auctions.length > 0 && (
+          <Section title="Auction" icon="📅" number="1">
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                Assign to Auction
+              </label>
+              <select
+                value={formData.auction_id}
+                onChange={(e) => setFormData({ ...formData, auction_id: e.target.value })}
+                className="w-full"
+              >
+                <option value="">No auction (standalone)</option>
+                {auctions.map(auction => (
+                  <option key={auction.id} value={auction.id}>
+                    {auction.name} ({auction.status})
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                Items assigned to an auction will be available for bidding during the auction
+              </p>
+            </div>
+          </Section>
+        )}
+
+        {/* Basic Info */}
+        <Section title="Basic Information" icon="💎" number={auctions.length > 0 ? "2" : "1"}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">Name *</label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g., Blue Sapphire 5.2ct"
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">Description *</label>
+              <textarea
+                required
+                rows={4}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Describe the item in detail..."
+                className="w-full resize-none"
+              />
+            </div>
           </div>
         </Section>
-      )}
 
-      {/* Basic Info */}
-      <Section title="Basic Information" icon="💎" number={auctions.length > 0 ? "2" : "1"}>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">Name *</label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., Blue Sapphire 5.2ct"
-              className="w-full"
-            />
+        {/* Pricing */}
+        <Section title="Pricing & Timing" icon="💰" number={auctions.length > 0 ? "3" : "2"}>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                <DollarSign className="w-4 h-4" /> Starting Price *
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.starting_price}
+                onChange={(e) => setFormData({ ...formData, starting_price: parseFloat(e.target.value) || 0 })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">Min Bid Increment *</label>
+              <input
+                type="number"
+                required
+                min="1"
+                step="0.01"
+                value={formData.min_bid_increment}
+                onChange={(e) => setFormData({ ...formData, min_bid_increment: parseFloat(e.target.value) || 0 })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" /> Start Time *
+              </label>
+              <input
+                type="datetime-local"
+                required
+                value={formData.start_time}
+                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">End Time *</label>
+              <input
+                type="datetime-local"
+                required
+                value={formData.end_time}
+                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                className="w-full"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">Description *</label>
+        </Section>
+
+        {/* Specifications */}
+        <Section title="Specifications" icon="✨" number={auctions.length > 0 ? "4" : "3"}>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">Carat Weight</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.carat_weight}
+                onChange={(e) => setFormData({ ...formData, carat_weight: e.target.value })}
+                placeholder="e.g., 5.2"
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">Color</label>
+              <input
+                type="text"
+                value={formData.color}
+                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                placeholder="e.g., Blue, Red, Green"
+                className="w-full"
+              />
+            </div>
+          </div>
+          <div className="mt-4">
+            <label className="block text-sm text-[var(--text-secondary)] mb-2">Provenance</label>
             <textarea
-              required
-              rows={4}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe the item in detail..."
+              rows={3}
+              value={formData.provenance}
+              onChange={(e) => setFormData({ ...formData, provenance: e.target.value })}
+              placeholder="Origin and history of the item..."
               className="w-full resize-none"
             />
           </div>
-        </div>
-      </Section>
-
-      {/* Pricing */}
-      <Section title="Pricing & Timing" icon="💰" number={auctions.length > 0 ? "3" : "2"}>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-              <DollarSign className="w-4 h-4" /> Starting Price *
-            </label>
-            <input
-              type="number"
-              required
-              min="0"
-              step="0.01"
-              value={formData.starting_price}
-              onChange={(e) => setFormData({ ...formData, starting_price: parseFloat(e.target.value) || 0 })}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">Min Bid Increment *</label>
-            <input
-              type="number"
-              required
-              min="1"
-              step="0.01"
-              value={formData.min_bid_increment}
-              onChange={(e) => setFormData({ ...formData, min_bid_increment: parseFloat(e.target.value) || 0 })}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-              <Clock className="w-4 h-4" /> Start Time *
-            </label>
-            <input
-              type="datetime-local"
-              required
-              value={formData.start_time}
-              onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">End Time *</label>
-            <input
-              type="datetime-local"
-              required
-              value={formData.end_time}
-              onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-              className="w-full"
-            />
-          </div>
-        </div>
-      </Section>
-
-      {/* Specifications */}
-      <Section title="Specifications" icon="✨" number={auctions.length > 0 ? "4" : "3"}>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">Carat Weight</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.carat_weight}
-              onChange={(e) => setFormData({ ...formData, carat_weight: e.target.value })}
-              placeholder="e.g., 5.2"
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">Cut</label>
-            <input
-              type="text"
-              value={formData.cut}
-              onChange={(e) => setFormData({ ...formData, cut: e.target.value })}
-              placeholder="e.g., Oval, Round, Emerald"
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">Color</label>
-            <input
-              type="text"
-              value={formData.color}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              placeholder="e.g., Blue, Red, Green"
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-2">Clarity</label>
-            <input
-              type="text"
-              value={formData.clarity}
-              onChange={(e) => setFormData({ ...formData, clarity: e.target.value })}
-              placeholder="e.g., VS1, VVS2"
-              className="w-full"
-            />
-          </div>
-        </div>
-        <div className="mt-4">
-          <label className="block text-sm text-[var(--text-secondary)] mb-2">Provenance</label>
-          <textarea
-            rows={3}
-            value={formData.provenance}
-            onChange={(e) => setFormData({ ...formData, provenance: e.target.value })}
-            placeholder="Origin and history of the item..."
-            className="w-full resize-none"
-          />
-        </div>
-      </Section>
+        </Section>
 
       {/* Images */}
       <Section title="Images & Videos" icon="🖼️" number={auctions.length > 0 ? "5" : "4"}>
@@ -311,45 +289,45 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         </div>
       </Section>
 
-      {/* Actions */}
-      <div className="flex items-center gap-4 pt-6 border-t border-[var(--border)]">
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-gold flex items-center gap-2"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Saving...</span>
-            </>
-          ) : (
-            <span>{gem ? 'Update Item' : 'Create Item'}</span>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="btn-outline"
-        >
-          Cancel
-        </button>
-      </div>
+        {/* Actions */}
+        <div className="flex items-center gap-4 pt-6 border-t border-[var(--border)]">
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-gold flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <span>{gem ? 'Update Item' : 'Create Item'}</span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="btn-outline"
+          >
+            Cancel
+          </button>
+        </div>
       </fieldset>
     </form>
   )
 }
 
-function Section({ 
-  title, 
-  icon, 
-  number, 
-  children 
-}: { 
+function Section({
+  title,
+  icon,
+  number,
+  children
+}: {
   title: string
   icon: string
   number: string
-  children: React.ReactNode 
+  children: React.ReactNode
 }) {
   return (
     <div className="space-y-4">
