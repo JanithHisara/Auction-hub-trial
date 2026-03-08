@@ -9,6 +9,7 @@ export const PERMISSIONS = {
   MANAGE_PERMISSIONS: 'manage_permissions',
   MANAGE_CHAT: 'manage_chat',
   UPLOAD_FILES: 'upload_files',
+  MANAGE_DEVICES: 'manage_devices',
 } as const
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
