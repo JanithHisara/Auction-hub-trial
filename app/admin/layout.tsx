@@ -2,7 +2,7 @@ import { requireAdmin, getUserPermissions, getCurrentUser } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { LayoutDashboard, Calendar, Gem, Plus, UserCheck, Shield, Users } from 'lucide-react'
+import { LayoutDashboard, Calendar, Gem, Plus, UserCheck, Shield, Users, CreditCard } from 'lucide-react'
 import { PERMISSIONS } from '@/lib/permissions'
 
 async function getPendingCount(adminId: string) {
@@ -76,6 +76,11 @@ export default async function AdminLayout({
               {hasPermission(PERMISSIONS.MANAGE_USERS) && (
                 <NavLink href="/admin/users" icon={<Users className="w-4 h-4" />}>
                   Users
+                </NavLink>
+              )}
+              {hasPermission(PERMISSIONS.MANAGE_DEVICES) && (
+                <NavLink href="/admin/nfc-management" icon={<CreditCard className="w-4 h-4" />}>
+                  NFC Cards
                 </NavLink>
               )}
               {hasPermission(PERMISSIONS.MANAGE_PERMISSIONS) && (

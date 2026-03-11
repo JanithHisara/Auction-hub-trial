@@ -92,6 +92,7 @@ import AuctionStatusActions from '@/components/admin/AuctionStatusActions'
 import AuctionDetailClient from '@/components/admin/AuctionDetailClient'
 import BidderHoldManager from '@/components/admin/BidderHoldManager'
 import AuctionChatButton from '@/components/admin/AuctionChatButton'
+import AddUserToAuctionButton from '@/components/admin/AddUserToAuctionButton'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString('en-US', {
@@ -193,6 +194,14 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           )}
           {auction.status === 'live' && (
             <AuctionChatButton auctionId={id} />
+          )}
+          {(auction.status === 'live' || auction.status === 'registration_open') && (
+            <Link
+              href={`/admin/auctions/${id}/entrance`}
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+            >
+              🚪 Entrance Scanner
+            </Link>
           )}
         </div>
       </div>
@@ -308,12 +317,15 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
       <div className="card-glass rounded-xl p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base sm:text-lg font-bold text-white">Registrations ({registrations.length})</h2>
-          <Link 
-            href={`/admin/auctions/${id}/registrations`}
-            className="text-sm text-[var(--gold)] hover:underline"
-          >
-            Manage →
-          </Link>
+          <div className="flex items-center gap-3">
+            <AddUserToAuctionButton auctionId={id} />
+            <Link 
+              href={`/admin/auctions/${id}/registrations`}
+              className="text-sm text-[var(--gold)] hover:underline"
+            >
+              Manage →
+            </Link>
+          </div>
         </div>
         
         {registrations.length > 0 ? (
