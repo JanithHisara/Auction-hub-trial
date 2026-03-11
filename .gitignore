@@ -37,3 +37,8 @@ next-env.d.ts
 
 # sst
 .sst/
+
+# cdk
+cdk.out/
+
+cdk/node_modules
