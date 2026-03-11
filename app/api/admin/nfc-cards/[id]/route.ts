@@ -12,27 +12,12 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-    const { auction_id, is_active, label } = body
+    const { is_active, label } = body
 
     const adminClient = createAdminClient()
 
     const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
-    }
-
-    if (auction_id !== undefined) {
-      if (auction_id) {
-        const { data: auction } = await adminClient
-          .from('auctions')
-          .select('id')
-          .eq('id', auction_id)
-          .single()
-
-        if (!auction) {
-          return NextResponse.json({ error: 'Auction not found' }, { status: 404 })
-        }
-      }
-      updateData.auction_id = auction_id || null
     }
 
     if (is_active !== undefined) {
@@ -48,9 +33,8 @@ export async function PATCH(
       .update(updateData)
       .eq('id', id)
       .select(`
-        id, nfc_uid, user_id, auction_id, is_active, label, created_at, updated_at,
-        users!inner (id, email, display_name),
-        auctions (id, name, status)
+        id, nfc_uid, user_id, is_active, label, created_at, updated_at,
+        users!inner (id, email, display_name)
       `)
       .single()
 

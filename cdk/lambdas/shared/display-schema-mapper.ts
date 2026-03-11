@@ -1,10 +1,7 @@
 import {
   UnifiedDisplaySchema,
-  DisplayScreenName,
-  DisplayState,
   FeedbackStatus,
   AuctionSummary,
-  ItemSummary,
   BidDetail,
   AuctionRow,
   GemRow,
@@ -28,24 +25,23 @@ const AUCTION_STATUS_LABELS: Record<string, string> = {
 
 const CURRENCY = 'LKR';
 
-export function createEmptySchema(): UnifiedDisplaySchema {
+function createEmptySchema(): UnifiedDisplaySchema {
   return {
     screen: { name: 'startup', state: 'idle', title: null, subtitle: null, message: null },
     device: {
       device_id: null, status: null, firmware_version: null,
-      hardware_version: null, boot_count: null, heartbeat_interval: null, last_seen_at: null,
+      hardware_version: null, heartbeat_interval: null, last_seen_at: null,
     },
-    session: { timestamp: new Date().toISOString(), message_id: null, protocol_version: '1.0', connection_status: 'online' },
+    session: { timestamp: new Date().toISOString(), protocol_version: '1.0', connection_status: 'online' },
     user: null,
     context: { active_auction_id: null, active_item_id: null },
-    lists: { auctions: [], items: [] },
-    detail: { auction: null, item: null, bid: null, update: null },
+    detail: { auction: null, item: null, bid: null },
     feedback: { status: 'success', code: null, label: null, message: null },
     actions: { primary: null, secondary: null, back: false },
   };
 }
 
-export function mapDeviceInfo(schema: UnifiedDisplaySchema, device: DeviceRow): UnifiedDisplaySchema {
+function mapDeviceInfo(schema: UnifiedDisplaySchema, device: DeviceRow): UnifiedDisplaySchema {
   return {
     ...schema,
     device: {
@@ -53,14 +49,13 @@ export function mapDeviceInfo(schema: UnifiedDisplaySchema, device: DeviceRow): 
       status: device.status,
       firmware_version: device.firmware_version,
       hardware_version: device.hardware_version,
-      boot_count: null,
       heartbeat_interval: 30,
       last_seen_at: device.last_seen_at,
     },
   };
 }
 
-export function mapUserInfo(
+function mapUserInfo(
   schema: UnifiedDisplaySchema,
   user: UserRow,
   nfcUid: string,
@@ -73,6 +68,7 @@ export function mapUserInfo(
     user: {
       nfc_uid: nfcUid,
       user_id: user.id,
+      display_name: user.display_name,
       role: user.role,
       access_granted: accessGranted,
       access_status: accessGranted ? 'success' : 'error',
@@ -97,7 +93,7 @@ export function mapAuctionToSummary(auction: AuctionRow, itemsCount?: number, re
   };
 }
 
-export function mapGemToItem(gem: GemRow, userBidSubmitted?: boolean): ItemSummary {
+export function mapGemToItem(gem: GemRow, userBidSubmitted?: boolean) {
   const currentPrice = gem.current_price ?? gem.starting_price;
   const nextMinBid = currentPrice + gem.min_bid_increment;
   const endTime = gem.round_end_time || gem.end_time;
@@ -118,12 +114,15 @@ export function mapGemToItem(gem: GemRow, userBidSubmitted?: boolean): ItemSumma
   };
 }
 
+/**
+ * Option B: NFC scan success - sends only the current active item
+ */
 export function buildNfcSuccessSchema(
   device: DeviceRow,
   user: UserRow,
   nfcUid: string,
   auction: AuctionRow,
-  gems: GemRow[],
+  activeGem: GemRow | null,
   itemsCount: number,
   registeredCount: number,
 ): UnifiedDisplaySchema {
@@ -132,28 +131,24 @@ export function buildNfcSuccessSchema(
   schema = mapUserInfo(schema, user, nfcUid, true);
 
   const auctionSummary = mapAuctionToSummary(auction, itemsCount, registeredCount);
-  const activeGem = gems.find(g => g.status === 'active');
-  const items = gems.map(g => mapGemToItem(g));
 
   return {
     ...schema,
     screen: {
-      name: 'auction_items',
+      name: 'active_item',
       state: 'success',
       title: auction.name,
       subtitle: auctionSummary.mode_label,
-      message: `${items.length} item${items.length !== 1 ? 's' : ''} available`,
+      message: activeGem ? activeGem.name : 'No active item',
     },
     context: {
       active_auction_id: auction.id,
       active_item_id: activeGem?.id ?? null,
     },
-    lists: { auctions: [], items },
     detail: {
       auction: auctionSummary,
       item: activeGem ? mapGemToItem(activeGem) : null,
       bid: null,
-      update: null,
     },
     feedback: {
       status: 'success',
@@ -193,6 +188,7 @@ export function buildNfcErrorSchema(
     user: {
       nfc_uid: nfcUid,
       user_id: null,
+      display_name: null,
       role: null,
       access_granted: false,
       access_status: 'error',
@@ -264,7 +260,6 @@ export function buildBidResultSchema(
       auction: auctionSummary,
       item: mapGemToItem(gem),
       bid: bidDetail,
-      update: null,
     },
     feedback: {
       status: bidResult.accepted ? 'success' : 'error',
@@ -280,40 +275,37 @@ export function buildBidResultSchema(
   };
 }
 
+/**
+ * Option B: Auction update - sends only the current active item to devices
+ */
 export function buildAuctionUpdateSchema(
-  screenName: DisplayScreenName,
-  screenState: DisplayState,
   device: DeviceRow,
   auction: AuctionRow,
-  gems: GemRow[],
+  activeGem: GemRow | null,
   itemsCount: number,
 ): UnifiedDisplaySchema {
   let schema = createEmptySchema();
   schema = mapDeviceInfo(schema, device);
 
   const auctionSummary = mapAuctionToSummary(auction, itemsCount);
-  const activeGem = gems.find(g => g.status === 'active');
-  const items = gems.map(g => mapGemToItem(g));
 
   return {
     ...schema,
     screen: {
-      name: screenName,
-      state: screenState,
+      name: 'active_item',
+      state: 'success',
       title: auction.name,
       subtitle: auctionSummary.mode_label,
-      message: `${items.length} item${items.length !== 1 ? 's' : ''} available`,
+      message: activeGem ? activeGem.name : 'No active item',
     },
     context: {
       active_auction_id: auction.id,
       active_item_id: activeGem?.id ?? null,
     },
-    lists: { auctions: [], items },
     detail: {
       auction: auctionSummary,
       item: activeGem ? mapGemToItem(activeGem) : null,
       bid: null,
-      update: null,
     },
     feedback: {
       status: 'success' as FeedbackStatus,

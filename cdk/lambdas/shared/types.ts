@@ -38,14 +38,13 @@ export interface SupabaseWebhookPayload {
 }
 
 // ---- Unified Display Schema (Cloud -> Device) ----
+// Option B: only sends the current active item, no item lists
 
 export type DisplayScreenName =
   | 'startup'
-  | 'auction_list'
   | 'nfc_access'
-  | 'auction_items'
-  | 'bid_result'
-  | 'update';
+  | 'active_item'
+  | 'bid_result';
 
 export type DisplayState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -87,14 +86,6 @@ export interface BidDetail {
   reason_label: string | null;
 }
 
-export interface UpdateDetail {
-  update_available: boolean | null;
-  mandatory: boolean | null;
-  latest_firmware_version: string | null;
-  release_date: string | null;
-  firmware_size_bytes: number | null;
-}
-
 export interface UnifiedDisplaySchema {
   screen: {
     name: DisplayScreenName;
@@ -108,19 +99,18 @@ export interface UnifiedDisplaySchema {
     status: string | null;
     firmware_version: string | null;
     hardware_version: string | null;
-    boot_count: number | null;
     heartbeat_interval: number | null;
     last_seen_at: string | null;
   };
   session: {
     timestamp: string | null;
-    message_id: string | null;
     protocol_version: string | null;
     connection_status: string | null;
   };
   user: {
     nfc_uid: string | null;
     user_id: string | null;
+    display_name: string | null;
     role: string | null;
     access_granted: boolean | null;
     access_status: string | null;
@@ -131,15 +121,10 @@ export interface UnifiedDisplaySchema {
     active_auction_id: string | null;
     active_item_id: string | null;
   };
-  lists: {
-    auctions: AuctionSummary[];
-    items: ItemSummary[];
-  };
   detail: {
     auction: AuctionSummary | null;
     item: ItemSummary | null;
     bid: BidDetail | null;
-    update: UpdateDetail | null;
   };
   feedback: {
     status: FeedbackStatus;
@@ -161,6 +146,7 @@ export interface DeviceRow {
   device_id: string;
   name: string | null;
   status: string;
+  auction_id: string | null;
   firmware_version: string | null;
   hardware_version: string | null;
   last_seen_at: string | null;

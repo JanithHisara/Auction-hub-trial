@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
 
     let query = adminClient
       .from('devices')
-      .select('*', { count: 'exact' })
+      .select(`
+        *,
+        auctions:auction_id (id, name, status)
+      `, { count: 'exact' })
 
     if (search) {
       query = query.or(`device_id.ilike.%${search}%,name.ilike.%${search}%`)
@@ -36,8 +39,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    const mapped = (devices || []).map(d => ({
+      ...d,
+      auction: d.auctions || null,
+      auctions: undefined,
+    }))
+
     return NextResponse.json({
-      devices,
+      devices: mapped,
       total: count || 0,
       page,
       totalPages: Math.ceil((count || 0) / limit),
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
     await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
-    const { device_id, name, firmware_version, hardware_version } = body
+    const { device_id, name, auction_id, firmware_version, hardware_version } = body
 
     if (!device_id) {
       return NextResponse.json(
@@ -63,7 +72,6 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
-    // Check for duplicate device_id
     const { data: existing } = await adminClient
       .from('devices')
       .select('id')
@@ -77,12 +85,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (auction_id) {
+      const { data: auction } = await adminClient
+        .from('auctions')
+        .select('id')
+        .eq('id', auction_id)
+        .single()
+
+      if (!auction) {
+        return NextResponse.json({ error: 'Auction not found' }, { status: 404 })
+      }
+    }
+
     const { data: device, error } = await adminClient
       .from('devices')
       .insert({
         device_id,
         name: name || null,
         status: 'active',
+        auction_id: auction_id || null,
         firmware_version: firmware_version || null,
         hardware_version: hardware_version || null,
       })

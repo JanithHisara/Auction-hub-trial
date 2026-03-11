@@ -30,7 +30,6 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     } else if (body.table === 'gems') {
       auctionId = record.auction_id as string;
     } else if (body.table === 'bids') {
-      // Look up auction_id from the gem
       const gemId = record.gem_id as string;
       const { data: gem } = await supabase
         .from('gems')
@@ -68,14 +67,19 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
     const auctionRow = auction as AuctionRow;
 
-    // Get auction items
-    const { data: gems } = await supabase
+    // Option B: fetch only the active item
+    const { data: activeGem } = await supabase
       .from('gems')
       .select('id, name, description, starting_price, current_price, min_bid_increment, status, end_time, round_end_time, auction_id')
       .eq('auction_id', auctionId)
-      .order('start_time', { ascending: true });
+      .eq('status', 'active')
+      .limit(1)
+      .single();
 
-    const gemRows = (gems || []) as GemRow[];
+    const { count: itemsCount } = await supabase
+      .from('gems')
+      .select('*', { count: 'exact', head: true })
+      .eq('auction_id', auctionId);
 
     // Get unique device_ids from sessions
     const deviceIds = [...new Set((sessions as DeviceSessionRow[]).map(s => s.device_id))];
@@ -88,18 +92,16 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
     const deviceMap = new Map((devices || []).map((d: DeviceRow) => [d.device_id, d]));
 
-    // Publish update to each device
+    // Publish update to each device with only the active item
     const publishPromises = deviceIds.map(async (deviceId) => {
       const device = deviceMap.get(deviceId);
       if (!device) return;
 
       const updateSchema = buildAuctionUpdateSchema(
-        'auction_items',
-        'success',
         device,
         auctionRow,
-        gemRows,
-        gemRows.length,
+        (activeGem as GemRow) || null,
+        itemsCount || 0,
       );
 
       await publishToDevice(deviceId, 'auction/update', updateSchema);

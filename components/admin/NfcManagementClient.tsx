@@ -14,6 +14,7 @@ import {
   ToggleRight,
   Trash2,
   Pencil,
+  UserPlus,
 } from 'lucide-react'
 
 // ---- Types ----
@@ -22,13 +23,11 @@ interface NfcCard {
   id: string
   nfc_uid: string
   user_id: string
-  auction_id: string | null
   is_active: boolean
   label: string | null
   created_at: string
   updated_at: string
   users: { id: string; email: string; display_name: string | null }
-  auctions: { id: string; name: string; status: string } | null
 }
 
 interface Device {
@@ -36,10 +35,12 @@ interface Device {
   device_id: string
   name: string | null
   status: string
+  auction_id: string | null
   firmware_version: string | null
   hardware_version: string | null
   last_seen_at: string | null
   created_at: string
+  auction?: { id: string; name: string; status: string } | null
 }
 
 interface UserOption {
@@ -158,11 +159,10 @@ function NfcCardsTab() {
     }
   }
 
-  function handleCreated(card: NfcCard) {
-    setCards(prev => [card, ...prev])
-    setTotal(prev => prev + 1)
+  function handleCreated() {
     setShowCreateForm(false)
     setSuccess('NFC card mapping created')
+    fetchCards()
   }
 
   function handleUpdated(card: NfcCard) {
@@ -211,7 +211,7 @@ function NfcCardsTab() {
           className="flex items-center gap-2 px-4 py-2.5 bg-[var(--gold)] text-black rounded-lg text-sm font-medium hover:bg-[var(--gold-light)] transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Add Mapping
+          Add Card
         </button>
       </div>
 
@@ -226,7 +226,6 @@ function NfcCardsTab() {
               <tr className="bg-[var(--surface)]">
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white">NFC Card</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white">User</th>
-                <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Auction</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-white">Status</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-white">Actions</th>
               </tr>
@@ -234,13 +233,13 @@ function NfcCardsTab() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center">
+                  <td colSpan={4} className="px-4 py-12 text-center">
                     <Loader2 className="w-5 h-5 animate-spin text-[var(--gold)] mx-auto" />
                   </td>
                 </tr>
               ) : cards.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-[var(--text-secondary)]">
+                  <td colSpan={4} className="px-4 py-12 text-center text-[var(--text-secondary)]">
                     No NFC cards found
                   </td>
                 </tr>
@@ -261,20 +260,10 @@ function NfcCardsTab() {
                     <td className="px-4 py-3">
                       <div>
                         <div className="text-sm font-medium text-white">
-                          {card.users.display_name || 'Unknown'}
+                          {card.users?.display_name || 'Unknown'}
                         </div>
-                        <div className="text-xs text-[var(--text-secondary)]">{card.users.email}</div>
+                        <div className="text-xs text-[var(--text-secondary)]">{card.users?.email}</div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      {card.auctions ? (
-                        <div>
-                          <div className="text-sm text-white">{card.auctions.name}</div>
-                          <AuctionStatusBadge status={card.auctions.status} />
-                        </div>
-                      ) : (
-                        <span className="text-xs text-[var(--text-secondary)]">Not assigned</span>
-                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <button onClick={() => handleToggleActive(card)} title={card.is_active ? 'Deactivate' : 'Activate'}>
@@ -351,42 +340,24 @@ function NfcCardsTab() {
   )
 }
 
-// ---- Create Modal ----
+// ---- Create Modal with inline user creation ----
 
 function CreateNfcCardModal({
   onClose,
   onCreated,
 }: {
   onClose: () => void
-  onCreated: (card: NfcCard) => void
+  onCreated: () => void
 }) {
   const [nfcUid, setNfcUid] = useState('')
   const [label, setLabel] = useState('')
   const [userId, setUserId] = useState('')
-  const [auctionId, setAuctionId] = useState('')
   const [users, setUsers] = useState<UserOption[]>([])
-  const [auctions, setAuctions] = useState<AuctionOption[]>([])
   const [userSearch, setUserSearch] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loadingUsers, setLoadingUsers] = useState(false)
-  const [loadingAuctions, setLoadingAuctions] = useState(false)
-
-  useEffect(() => {
-    async function loadAuctions() {
-      setLoadingAuctions(true)
-      try {
-        const res = await fetch('/api/admin/auctions-list')
-        if (res.ok) {
-          const data = await res.json()
-          setAuctions(data.auctions || [])
-        }
-      } catch { /* ignore */ } finally {
-        setLoadingAuctions(false)
-      }
-    }
-    loadAuctions()
-  }, [])
+  const [showCreateUser, setShowCreateUser] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -426,7 +397,6 @@ function CreateNfcCardModal({
         body: JSON.stringify({
           nfc_uid: nfcUid.trim(),
           user_id: userId,
-          auction_id: auctionId || null,
           label: label.trim() || null,
         }),
       })
@@ -436,13 +406,19 @@ function CreateNfcCardModal({
         throw new Error(data.error || 'Failed to create')
       }
 
-      const data = await res.json()
-      onCreated(data.nfcCard)
+      onCreated()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create NFC card mapping')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function handleUserCreated(user: { id: string; email: string; display_name: string | null }) {
+    setUserId(user.id)
+    setUsers([user])
+    setUserSearch('')
+    setShowCreateUser(false)
   }
 
   const selectedUser = users.find(u => u.id === userId)
@@ -455,7 +431,7 @@ function CreateNfcCardModal({
             <div className="w-10 h-10 rounded-full bg-[var(--gold)]/20 flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-[var(--gold)]" />
             </div>
-            <h3 className="text-lg font-bold text-white">New NFC Card Mapping</h3>
+            <h3 className="text-lg font-bold text-white">New NFC Card</h3>
           </div>
           <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-white">
             <X className="w-5 h-5" />
@@ -485,7 +461,7 @@ function CreateNfcCardModal({
 
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-              Label (optional)
+              Label
             </label>
             <input
               type="text"
@@ -497,9 +473,18 @@ function CreateNfcCardModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-              User *
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">User *</label>
+              {!selectedUser && (
+                <button
+                  type="button"
+                  onClick={() => setShowCreateUser(true)}
+                  className="flex items-center gap-1 text-xs text-[var(--gold)] hover:underline"
+                >
+                  <UserPlus className="w-3 h-3" /> Create New User
+                </button>
+              )}
+            </div>
             {selectedUser ? (
               <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg">
                 <div>
@@ -541,28 +526,6 @@ function CreateNfcCardModal({
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-              Auction
-            </label>
-            {loadingAuctions ? (
-              <div className="px-4 py-2.5 text-sm text-[var(--text-secondary)]">Loading auctions...</div>
-            ) : (
-              <select
-                value={auctionId}
-                onChange={e => setAuctionId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)]/50"
-              >
-                <option value="">No auction assigned</option>
-                {auctions.map(a => (
-                  <option key={a.id} value={a.id}>
-                    {a.name} ({a.status})
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
           <div className="flex gap-3 justify-end pt-2">
             <button
               type="button"
@@ -577,7 +540,133 @@ function CreateNfcCardModal({
               className="flex items-center gap-2 px-4 py-2 bg-[var(--gold)] text-black rounded-lg text-sm font-medium hover:bg-[var(--gold-light)] transition-colors disabled:opacity-50"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Create Mapping
+              Create Card
+            </button>
+          </div>
+        </form>
+
+        {showCreateUser && (
+          <InlineCreateUserModal
+            onClose={() => setShowCreateUser(false)}
+            onCreated={handleUserCreated}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ---- Inline Create User Modal ----
+
+function InlineCreateUserModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void
+  onCreated: (user: { id: string; email: string; display_name: string | null }) => void
+}) {
+  const [displayName, setDisplayName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!displayName.trim()) { setError('Name is required'); return }
+
+    setSubmitting(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/admin/users/quick-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          display_name: displayName.trim(),
+          email: email.trim() || undefined,
+          phone: phone.trim() || undefined,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to create user')
+      }
+
+      const { user } = await res.json()
+      onCreated(user)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create user')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <UserPlus className="w-5 h-5 text-[var(--gold)]" />
+            <h4 className="text-base font-bold text-white">Quick Create User</h4>
+          </div>
+          <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-white">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-3 px-3 py-2 bg-red-500/20 border border-red-500/40 rounded-lg text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Name *</label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder="Full name"
+              autoFocus
+              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Phone</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="+94 77 123 4567"
+              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="john@example.com"
+              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end pt-1">
+            <button type="button" onClick={onClose} className="px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-white">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !displayName.trim()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--gold)] text-black rounded-lg text-xs font-bold hover:bg-[var(--gold-light)] disabled:opacity-50"
+            >
+              {submitting && <Loader2 className="w-3 h-3 animate-spin" />}
+              Create
             </button>
           </div>
         </form>
@@ -586,7 +675,7 @@ function CreateNfcCardModal({
   )
 }
 
-// ---- Edit Modal ----
+// ---- Edit Modal (simplified - no auction) ----
 
 function EditNfcCardModal({
   card,
@@ -597,28 +686,9 @@ function EditNfcCardModal({
   onClose: () => void
   onUpdated: (card: NfcCard) => void
 }) {
-  const [auctionId, setAuctionId] = useState(card.auction_id || '')
   const [label, setLabel] = useState(card.label || '')
-  const [auctions, setAuctions] = useState<AuctionOption[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadingAuctions, setLoadingAuctions] = useState(false)
-
-  useEffect(() => {
-    async function loadAuctions() {
-      setLoadingAuctions(true)
-      try {
-        const res = await fetch('/api/admin/auctions-list')
-        if (res.ok) {
-          const data = await res.json()
-          setAuctions(data.auctions || [])
-        }
-      } catch { /* ignore */ } finally {
-        setLoadingAuctions(false)
-      }
-    }
-    loadAuctions()
-  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -629,10 +699,7 @@ function EditNfcCardModal({
       const res = await fetch(`/api/admin/nfc-cards/${card.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          auction_id: auctionId || null,
-          label: label.trim() || null,
-        }),
+        body: JSON.stringify({ label: label.trim() || null }),
       })
 
       if (!res.ok) {
@@ -675,8 +742,8 @@ function EditNfcCardModal({
 
         <div className="mb-4 px-4 py-3 bg-white/5 rounded-lg">
           <div className="text-xs text-[var(--text-secondary)] mb-1">Mapped User</div>
-          <div className="text-sm text-white">{card.users.display_name || card.users.email}</div>
-          <div className="text-xs text-[var(--text-secondary)]">{card.users.email}</div>
+          <div className="text-sm text-white">{card.users?.display_name || card.users?.email}</div>
+          <div className="text-xs text-[var(--text-secondary)]">{card.users?.email}</div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -689,26 +756,6 @@ function EditNfcCardModal({
               placeholder="e.g. Card #12"
               className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Auction</label>
-            {loadingAuctions ? (
-              <div className="px-4 py-2.5 text-sm text-[var(--text-secondary)]">Loading...</div>
-            ) : (
-              <select
-                value={auctionId}
-                onChange={e => setAuctionId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)]/50"
-              >
-                <option value="">No auction assigned</option>
-                {auctions.map(a => (
-                  <option key={a.id} value={a.id}>
-                    {a.name} ({a.status})
-                  </option>
-                ))}
-              </select>
-            )}
           </div>
 
           <div className="flex gap-3 justify-end pt-2">
@@ -734,7 +781,7 @@ function EditNfcCardModal({
   )
 }
 
-// ---- Devices Tab ----
+// ---- Devices Tab (with auction assignment) ----
 
 function DevicesTab() {
   const [devices, setDevices] = useState<Device[]>([])
@@ -772,11 +819,10 @@ function DevicesTab() {
   useEffect(() => { fetchDevices() }, [fetchDevices])
   useEffect(() => { setPage(1) }, [search, statusFilter])
 
-  function handleCreated(device: Device) {
-    setDevices(prev => [device, ...prev])
-    setTotal(prev => prev + 1)
+  function handleCreated() {
     setShowCreateForm(false)
     setSuccess('Device registered')
+    fetchDevices()
   }
 
   function formatLastSeen(dateStr: string | null) {
@@ -845,7 +891,8 @@ function DevicesTab() {
             <thead>
               <tr className="bg-[var(--surface)]">
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white">Device</th>
-                <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Firmware</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Auction</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden lg:table-cell">Firmware</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-white">Status</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Last Seen</th>
               </tr>
@@ -853,13 +900,13 @@ function DevicesTab() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-12 text-center">
+                  <td colSpan={5} className="px-4 py-12 text-center">
                     <Loader2 className="w-5 h-5 animate-spin text-[var(--gold)] mx-auto" />
                   </td>
                 </tr>
               ) : devices.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-12 text-center text-[var(--text-secondary)]">
+                  <td colSpan={5} className="px-4 py-12 text-center text-[var(--text-secondary)]">
                     No devices registered
                   </td>
                 </tr>
@@ -878,6 +925,16 @@ function DevicesTab() {
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
+                      {device.auction ? (
+                        <div>
+                          <div className="text-sm text-white">{device.auction.name}</div>
+                          <AuctionStatusBadge status={device.auction.status} />
+                        </div>
+                      ) : (
+                        <span className="text-xs text-[var(--text-secondary)]">Not assigned</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
                       <span className="text-sm text-[var(--text-secondary)]">
                         {device.firmware_version || '-'}
                       </span>
@@ -930,21 +987,40 @@ function DevicesTab() {
   )
 }
 
-// ---- Create Device Modal ----
+// ---- Create Device Modal (with auction assignment) ----
 
 function CreateDeviceModal({
   onClose,
   onCreated,
 }: {
   onClose: () => void
-  onCreated: (device: Device) => void
+  onCreated: () => void
 }) {
   const [deviceId, setDeviceId] = useState('')
   const [name, setName] = useState('')
+  const [auctionId, setAuctionId] = useState('')
   const [firmwareVersion, setFirmwareVersion] = useState('')
   const [hardwareVersion, setHardwareVersion] = useState('')
+  const [auctions, setAuctions] = useState<AuctionOption[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadingAuctions, setLoadingAuctions] = useState(false)
+
+  useEffect(() => {
+    async function loadAuctions() {
+      setLoadingAuctions(true)
+      try {
+        const res = await fetch('/api/admin/auctions-list')
+        if (res.ok) {
+          const data = await res.json()
+          setAuctions(data.auctions || [])
+        }
+      } catch { /* ignore */ } finally {
+        setLoadingAuctions(false)
+      }
+    }
+    loadAuctions()
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -960,6 +1036,7 @@ function CreateDeviceModal({
         body: JSON.stringify({
           device_id: deviceId.trim(),
           name: name.trim() || null,
+          auction_id: auctionId || null,
           firmware_version: firmwareVersion.trim() || null,
           hardware_version: hardwareVersion.trim() || null,
         }),
@@ -970,8 +1047,7 @@ function CreateDeviceModal({
         throw new Error(data.error || 'Failed to register device')
       }
 
-      const data = await res.json()
-      onCreated(data.device)
+      onCreated()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to register device')
     } finally {
@@ -1021,6 +1097,25 @@ function CreateDeviceModal({
               placeholder="e.g. Handheld #3"
               className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Assigned Auction</label>
+            {loadingAuctions ? (
+              <div className="px-4 py-2.5 text-sm text-[var(--text-secondary)]">Loading auctions...</div>
+            ) : (
+              <select
+                value={auctionId}
+                onChange={e => setAuctionId(e.target.value)}
+                className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)]/50"
+              >
+                <option value="">No auction assigned</option>
+                {auctions.map(a => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.status})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

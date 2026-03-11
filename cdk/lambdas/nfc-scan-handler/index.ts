@@ -43,35 +43,36 @@ export async function handler(event: NfcScanPayload): Promise<void> {
     return;
   }
 
-  // 2. Look up NFC card mapping
-  const { data: nfcCards, error: nfcError } = await supabase
+  // 2. Resolve auction from device assignment (Option B)
+  if (!deviceRow.auction_id) {
+    await publishToDevice(device_id, 'state', buildNfcErrorSchema(
+      deviceRow, nfc_uid, 16, 'No Auction Assigned', 'This device is not assigned to an auction',
+    ));
+    return;
+  }
+
+  // 3. Look up NFC card → user mapping (card is now user-only, no auction context)
+  const { data: nfcCard, error: nfcError } = await supabase
     .from('nfc_cards')
     .select('*')
     .eq('nfc_uid', nfc_uid)
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .single();
 
-  if (nfcError || !nfcCards || nfcCards.length === 0) {
+  if (nfcError || !nfcCard) {
     await publishToDevice(device_id, 'state', buildNfcErrorSchema(
       deviceRow, nfc_uid, 3, 'Card Not Recognized', 'This NFC card is not registered',
     ));
     return;
   }
 
-  // Pick the card with an assigned auction; fall back to the first active card
-  const nfcCard = (nfcCards as NfcCardRow[]).find(c => c.auction_id) || nfcCards[0] as NfcCardRow;
+  const nfcCardRow = nfcCard as NfcCardRow;
 
-  if (!nfcCard.auction_id) {
-    await publishToDevice(device_id, 'state', buildNfcErrorSchema(
-      deviceRow, nfc_uid, 4, 'No Auction Assigned', 'This card has no auction assigned. Contact an administrator.',
-    ));
-    return;
-  }
-
-  // 3. Get user details
+  // 4. Get user details
   const { data: user, error: userError } = await supabase
     .from('users')
     .select('id, email, role, display_name, phone')
-    .eq('id', nfcCard.user_id)
+    .eq('id', nfcCardRow.user_id)
     .single();
 
   if (userError || !user) {
@@ -83,11 +84,11 @@ export async function handler(event: NfcScanPayload): Promise<void> {
 
   const userRow = user as UserRow;
 
-  // 4. Get auction details
+  // 5. Get auction details from device's assigned auction
   const { data: auction, error: auctionError } = await supabase
     .from('auctions')
     .select('id, name, status, auction_type, auction_start, auction_end')
-    .eq('id', nfcCard.auction_id)
+    .eq('id', deviceRow.auction_id)
     .single();
 
   if (auctionError || !auction) {
@@ -107,17 +108,17 @@ export async function handler(event: NfcScanPayload): Promise<void> {
     return;
   }
 
-  // 5. Verify auction registration
+  // 6. Verify auction registration
   const { data: registration } = await supabase
     .from('auction_registrations')
     .select('id, approval_status')
-    .eq('auction_id', nfcCard.auction_id)
-    .eq('user_id', nfcCard.user_id)
+    .eq('auction_id', deviceRow.auction_id)
+    .eq('user_id', nfcCardRow.user_id)
     .single();
 
   if (!registration) {
     await publishToDevice(device_id, 'state', buildNfcErrorSchema(
-      deviceRow, nfc_uid, 8, 'Not Registered', 'You are not registered for this auction',
+      deviceRow, nfc_uid, 8, 'Not Registered', 'You are not registered for this auction. Please register at the entrance.',
     ));
     return;
   }
@@ -130,24 +131,29 @@ export async function handler(event: NfcScanPayload): Promise<void> {
     return;
   }
 
-  // 6. Get auction items
-  const { data: gems } = await supabase
+  // 7. Get only the active item (Option B: single item, not full list)
+  const { data: activeGem } = await supabase
     .from('gems')
     .select('id, name, description, starting_price, current_price, min_bid_increment, status, end_time, round_end_time, auction_id')
-    .eq('auction_id', nfcCard.auction_id)
-    .order('start_time', { ascending: true });
+    .eq('auction_id', deviceRow.auction_id)
+    .eq('status', 'active')
+    .limit(1)
+    .single();
 
-  const gemRows = (gems || []) as GemRow[];
+  // 8. Get total items count
+  const { count: itemsCount } = await supabase
+    .from('gems')
+    .select('*', { count: 'exact', head: true })
+    .eq('auction_id', deviceRow.auction_id);
 
-  // 7. Get registration count
+  // 9. Get registration count
   const { count: registeredCount } = await supabase
     .from('auction_registrations')
     .select('*', { count: 'exact', head: true })
-    .eq('auction_id', nfcCard.auction_id)
+    .eq('auction_id', deviceRow.auction_id)
     .eq('approval_status', 'approved');
 
-  // 8. Create/update device session
-  // End any existing active session for this device
+  // 10. Create/update device session
   await supabase
     .from('device_sessions')
     .update({ status: 'ended', ended_at: new Date().toISOString() })
@@ -159,25 +165,24 @@ export async function handler(event: NfcScanPayload): Promise<void> {
     .insert({
       device_id,
       nfc_uid,
-      user_id: nfcCard.user_id,
-      auction_id: nfcCard.auction_id,
+      user_id: nfcCardRow.user_id,
+      auction_id: deviceRow.auction_id,
       status: 'active',
     });
 
-  // Update device last_seen_at
   await supabase
     .from('devices')
     .update({ last_seen_at: new Date().toISOString() })
     .eq('device_id', device_id);
 
-  // 9. Build and publish success state
+  // 11. Build and publish success state with only the active item
   const displayState = buildNfcSuccessSchema(
     deviceRow,
     userRow,
     nfc_uid,
     auctionRow,
-    gemRows,
-    gemRows.length,
+    (activeGem as GemRow) || null,
+    itemsCount || 0,
     registeredCount || 0,
   );
 

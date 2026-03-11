@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
-    const auctionFilter = searchParams.get('auction_id') || ''
     const statusFilter = searchParams.get('status') || ''
     const page = parseInt(searchParams.get('page') || '1')
     const limit = 20
@@ -20,17 +19,12 @@ export async function GET(request: NextRequest) {
     let query = adminClient
       .from('nfc_cards')
       .select(`
-        id, nfc_uid, user_id, auction_id, is_active, label, created_at, updated_at,
-        users!inner (id, email, display_name),
-        auctions (id, name, status)
+        id, nfc_uid, user_id, is_active, label, created_at, updated_at,
+        users!inner (id, email, display_name)
       `, { count: 'exact' })
 
     if (search) {
       query = query.or(`nfc_uid.ilike.%${search}%,label.ilike.%${search}%`)
-    }
-
-    if (auctionFilter) {
-      query = query.eq('auction_id', auctionFilter)
     }
 
     if (statusFilter === 'active') {
@@ -63,7 +57,7 @@ export async function POST(request: NextRequest) {
     await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
-    const { nfc_uid, user_id, auction_id, label } = body
+    const { nfc_uid, user_id, label } = body
 
     if (!nfc_uid || !user_id) {
       return NextResponse.json(
@@ -74,7 +68,6 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
-    // Verify user exists
     const { data: user } = await adminClient
       .from('users')
       .select('id')
@@ -85,34 +78,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Verify auction exists if provided
-    if (auction_id) {
-      const { data: auction } = await adminClient
-        .from('auctions')
-        .select('id')
-        .eq('id', auction_id)
-        .single()
+    // NFC UID must be unique (one card = one user)
+    const { data: existing } = await adminClient
+      .from('nfc_cards')
+      .select('id')
+      .eq('nfc_uid', nfc_uid)
+      .limit(1)
 
-      if (!auction) {
-        return NextResponse.json({ error: 'Auction not found' }, { status: 404 })
-      }
-    }
-
-    // Check for duplicate nfc_uid + auction_id combination
-    if (auction_id) {
-      const { data: existing } = await adminClient
-        .from('nfc_cards')
-        .select('id')
-        .eq('nfc_uid', nfc_uid)
-        .eq('auction_id', auction_id)
-        .limit(1)
-
-      if (existing && existing.length > 0) {
-        return NextResponse.json(
-          { error: 'This NFC card is already mapped to this auction' },
-          { status: 409 },
-        )
-      }
+    if (existing && existing.length > 0) {
+      return NextResponse.json(
+        { error: 'This NFC card is already registered' },
+        { status: 409 },
+      )
     }
 
     const { data: nfcCard, error } = await adminClient
@@ -120,14 +97,12 @@ export async function POST(request: NextRequest) {
       .insert({
         nfc_uid,
         user_id,
-        auction_id: auction_id || null,
         label: label || null,
         is_active: true,
       })
       .select(`
-        id, nfc_uid, user_id, auction_id, is_active, label, created_at, updated_at,
-        users!inner (id, email, display_name),
-        auctions (id, name, status)
+        id, nfc_uid, user_id, is_active, label, created_at, updated_at,
+        users!inner (id, email, display_name)
       `)
       .single()
 
