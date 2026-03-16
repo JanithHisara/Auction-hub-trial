@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction, Gem, AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
 import LocalTime from '@/components/ui/LocalTime'
+import { ADMIN_ROLES } from '@/lib/permissions'
 
 async function getAuction(id: string) {
   const supabase = await createClient()
@@ -16,7 +17,7 @@ async function getAuction(id: string) {
     .eq('id', user.id)
     .single()
   
-  if (userData?.role !== 'admin') redirect('/')
+  if (!userData?.role || !ADMIN_ROLES.includes(userData.role as typeof ADMIN_ROLES[number])) redirect('/')
 
   const { data: auction } = await supabase
     .from('auctions')
