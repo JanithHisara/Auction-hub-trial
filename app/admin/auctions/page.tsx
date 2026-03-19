@@ -152,7 +152,7 @@ export default async function AdminAuctionsPage() {
                             ? 'bg-purple-500/20 text-purple-400' 
                             : 'bg-emerald-500/20 text-emerald-400'
                         }`}>
-                          {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
+                          {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Sealed Bid'}
                         </span>
                       </div>
                     </td>
@@ -207,7 +207,7 @@ export default async function AdminAuctionsPage() {
                           ? 'bg-purple-500/20 text-purple-400' 
                           : 'bg-emerald-500/20 text-emerald-400'
                       }`}>
-                        {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
+                        {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Sealed Bid'}
                       </span>
                     </div>
                   </div>

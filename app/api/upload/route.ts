@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
@@ -20,7 +20,7 @@ function getMediaType(mimeType: string): 'image' | 'gif' | 'video' {
 export async function POST(request: NextRequest) {
   try {
     await requirePermission(PERMISSIONS.UPLOAD_FILES)
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const formData = await request.formData()
     const file = formData.get('file') as File
