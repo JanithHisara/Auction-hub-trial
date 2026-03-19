@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction, Gem, AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
 import LocalTime from '@/components/ui/LocalTime'
+import { ADMIN_ROLES } from '@/lib/permissions'
 
 async function getAuction(id: string) {
   const supabase = await createClient()
@@ -16,7 +17,7 @@ async function getAuction(id: string) {
     .eq('id', user.id)
     .single()
   
-  if (userData?.role !== 'admin') redirect('/')
+  if (!userData?.role || !ADMIN_ROLES.includes(userData.role as typeof ADMIN_ROLES[number])) redirect('/')
 
   const { data: auction } = await supabase
     .from('auctions')
@@ -150,7 +151,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
               ? 'bg-purple-500/20 text-purple-400' 
               : 'bg-emerald-500/20 text-emerald-400'
           }`}>
-            {auction.auction_type === 'progressive_elimination_auction' ? '⏱ Progressive Elimination' : '📈 Tender / Fixed Bid'}
+            {auction.auction_type === 'progressive_elimination_auction' ? '⏱ Progressive Elimination' : '📈 Sealed Bid'}
           </span>
           <span className={`px-4 py-2 rounded-full text-sm font-bold ${statusColors[auction.status]}`}>
             {auction.status.replace('_', ' ').toUpperCase()}

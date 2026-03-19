@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction } from '@/types/database'
+import { ADMIN_ROLES } from '@/lib/permissions'
 
 async function getAuctions() {
   const supabase = await createClient()
@@ -15,7 +16,7 @@ async function getAuctions() {
     .eq('id', user.id)
     .single()
   
-  if (userData?.role !== 'admin') redirect('/')
+  if (!userData?.role || !ADMIN_ROLES.includes(userData.role as typeof ADMIN_ROLES[number])) redirect('/')
 
   const { data: auctions } = await supabase
     .from('auctions')
@@ -151,7 +152,7 @@ export default async function AdminAuctionsPage() {
                             ? 'bg-purple-500/20 text-purple-400' 
                             : 'bg-emerald-500/20 text-emerald-400'
                         }`}>
-                          {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
+                          {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Sealed Bid'}
                         </span>
                       </div>
                     </td>
@@ -206,7 +207,7 @@ export default async function AdminAuctionsPage() {
                           ? 'bg-purple-500/20 text-purple-400' 
                           : 'bg-emerald-500/20 text-emerald-400'
                       }`}>
-                        {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
+                        {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Sealed Bid'}
                       </span>
                     </div>
                   </div>

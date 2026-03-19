@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
 import RegistrationStatusActions from '@/components/admin/RegistrationStatusActions'
 import LocalTime from '@/components/ui/LocalTime'
+import { ADMIN_ROLES } from '@/lib/permissions'
 
 async function getData(auctionId: string, status?: string) {
   const supabase = await createClient()
@@ -18,7 +19,7 @@ async function getData(auctionId: string, status?: string) {
     .eq('id', user.id)
     .single()
   
-  if (userData?.role !== 'admin') redirect('/')
+  if (!userData?.role || !ADMIN_ROLES.includes(userData.role as typeof ADMIN_ROLES[number])) redirect('/')
 
   // Use admin client for data fetching (bypasses RLS)
   const adminClient = createAdminClient()

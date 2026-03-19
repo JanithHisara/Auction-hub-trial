@@ -59,7 +59,7 @@ export async function POST(
       })
     }
 
-    const user = nfcCard.users as { id: string; email: string; display_name: string | null; phone: string | null; role: string }
+    const user = nfcCard.users as unknown as { id: string; email: string; display_name: string | null; phone: string | null; role: string }
 
     // Check if already registered
     const { data: existingReg } = await adminClient

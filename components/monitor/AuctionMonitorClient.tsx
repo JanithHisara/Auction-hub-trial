@@ -168,7 +168,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
             <div className="text-left sm:text-right">
               <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">Type</div>
               <div className={`text-sm sm:text-lg font-bold ${isProgressiveElimination ? 'text-purple-400' : 'text-emerald-400'}`}>
-                {isProgressiveElimination ? 'Progressive Elimination' : 'Tender / Fixed Bid'}
+                {isProgressiveElimination ? 'Progressive Elimination' : 'Sealed Bid'}
               </div>
             </div>
             <div className="monitor-clock">
