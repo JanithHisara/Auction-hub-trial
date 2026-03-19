@@ -191,7 +191,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${
             isProgressiveElimination ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
           }`}>
-            {isProgressiveElimination ? '⏱ Progressive Elimination Auction' : '📈 Tender Base / Fixed Bid'}
+            {isProgressiveElimination ? '⏱ Progressive Elimination Auction' : '📈 Sealed Bid Auction'}
           </span>
         </div>
 
@@ -359,7 +359,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         document.body
       )}
 
-      {/* Start Bidding Modal (Tender Base / Fixed Bid) */}
+      {/* Start Bidding Modal (Sealed Bid Auction) */}
       {mounted && showStartBiddingModal && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl">

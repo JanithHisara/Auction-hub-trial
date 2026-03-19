@@ -398,7 +398,7 @@ export default function AuctionChatDrawer({ auctionId, isOpen, onClose, onUnread
                 </div>
               ) : (
                 messages.map((msg) => {
-                  const isAdmin = msg.sender_role === 'admin'
+                  const isAdmin = msg.sender_role !== 'user'
                   const senderName = isAdmin
                     ? (msg.sender?.display_name || msg.sender?.email || 'Admin')
                     : getUserDisplayName(activeConv)

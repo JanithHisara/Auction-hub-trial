@@ -50,6 +50,19 @@ export async function POST(
 
     const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'tender_base_fixed_bid'
 
+    // Check if user is on hold
+    const { data: activeHold } = await supabase
+      .from('bidder_holds')
+      .select('id')
+      .eq('auction_id', gem.auction_id)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .limit(1)
+
+    if (activeHold && activeHold.length > 0) {
+      return NextResponse.json({ error: 'Your bidding is currently on hold. Please contact the auction administrator.' }, { status: 403 })
+    }
+
     const now = new Date()
 
     // Get highest current bid
@@ -68,6 +81,14 @@ export async function POST(
     if (auctionType === 'progressive_elimination_auction') {
       // Progressive elimination: user accepts current price
       bidAmount = gem.current_price || gem.starting_price
+
+      // Check if bidding round is active
+      if (gem.round_end_time) {
+        const roundEndTime = new Date(gem.round_end_time)
+        if (now >= roundEndTime) {
+          return NextResponse.json({ error: 'Bidding time has ended for this round' }, { status: 400 })
+        }
+      }
 
       // Check if user already accepted this price
       const { data: existingBid } = await supabase
@@ -169,8 +190,21 @@ export async function PATCH(
 
     const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'tender_base_fixed_bid'
 
+    // Check if user is on hold
+    const { data: activeHold } = await supabase
+      .from('bidder_holds')
+      .select('id')
+      .eq('auction_id', gem.auction_id)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .limit(1)
+
+    if (activeHold && activeHold.length > 0) {
+      return NextResponse.json({ error: 'Your bidding is currently on hold. Please contact the auction administrator.' }, { status: 403 })
+    }
+
     if (auctionType !== 'tender_base_fixed_bid') {
-      return NextResponse.json({ error: 'Bid editing is only available for Tender Base / Fixed Bid auctions' }, { status: 400 })
+      return NextResponse.json({ error: 'Bid editing is only available for Sealed Bid auctions' }, { status: 400 })
     }
 
     if (!gem.round_end_time) {
