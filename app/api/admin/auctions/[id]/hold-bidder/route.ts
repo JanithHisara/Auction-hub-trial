@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { id: auctionId } = await params
     await requirePermission(PERMISSIONS.CONTROL_BIDDING)
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const { data: holds, error } = await supabase
       .from('bidder_holds')
@@ -35,7 +35,7 @@ export async function POST(
   try {
     const { id: auctionId } = await params
     const admin = await requirePermission(PERMISSIONS.CONTROL_BIDDING)
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const body = await request.json()
 
     const { user_id, reason } = body
@@ -83,7 +83,7 @@ export async function PATCH(
   try {
     const { id: auctionId } = await params
     await requirePermission(PERMISSIONS.CONTROL_BIDDING)
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const body = await request.json()
 
     const { user_id } = body

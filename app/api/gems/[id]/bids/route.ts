@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import Decimal from 'decimal.js'
@@ -50,8 +51,9 @@ export async function POST(
 
     const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'tender_base_fixed_bid'
 
-    // Check if user is on hold
-    const { data: activeHold } = await supabase
+    // Check if user is on hold (use admin client to bypass RLS)
+    const adminDb = createAdminClient()
+    const { data: activeHold } = await adminDb
       .from('bidder_holds')
       .select('id')
       .eq('auction_id', gem.auction_id)
@@ -190,8 +192,9 @@ export async function PATCH(
 
     const auctionType = (gem.auction as { auction_type: string } | null)?.auction_type || 'tender_base_fixed_bid'
 
-    // Check if user is on hold
-    const { data: activeHold } = await supabase
+    // Check if user is on hold (use admin client to bypass RLS)
+    const adminDb = createAdminClient()
+    const { data: activeHold } = await adminDb
       .from('bidder_holds')
       .select('id')
       .eq('auction_id', gem.auction_id)
