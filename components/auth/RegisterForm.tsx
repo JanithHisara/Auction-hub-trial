@@ -26,10 +26,23 @@ export default function RegisterForm() {
     return null
   }
 
+  const validatePhone = (value: string): string | null => {
+    const digits = value.replace(/[\s\-\(\)\.]/g, '')
+    if (!digits) return 'Phone number is required'
+    if (!/^\+?\d{7,15}$/.test(digits)) return 'Enter a valid phone number (e.g. +94771234567)'
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (loading) return
     setError(null)
+
+    const phoneError = validatePhone(phone)
+    if (phoneError) {
+      setError(phoneError)
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -132,9 +145,12 @@ export default function RegisterForm() {
                     onChange={(e) => setPhone(e.target.value)}
                     required
                     className="w-full pl-12 pr-4 py-3.5"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+94 77 123 4567"
                   />
                 </div>
+                <p className="text-xs text-[var(--text-muted)] mt-2">
+                  Include country code (e.g. +94 for Sri Lanka, +1 for US)
+                </p>
               </div>
 
               <div>
