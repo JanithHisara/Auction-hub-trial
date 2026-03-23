@@ -285,6 +285,44 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           }
         }
       )
+      // Listen for bid updates (edited bids in Sealed Bid auctions)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bids',
+          filter: `gem_id=in.(${items.map(i => i.id).join(',')})`,
+        },
+        (payload) => {
+          const updatedBid = payload.new as Bid
+
+          // Only process own bid updates (sealed bids are private)
+          if (updatedBid.user_id !== user.id) return
+
+          if (isFreeForm) {
+            setUserBidAmount(updatedBid.bid_amount)
+          }
+
+          // Update bid in items array
+          setItems(prev => prev.map(item => {
+            if (item.id === updatedBid.gem_id) {
+              return {
+                ...item,
+                bids: item.bids.map(b => b.id === updatedBid.id ? { ...b, bid_amount: updatedBid.bid_amount } : b),
+              }
+            }
+            return item
+          }))
+
+          if (selectedItemIdRef.current === updatedBid.gem_id) {
+            setSelectedItem(prev => prev ? {
+              ...prev,
+              bids: prev.bids.map(b => b.id === updatedBid.id ? { ...b, bid_amount: updatedBid.bid_amount } : b),
+            } : prev)
+          }
+        }
+      )
       // Listen for item updates (status, price changes, round_end_time)
       .on(
         'postgres_changes',
