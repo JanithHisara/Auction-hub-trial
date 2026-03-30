@@ -61,15 +61,21 @@ export async function POST(
           .eq('approval_status', 'approved')
 
         if (registrations?.length && auction) {
+          type UserInfo = { email: string; anonymous_name?: string | null; display_name?: string | null }
           const emailPromises = registrations
-            .filter(r => r.user?.email)
+            .map(r => {
+              const userRaw = r.user as unknown
+              const user: UserInfo | null = Array.isArray(userRaw) ? (userRaw[0] as UserInfo | undefined) ?? null : userRaw as UserInfo | null
+              return { ...r, userInfo: user }
+            })
+            .filter(r => r.userInfo?.email)
             .map(r => 
               sendAuctionLiveEmail({
-                to: r.user!.email,
+                to: r.userInfo!.email,
                 auctionName: auction.name,
                 accessToken: r.access_token,
-                userName: r.user!.display_name || r.user!.anonymous_name || undefined,
-              }).catch(err => console.error(`Failed to send live email to ${r.user!.email}:`, err))
+                userName: r.userInfo!.display_name || r.userInfo!.anonymous_name || undefined,
+              }).catch(err => console.error(`Failed to send live email to ${r.userInfo!.email}:`, err))
             )
           await Promise.allSettled(emailPromises)
           console.log(`Sent auction-live emails to ${emailPromises.length} registrants`)
