@@ -133,9 +133,8 @@ export async function POST(
         return NextResponse.json({ error: 'Bid amount is required' }, { status: 400 })
       }
 
-      // Use Decimal.js for precise number handling
       try {
-        bidAmount = new Decimal(body.bid_amount).toNumber()
+        bidAmount = new Decimal(body.bid_amount).toDecimalPlaces(2).toNumber()
       } catch {
         return NextResponse.json({ error: 'Invalid bid amount' }, { status: 400 })
       }
@@ -236,7 +235,7 @@ export async function PATCH(
 
     let newAmount: number
     try {
-      newAmount = new Decimal(body.bid_amount).toNumber()
+      newAmount = new Decimal(body.bid_amount).toDecimalPlaces(2).toNumber()
     } catch {
       return NextResponse.json({ error: 'Invalid bid amount' }, { status: 400 })
     }

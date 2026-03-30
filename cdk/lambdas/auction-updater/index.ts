@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { getSupabaseClient } from '../shared/supabase-client';
 import { publishToDevice } from '../shared/mqtt-publisher';
-import { buildAuctionUpdateSchema } from '../shared/display-schema-mapper';
+import { buildAuctionUpdateSchema, buildWinnerAnnouncementSchema } from '../shared/display-schema-mapper';
 import type {
   SupabaseWebhookPayload,
   DeviceRow,
@@ -25,11 +25,21 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
       return { statusCode: 200, body: JSON.stringify({ message: 'No record data' }) };
     }
 
+    const isWinnerAnnouncement = body.table === 'auction_winners' && body.type === 'INSERT';
+
     if (body.table === 'auctions') {
       auctionId = record.id as string;
     } else if (body.table === 'gems') {
       auctionId = record.auction_id as string;
     } else if (body.table === 'bids') {
+      const gemId = record.gem_id as string;
+      const { data: gem } = await supabase
+        .from('gems')
+        .select('auction_id')
+        .eq('id', gemId)
+        .single();
+      auctionId = gem?.auction_id ?? null;
+    } else if (body.table === 'auction_winners') {
       const gemId = record.gem_id as string;
       const { data: gem } = await supabase
         .from('gems')
@@ -92,17 +102,58 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
     const deviceMap = new Map((devices || []).map((d: DeviceRow) => [d.device_id, d]));
 
+    // For winner announcements, fetch winner info and send a special message
+    let winnerInfo: { gemName: string; winnerName: string; amount: number } | null = null;
+    if (isWinnerAnnouncement) {
+      const winnerRecord = body.record;
+      const { data: winBid } = await supabase
+        .from('bids')
+        .select('bid_amount')
+        .eq('id', winnerRecord.winning_bid_id as string)
+        .single();
+
+      const { data: winUser } = await supabase
+        .from('users')
+        .select('display_name, anonymous_name, email')
+        .eq('id', winnerRecord.user_id as string)
+        .single();
+
+      const { data: winGem } = await supabase
+        .from('gems')
+        .select('name')
+        .eq('id', winnerRecord.gem_id as string)
+        .single();
+
+      winnerInfo = {
+        gemName: winGem?.name || 'Unknown Item',
+        winnerName: winUser?.display_name || winUser?.anonymous_name || winUser?.email || 'Anonymous',
+        amount: winBid?.bid_amount || 0,
+      };
+    }
+
     // Publish update to each device with only the active item
     const publishPromises = deviceIds.map(async (deviceId) => {
       const device = deviceMap.get(deviceId);
       if (!device) return;
 
-      const updateSchema = buildAuctionUpdateSchema(
-        device,
-        auctionRow,
-        (activeGem as GemRow) || null,
-        itemsCount || 0,
-      );
+      let updateSchema;
+      if (isWinnerAnnouncement && winnerInfo) {
+        updateSchema = buildWinnerAnnouncementSchema(
+          device,
+          auctionRow,
+          winnerInfo.gemName,
+          winnerInfo.winnerName,
+          winnerInfo.amount,
+          (activeGem as GemRow) || null,
+        );
+      } else {
+        updateSchema = buildAuctionUpdateSchema(
+          device,
+          auctionRow,
+          (activeGem as GemRow) || null,
+          itemsCount || 0,
+        );
+      }
 
       await publishToDevice(deviceId, 'auction/update', updateSchema);
     });

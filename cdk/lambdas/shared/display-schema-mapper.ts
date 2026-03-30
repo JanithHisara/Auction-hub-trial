@@ -276,6 +276,63 @@ export function buildBidResultSchema(
 }
 
 /**
+ * Winner announcement - notify all devices about the auction winner
+ */
+export function buildWinnerAnnouncementSchema(
+  device: DeviceRow,
+  auction: AuctionRow,
+  gemName: string,
+  winnerDisplayName: string,
+  winningAmount: number,
+  nextGem: GemRow | null,
+): UnifiedDisplaySchema {
+  let schema = createEmptySchema();
+  schema = mapDeviceInfo(schema, device);
+
+  const auctionSummary = mapAuctionToSummary(auction);
+
+  return {
+    ...schema,
+    screen: {
+      name: 'active_item',
+      state: 'success',
+      title: 'Winner Announced',
+      subtitle: gemName,
+      message: `${winnerDisplayName} wins with ${CURRENCY} ${winningAmount.toLocaleString()}`,
+    },
+    context: {
+      active_auction_id: auction.id,
+      active_item_id: nextGem?.id ?? null,
+    },
+    detail: {
+      auction: auctionSummary,
+      item: nextGem ? mapGemToItem(nextGem) : null,
+      bid: {
+        item_id: null,
+        amount: winningAmount,
+        currency: CURRENCY,
+        bid_status: 'WINNER',
+        current_highest_bid: winningAmount,
+        next_min_bid: null,
+        reason_code: null,
+        reason_label: winnerDisplayName,
+      },
+    },
+    feedback: {
+      status: 'success' as FeedbackStatus,
+      code: 100,
+      label: 'WINNER_ANNOUNCED',
+      message: `${winnerDisplayName} won ${gemName} for ${CURRENCY} ${winningAmount.toLocaleString()}`,
+    },
+    actions: {
+      primary: nextGem ? 'submit_bid' : 'refresh',
+      secondary: 'refresh',
+      back: false,
+    },
+  };
+}
+
+/**
  * Option B: Auction update - sends only the current active item to devices
  */
 export function buildAuctionUpdateSchema(

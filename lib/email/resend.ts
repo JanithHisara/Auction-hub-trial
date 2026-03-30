@@ -31,16 +31,24 @@ export async function sendAuctionAccessEmail({
     return { id: 'mock-email-id' }
   }
 
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>'
+  const replyTo = process.env.RESEND_REPLY_TO || undefined
+
   const { data, error } = await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>',
+    from: fromEmail,
     to,
-    subject: `🎫 Your Access Pass: ${auctionName}`,
+    replyTo,
+    subject: `Your Access Pass: ${auctionName}`,
     html: generateAuctionEmailHtml({
       auctionName,
       auctionDate,
       auctionUrl,
       userName,
     }),
+    text: `Your Auction Access Pass\n\n${userName ? `Hi ${userName},` : 'Hello,'}\n\nYou've been approved for ${auctionName}.\nDate: ${auctionDate}\n\nEnter your auction room: ${auctionUrl}\n\nThis link is unique to you. Do not share it with others.\n\nImportant:\n- You must be logged into your account to enter\n- This link is personal and non-transferable\n- Join on time - late entry may limit bidding\n\nAuctionhub - Premium gem auctions`,
+    headers: {
+      'List-Unsubscribe': `<mailto:${replyTo || 'unsubscribe@auctionhub.com'}>`,
+    },
   })
 
   if (error) {
@@ -227,10 +235,14 @@ export async function sendWinnerEmail({
     return { id: 'mock-email-id' }
   }
 
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>'
+  const replyTo = process.env.RESEND_REPLY_TO || undefined
+
   const { data, error } = await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>',
+    from: fromEmail,
     to,
-    subject: `🏆 Congratulations! You Won: ${gemName}`,
+    replyTo,
+    subject: `Congratulations! You Won: ${gemName}`,
     html: generateWinnerEmailHtml({
       userName,
       gemName,
@@ -240,6 +252,10 @@ export async function sendWinnerEmail({
       paymentUrl: finalPaymentUrl,
       profileUrl,
     }),
+    text: `Congratulations! You Won: ${gemName}\n\n${userName ? `Dear ${userName},` : 'Hello,'}\n\nYou've won ${gemName} in the ${auctionName} auction!\n\nWinning Bid: ${formattedAmount}\n\nNext Steps:\n1. Complete payment within 48 hours: ${finalPaymentUrl}\n2. We'll contact you for delivery arrangements\n3. Securely packaged and insured delivery\n\nView your profile: ${profileUrl}\n\nThank you for participating!\nAuctionhub - Premium gem auctions`,
+    headers: {
+      'List-Unsubscribe': `<mailto:${replyTo || 'unsubscribe@auctionhub.com'}>`,
+    },
   })
 
   if (error) {
@@ -450,6 +466,117 @@ function generateWinnerEmailHtml({
 </body>
 </html>
   `
+}
+
+// Auction going live notification email
+export interface AuctionLiveEmailParams {
+  to: string
+  auctionName: string
+  accessToken: string
+  userName?: string
+}
+
+export async function sendAuctionLiveEmail({
+  to,
+  auctionName,
+  accessToken,
+  userName,
+}: AuctionLiveEmailParams) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const auctionUrl = `${appUrl}/auction-room/${accessToken}`
+
+  if (!resend) {
+    console.log('[Email] Auction live notification would be sent to:', to)
+    console.log('[Email] Auction URL:', auctionUrl)
+    console.log('[Email] Resend API key not configured - email not sent')
+    return { id: 'mock-email-id' }
+  }
+
+  const { data, error } = await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>',
+    to,
+    subject: `${auctionName} is now LIVE - Join Now`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auction is Live</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0f; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background: linear-gradient(145deg, #1a1a24 0%, #12121a 100%); border-radius: 24px; border: 1px solid rgba(239, 68, 68, 0.3); overflow: hidden;">
+          <tr>
+            <td style="padding: 48px 40px 24px; text-align: center; background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);">
+              <div style="display: inline-block; width: 16px; height: 16px; background-color: #ef4444; border-radius: 50%; margin-bottom: 16px; animation: pulse 2s infinite;"></div>
+              <h1 style="margin: 0; color: #ef4444; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">
+                AUCTION IS LIVE
+              </h1>
+              <p style="margin: 12px 0 0; color: #f5f5f7; font-size: 18px; font-weight: 600;">
+                ${auctionName}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 40px 16px;">
+              <p style="margin: 0; color: #f5f5f7; font-size: 16px; line-height: 1.6;">
+                ${userName ? `Hi ${userName},` : 'Hello,'}
+              </p>
+              <p style="margin: 16px 0 0; color: #a1a1aa; font-size: 16px; line-height: 1.6;">
+                The auction you registered for is now live! Join now to start bidding.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 40px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${auctionUrl}" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);">
+                      Join Auction Now
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 16px 0 0; color: #71717a; font-size: 13px; text-align: center;">
+                This link is unique to you. Do not share it with others.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 40px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <p style="margin: 0; color: #71717a; font-size: 13px;">Auctionhub</p>
+            </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin-top: 24px;">
+          <tr>
+            <td align="center">
+              <p style="margin: 0; color: #52525b; font-size: 12px;">
+                If the button doesn't work, copy this link:<br>
+                <a href="${auctionUrl}" style="color: #d4af37; word-break: break-all;">${auctionUrl}</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `,
+    text: `${auctionName} is now LIVE!\n\n${userName ? `Hi ${userName},` : 'Hello,'}\n\nThe auction you registered for is now live! Join now to start bidding.\n\nJoin here: ${auctionUrl}\n\nThis link is unique to you. Do not share it with others.\n\nAuctionhub`,
+  })
+
+  if (error) {
+    console.error('Failed to send auction live email:', error)
+    throw error
+  }
+
+  return data
 }
 
 export { resend }

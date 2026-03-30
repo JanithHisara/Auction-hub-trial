@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import PublishButton from '@/components/admin/PublishButton'
 import AdminControls from '@/components/admin/AdminControls'
+import GemDetailClient from '@/components/admin/GemDetailClient'
 
 export default async function GemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -34,7 +35,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
 
   const { data: bids } = await supabase
     .from('bids')
-    .select('*, user:users(email, anonymous_name)')
+    .select('*, user:users(id, email, anonymous_name, display_name, phone)')
     .eq('gem_id', id)
     .order('bid_amount', { ascending: false })
 
@@ -62,6 +63,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   }
 
   return (
+    <GemDetailClient gemId={gem.id} auctionId={gem.auction_id}>
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -236,33 +238,43 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
         <h2 className="text-lg font-bold text-white mb-4">Bid History ({bids?.length || 0})</h2>
         {bids && bids.length > 0 ? (
           <div className="space-y-2">
-            {bids.map((bid, idx) => (
-              <div
-                key={bid.id}
-                className={`flex justify-between items-center p-4 rounded-xl border ${idx === 0 ? 'bg-[var(--gold)]/10 border-[var(--gold)]/30' : 'bg-[var(--surface)] border-[var(--border)]'
-                  }`}
-              >
-                <div>
-                  <p className={`font-bold font-mono ${idx === 0 ? 'text-[var(--gold)]' : 'text-white'}`}>
-                    {formatCurrency(bid.bid_amount)}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {(bid.user as { anonymous_name?: string; email: string })?.anonymous_name ||
-                      (bid.user as { email: string })?.email || 'Unknown'}
-                  </p>
+            {bids.map((bid, idx) => {
+              const bidUser = bid.user as { id?: string; anonymous_name?: string; display_name?: string | null; email: string; phone?: string | null } | null
+              return (
+                <div
+                  key={bid.id}
+                  className={`flex justify-between items-start p-4 rounded-xl border ${idx === 0 ? 'bg-[var(--gold)]/10 border-[var(--gold)]/30' : 'bg-[var(--surface)] border-[var(--border)]'
+                    }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className={`font-bold font-mono ${idx === 0 ? 'text-[var(--gold)]' : 'text-white'}`}>
+                      {formatCurrency(bid.bid_amount)}
+                    </p>
+                    <p className="text-sm text-white mt-1">
+                      {bidUser?.display_name || bidUser?.anonymous_name || 'Anonymous'}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                      <p className="text-xs text-[var(--text-muted)]">{bidUser?.email}</p>
+                      {bidUser?.phone && <p className="text-xs text-[var(--text-muted)]">{bidUser.phone}</p>}
+                    </div>
+                    {bidUser?.id && (
+                      <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-mono opacity-60">ID: {bidUser.id.slice(0, 8)}...</p>
+                    )}
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-4">
+                    {idx === 0 && <span className="text-xs text-[var(--gold)] font-bold">LEADING</span>}
+                    <p className="text-xs text-[var(--text-muted)]">{formatDate(bid.created_at)}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  {idx === 0 && <span className="text-xs text-[var(--gold)] font-bold">LEADING</span>}
-                  <p className="text-xs text-[var(--text-muted)]">{formatDate(bid.created_at)}</p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <p className="text-[var(--text-muted)] text-center py-8">No bids yet</p>
         )}
       </div>
     </div>
+    </GemDetailClient>
   )
 }
 
