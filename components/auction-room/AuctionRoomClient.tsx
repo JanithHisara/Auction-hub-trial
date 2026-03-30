@@ -31,6 +31,7 @@ function formatCurrency(amount: number) {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount)
 }
 
@@ -57,6 +58,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const [registeredCount, setRegisteredCount] = useState(0) // For % calculation
   const [biddingCountdown, setBiddingCountdown] = useState('')
   const [biddingTimeExpired, setBiddingTimeExpired] = useState(false)
+  const [showNextRoundBanner, setShowNextRoundBanner] = useState(false)
   const [isHeld, setIsHeld] = useState(initialIsHeld)
   const [holdAdminPhone] = useState(adminPhone)
   const [showLeavePopup, setShowLeavePopup] = useState(false)
@@ -106,9 +108,9 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     : currentBid + (selectedItem?.min_bid_increment || 100)
   const fixedPrice = selectedItem?.current_price || selectedItem?.starting_price || 0
 
-  // For fixed increment: count how many accepted current price
+  // For fixed increment: count unique bidders who accepted current price (>= fixedPrice to include device bids)
   const currentPriceBidders = isFixedIncrement && selectedItem?.bids
-    ? selectedItem.bids.filter(b => b.bid_amount === fixedPrice).length
+    ? new Set(selectedItem.bids.filter(b => b.bid_amount >= fixedPrice).map(b => b.user_id)).size
     : 0
   const bidderPercentage = registeredCount > 0
     ? Math.round((currentPriceBidders / registeredCount) * 100)
@@ -370,6 +372,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               // Reset accepted price status when price changes (new round) - for fixed increment
               if (prev.current_price !== updatedGem.current_price) {
                 setHasAcceptedPrice(false)
+                setShowNextRoundBanner(true)
+                setTimeout(() => setShowNextRoundBanner(false), 4000)
               }
 
               // Reset bidding expired state when round_end_time changes (new round started)
@@ -486,8 +490,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     e.preventDefault()
     if (!selectedItem || isSubmitting || hasPlacedBid || isHeld) return
 
-    // Use Decimal.js for precise number handling
-    const amount = new Decimal(bidAmount || '0').toNumber()
+    const decimalAmount = new Decimal(bidAmount || '0').toDecimalPlaces(2)
+    const amount = decimalAmount.toNumber()
     if (isNaN(amount) || amount < minBid) {
       alert(`Minimum bid is ${formatCurrency(minBid)}`)
       return
@@ -524,7 +528,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     e.preventDefault()
     if (!selectedItem || isSubmitting || isHeld) return
 
-    const amount = new Decimal(bidAmount || '0').toNumber()
+    const decimalEditAmount = new Decimal(bidAmount || '0').toDecimalPlaces(2)
+    const amount = decimalEditAmount.toNumber()
     if (isNaN(amount) || amount < minBid) {
       alert(`Minimum bid is ${formatCurrency(minBid)}`)
       return
@@ -583,7 +588,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   }
 
   const quickBid = (multiplier: number) => {
-    setBidAmount(Math.round(minBid * multiplier).toString())
+    setBidAmount(new Decimal(minBid).times(multiplier).toDecimalPlaces(2).toString())
   }
 
   // Check if current user won the selected item and get winning amount
@@ -684,6 +689,16 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 </a>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Next Round Banner */}
+      {showNextRoundBanner && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] animate-bounce-in">
+          <div className="px-6 py-3 bg-blue-500 text-white rounded-full font-bold text-sm shadow-2xl flex items-center gap-2">
+            <span>🔔</span>
+            New round started! Price updated to {formatCurrency(fixedPrice)}
           </div>
         </div>
       )}
@@ -880,7 +895,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                                       : biddingActive 
                                         ? '🔴 Open' 
                                         : 'Closed')
-                                : `${item.bids?.filter(b => b.bid_amount === (item.current_price || item.starting_price)).length || 0} accepted`
+                                : `${new Set(item.bids?.filter(b => b.bid_amount >= (item.current_price || item.starting_price)).map(b => b.user_id)).size || 0} accepted`
                             }
                           </p>
                         </div>
@@ -1127,9 +1142,9 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
                                     <input
                                       type="text"
-                                      inputMode="numeric"
+                                      inputMode="decimal"
                                       value={bidAmount}
-                                      onChange={(e) => setBidAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                                      onChange={(e) => setBidAmount(e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'))}
                                       placeholder={(userBidAmount || minBid).toString()}
                                       className="w-full pl-8 pr-4 py-4 text-2xl font-bold bg-[var(--surface)] border-2 border-[var(--border)] rounded-xl focus:border-[var(--gold)] text-white"
                                     />
@@ -1216,12 +1231,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
                               <input
                                 type="text"
-                                inputMode="numeric"
+                                inputMode="decimal"
                                 value={bidAmount}
                                 onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '')
-                                  setBidAmount(val)
-                                }}
+                                      const val = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
+                                      setBidAmount(val)
+                                    }}
                                 placeholder={minBid.toString()}
                                 className="w-full pl-8 pr-4 py-4 text-2xl font-bold bg-[var(--surface)] border-2 border-[var(--border)] rounded-xl focus:border-[var(--gold)] text-white"
                               />
@@ -1239,7 +1254,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                                 <span>Placing Bid...</span>
                               </>
                             ) : (
-                              <span>Place Bid {bidAmount ? formatCurrency(new Decimal(bidAmount).toNumber()) : ''}</span>
+                              <span>Place Bid {bidAmount ? formatCurrency(new Decimal(bidAmount).toDecimalPlaces(2).toNumber()) : ''}</span>
                             )}
                           </button>
 
@@ -1291,9 +1306,9 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                   ref={bidsContainerRef}
                   className="bid-ticker max-h-[40vh] lg:max-h-[calc(100vh-300px)] overflow-y-auto"
                 >
-                  {selectedItem?.bids?.filter(b => b.bid_amount === fixedPrice).length ? (
+                  {selectedItem?.bids?.filter(b => b.bid_amount >= fixedPrice).length ? (
                     selectedItem.bids
-                      .filter(b => b.bid_amount === fixedPrice)
+                      .filter(b => b.bid_amount >= fixedPrice)
                       .map((bid) => (
                         <div
                           key={bid.id}
