@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
@@ -38,16 +39,17 @@ export async function POST(
       return NextResponse.json({ error: 'Auction must be active or ended' }, { status: 400 })
     }
 
-    // Find the winner automatically
+    // Find the winner automatically using admin client to include all bids (web + device)
     // Criteria:
-    // 1. Highest Bid Amount (which should be current_price in this model)
-    // 2. Earliest created_at timestamp (First to bid)
-    const { data: winningBid } = await supabase
+    // 1. Highest Bid Amount
+    // 2. Earliest created_at timestamp (First to bid as tiebreaker)
+    const adminDb = createAdminClient()
+    const { data: winningBid } = await adminDb
       .from('bids')
       .select('id, user_id, bid_amount, created_at')
       .eq('gem_id', id)
       .order('bid_amount', { ascending: false })
-      .order('created_at', { ascending: true }) // First come, first served
+      .order('created_at', { ascending: true })
       .limit(1)
       .single()
 

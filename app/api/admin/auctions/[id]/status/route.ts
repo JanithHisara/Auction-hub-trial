@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
+import { sendAuctionLiveEmail } from '@/lib/email/resend'
 
 export async function POST(
   request: NextRequest,
@@ -40,6 +42,47 @@ export async function POST(
     if (error) {
       console.error('Update error:', error)
       return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
+    }
+
+    // When auction goes live, notify all approved registered users via email
+    if (status === 'live') {
+      try {
+        const adminDb = createAdminClient()
+        const { data: auction } = await adminDb
+          .from('auctions')
+          .select('name')
+          .eq('id', id)
+          .single()
+
+        const { data: registrations } = await adminDb
+          .from('auction_registrations')
+          .select('access_token, user:users!auction_registrations_user_id_fkey(email, anonymous_name, display_name)')
+          .eq('auction_id', id)
+          .eq('approval_status', 'approved')
+
+        if (registrations?.length && auction) {
+          type UserInfo = { email: string; anonymous_name?: string | null; display_name?: string | null }
+          const emailPromises = registrations
+            .map(r => {
+              const userRaw = r.user as unknown
+              const user: UserInfo | null = Array.isArray(userRaw) ? (userRaw[0] as UserInfo | undefined) ?? null : userRaw as UserInfo | null
+              return { ...r, userInfo: user }
+            })
+            .filter(r => r.userInfo?.email)
+            .map(r => 
+              sendAuctionLiveEmail({
+                to: r.userInfo!.email,
+                auctionName: auction.name,
+                accessToken: r.access_token,
+                userName: r.userInfo!.display_name || r.userInfo!.anonymous_name || undefined,
+              }).catch(err => console.error(`Failed to send live email to ${r.userInfo!.email}:`, err))
+            )
+          await Promise.allSettled(emailPromises)
+          console.log(`Sent auction-live emails to ${emailPromises.length} registrants`)
+        }
+      } catch (emailError) {
+        console.error('Failed to send auction-live notification emails:', emailError)
+      }
     }
 
     if (contentType?.includes('application/json')) {

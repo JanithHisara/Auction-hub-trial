@@ -24,13 +24,16 @@ export async function POST(
         return NextResponse.json({ error: 'Gem not found' }, { status: 404 })
     }
 
-    const { count: currentLevelBidders } = await supabase
+    // Count unique bidders at current price level (>= to include device bids that may exceed exact price)
+    const { data: currentLevelBids } = await supabase
       .from('bids')
-      .select('*', { count: 'exact', head: true })
+      .select('user_id')
       .eq('gem_id', id)
-      .eq('bid_amount', gem.current_price)
+      .gte('bid_amount', gem.current_price)
 
-    if ((currentLevelBidders || 0) <= 1) {
+    const uniqueBidders = new Set((currentLevelBids || []).map(b => b.user_id)).size
+
+    if (uniqueBidders <= 1) {
         return NextResponse.json({ 
             error: 'Cannot increment price. Wait for more bidders or end the auction.' 
         }, { status: 400 })

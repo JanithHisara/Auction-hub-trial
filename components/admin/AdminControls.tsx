@@ -24,7 +24,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
   const [showStartBiddingModal, setShowStartBiddingModal] = useState(false)
   const [showAnnounceWinnerModal, setShowAnnounceWinnerModal] = useState(false)
   const [customIncrement, setCustomIncrement] = useState(minIncrement.toString())
-  const [biddingDuration, setBiddingDuration] = useState('300') // 5 minutes default
+  const [biddingDuration, setBiddingDuration] = useState('300')
+  const [showProgressiveStartModal, setShowProgressiveStartModal] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [useCustomIncrement, setUseCustomIncrement] = useState(false)
   const [countdown, setCountdown] = useState('')
@@ -255,7 +256,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
             <>
               {status === 'active' && !roundEndTime && (
                 <button
-                  onClick={() => handleAction('start')}
+                  onClick={() => setShowProgressiveStartModal(true)}
                   disabled={loading}
                   className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
                 >
@@ -444,6 +445,97 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                     <Play className="w-4 h-4" />
                     <span>Start Now</span>
                   </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Start Round Modal (Progressive Elimination) */}
+      {mounted && showProgressiveStartModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#1a1a24] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Clock className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Start Round</h3>
+                <p className="text-sm text-[var(--text-secondary)]">Set the round duration</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <label className="block text-sm text-[var(--text-muted)] mb-2">
+                Round Duration
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {durationOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setBiddingDuration(opt.value)}
+                    className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                      biddingDuration === opt.value
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm text-[var(--text-muted)] mb-2">
+                  Or enter custom (seconds)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={biddingDuration}
+                  onChange={(e) => setBiddingDuration(e.target.value.replace(/[^0-9]/g, ''))}
+                  className="w-full px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-white focus:border-[var(--gold)]"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 bg-[var(--surface)] rounded-xl mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-[var(--text-muted)]">Round will end in</span>
+                <span className="text-xl font-bold text-emerald-400">
+                  {Math.floor(parseInt(biddingDuration || '0') / 60)}:{(parseInt(biddingDuration || '0') % 60).toString().padStart(2, '0')} min
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowProgressiveStartModal(false)}
+                disabled={loading}
+                className="flex-1 px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-white font-medium hover:bg-[var(--surface-elevated)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const duration = parseInt(biddingDuration)
+                  if (isNaN(duration) || duration <= 0) {
+                    alert('Please enter a valid duration')
+                    return
+                  }
+                  setShowProgressiveStartModal(false)
+                  handleAction('start', { duration })
+                }}
+                disabled={loading}
+                className="flex-1 px-4 py-3 bg-emerald-500 rounded-lg text-white font-medium flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all"
+              >
+                {loading ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /><span>Starting...</span></>
+                ) : (
+                  <><Play className="w-4 h-4" /><span>Start Round</span></>
                 )}
               </button>
             </div>
