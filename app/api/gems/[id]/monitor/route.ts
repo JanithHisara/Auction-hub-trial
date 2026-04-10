@@ -32,9 +32,9 @@ export async function GET(
     const currentLevelBidders = statsData?.active_bidders || 0
     const currentPrice = gem.current_price
     
-    // Calculate stats
+    // Calculate stats (cap at 100% since bidders can't exceed registered count)
     const percentageLeft = totalRegistered > 0 
-      ? Math.round((currentLevelBidders / totalRegistered) * 100) 
+      ? Math.min(Math.round((currentLevelBidders / totalRegistered) * 100), 100)
       : 0
 
     return NextResponse.json({

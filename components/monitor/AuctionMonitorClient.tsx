@@ -58,6 +58,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
   const tickerRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
+  const hasItems = auction.items.length > 0
   const totalBids = auction.items.reduce((sum, item) => sum + item.bidCount, 0)
   const totalValue = auction.items.reduce((sum, item) => sum + item.highestBid, 0)
   const activeItems = auction.items.filter(i => i.status === 'active').length
@@ -233,7 +234,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
                     <span className={`price-current ${flashItem === item.id ? 'price-flash' : ''}`}>
                       {formatCurrency(item.highestBid)}
                     </span>
-                    {item.highestBid > item.starting_price && (
+                    {item.highestBid > item.starting_price && item.starting_price > 0 && (
                       <span className="price-change">
                         +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%
                       </span>
@@ -259,10 +260,12 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           <div className="highlight-card">
             <div className="highlight-label">HIGHEST BID</div>
             <div className="highlight-value animate-glow">
-              {formatCurrency(Math.max(...auction.items.map(i => i.highestBid)))}
+              {hasItems ? formatCurrency(Math.max(...auction.items.map(i => i.highestBid))) : formatCurrency(0)}
             </div>
             <div className="highlight-item">
-              {auction.items.reduce((max, item) => item.highestBid > max.highestBid ? item : max, auction.items[0])?.name}
+              {hasItems
+                ? auction.items.reduce((max, item) => item.highestBid > max.highestBid ? item : max, auction.items[0])?.name
+                : 'No items yet'}
             </div>
           </div>
 
@@ -302,7 +305,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
             <span key={item.id} className="ticker-item">
               <span className="ticker-name">{item.name}</span>
               <span className="ticker-price">{formatCurrency(item.highestBid)}</span>
-              {item.highestBid > item.starting_price && (
+              {item.highestBid > item.starting_price && item.starting_price > 0 && (
                 <span className="ticker-up">▲ +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
               )}
               {idx < auction.items.length - 1 && <span className="ticker-sep">•</span>}
@@ -313,7 +316,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
             <span key={`dup-${item.id}`} className="ticker-item">
               <span className="ticker-name">{item.name}</span>
               <span className="ticker-price">{formatCurrency(item.highestBid)}</span>
-              {item.highestBid > item.starting_price && (
+              {item.highestBid > item.starting_price && item.starting_price > 0 && (
                 <span className="ticker-up">▲ +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
               )}
               {idx < auction.items.length - 1 && <span className="ticker-sep">•</span>}

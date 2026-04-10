@@ -113,10 +113,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     ? new Set(selectedItem.bids.filter(b => b.bid_amount >= fixedPrice).map(b => b.user_id)).size
     : 0
   const bidderPercentage = registeredCount > 0
-    ? Math.round((currentPriceBidders / registeredCount) * 100)
+    ? Math.min(Math.round((currentPriceBidders / registeredCount) * 100), 100)
     : 0
 
   // Fetch registered count for percentage calculation (using RPC to bypass RLS)
+  // Re-fetch periodically since new registrations can be approved during the auction
   useEffect(() => {
     const fetchRegisteredCount = async () => {
       const { data: count } = await supabase
@@ -125,6 +126,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       setRegisteredCount(count || 0)
     }
     fetchRegisteredCount()
+    const interval = setInterval(fetchRegisteredCount, 15000)
+    return () => clearInterval(interval)
   }, [auction.id, supabase])
 
   // Check if user has placed bid (for free-form) or accepted price (for fixed)

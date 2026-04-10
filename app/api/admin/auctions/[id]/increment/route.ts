@@ -41,10 +41,11 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}))
     const incrementAmount = body.increment || gem.min_bid_increment
+    const durationSeconds = body.duration || gem.increment_interval
     
     const newPrice = new Decimal(gem.current_price).plus(new Decimal(incrementAmount)).toNumber()
     const now = new Date()
-    const nextRoundEnd = new Date(now.getTime() + (gem.increment_interval * 1000))
+    const nextRoundEnd = new Date(now.getTime() + (durationSeconds * 1000))
     
     const { error } = await supabase
       .from('gems')
