@@ -86,7 +86,10 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
       } else if (action === 'increment') {
         endpoint = `/api/admin/auctions/${gemId}/increment`
         if (options?.increment !== undefined) {
-          body = { increment: options.increment }
+          body.increment = options.increment
+        }
+        if (options?.duration !== undefined) {
+          body.duration = options.duration
         }
       } else if (action === 'end') {
         endpoint = `/api/admin/auctions/${gemId}/select-winner`
@@ -133,7 +136,12 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
       alert('Please enter a valid increment amount')
       return
     }
-    handleAction('increment', { increment })
+    const duration = parseInt(biddingDuration)
+    if (isNaN(duration) || duration <= 0) {
+      alert('Please enter a valid duration')
+      return
+    }
+    handleAction('increment', { increment, duration })
   }
 
   const handleStartBidding = () => {
@@ -269,8 +277,12 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 <>
                   <button
                     onClick={() => {
-                      if (confirm(`Start default round with +${formatCurrency(minIncrement)} increment?`)) {
-                        handleAction('increment', { increment: minIncrement })
+                      const duration = parseInt(biddingDuration)
+                      const durLabel = duration >= 60
+                        ? `${Math.floor(duration / 60)}m ${duration % 60 ? duration % 60 + 's' : ''}`
+                        : `${duration}s`
+                      if (confirm(`Start default round with +${formatCurrency(minIncrement)} increment and ${durLabel} duration?`)) {
+                        handleAction('increment', { increment: minIncrement, duration: duration || undefined })
                       }
                     }}
                     disabled={loading}
@@ -621,6 +633,37 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                   </div>
                 </div>
               </label>
+            </div>
+
+            {/* Round Duration */}
+            <div className="space-y-3 mb-6">
+              <label className="block text-sm text-[var(--text-muted)]">Round Duration</label>
+              <div className="grid grid-cols-3 gap-2">
+                {durationOptions.slice(0, 6).map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setBiddingDuration(opt.value)}
+                    className={`p-2 rounded-lg text-xs font-medium transition-colors ${
+                      biddingDuration === opt.value
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--text-muted)] mb-1">Custom (seconds)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={biddingDuration}
+                  onChange={(e) => setBiddingDuration(e.target.value.replace(/[^0-9]/g, ''))}
+                  className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-white text-sm focus:border-[var(--gold)]"
+                />
+              </div>
             </div>
 
             {/* Actions */}

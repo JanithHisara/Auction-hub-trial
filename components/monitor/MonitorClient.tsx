@@ -147,7 +147,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
   }
 
   const { item, bidCount, uniqueBidders, highestBid, isFinished, topBidders, recentBids } = data
-  const priceIncrease = highestBid > item.starting_price 
+  const priceIncrease = highestBid > item.starting_price && item.starting_price > 0
     ? Math.round(((highestBid - item.starting_price) / item.starting_price) * 100) 
     : 0
 
