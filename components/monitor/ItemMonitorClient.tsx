@@ -268,7 +268,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
                   <div className={`price-value ${flashPrice ? 'flash' : ''}`}>
                     {formatCurrency(currentItem.highestBid)}
                   </div>
-                  {currentItem.highestBid > currentItem.starting_price && (
+                  {currentItem.highestBid > currentItem.starting_price && currentItem.starting_price > 0 && (
                     <div className="price-increase">
                       ▲ +{Math.round(((currentItem.highestBid - currentItem.starting_price) / currentItem.starting_price) * 100)}% from starting
                     </div>

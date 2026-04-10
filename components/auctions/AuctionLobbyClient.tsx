@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -14,6 +14,40 @@ export default function AuctionLobbyClient({ auctionId, userId, children }: Prop
   const router = useRouter()
   const supabase = createClient()
   const [notification, setNotification] = useState<{ type: 'approved' | 'live' | 'round_ended' | 'next_round'; message: string } | null>(null)
+  const lastApprovalStatus = useRef<string | null>(null)
+
+  const pollRegistrationStatus = useCallback(async () => {
+    if (!userId) return
+    const { data } = await supabase
+      .from('auction_registrations')
+      .select('approval_status')
+      .eq('auction_id', auctionId)
+      .eq('user_id', userId)
+      .single()
+
+    if (!data) return
+
+    if (lastApprovalStatus.current === null) {
+      lastApprovalStatus.current = data.approval_status
+      return
+    }
+
+    if (data.approval_status !== lastApprovalStatus.current) {
+      lastApprovalStatus.current = data.approval_status
+      if (data.approval_status === 'approved') {
+        setNotification({ type: 'approved', message: 'Your registration has been approved! Refreshing...' })
+      }
+      setTimeout(() => router.refresh(), 1500)
+    }
+  }, [auctionId, userId, supabase, router])
+
+  // Poll registration status as a reliable fallback for realtime
+  useEffect(() => {
+    if (!userId) return
+    pollRegistrationStatus()
+    const interval = setInterval(pollRegistrationStatus, 5000)
+    return () => clearInterval(interval)
+  }, [userId, pollRegistrationStatus])
 
   useEffect(() => {
     const channel = supabase
@@ -49,6 +83,7 @@ export default function AuctionLobbyClient({ auctionId, userId, children }: Prop
         (payload) => {
           const updated = payload.new as { user_id?: string; approval_status?: string }
           if (updated.user_id === userId) {
+            lastApprovalStatus.current = updated.approval_status || null
             if (updated.approval_status === 'approved') {
               setNotification({ type: 'approved', message: 'Your registration has been approved! Refreshing...' })
             }
