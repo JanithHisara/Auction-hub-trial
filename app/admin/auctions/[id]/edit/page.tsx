@@ -13,6 +13,13 @@ function toLocalDatetime(isoStr: string) {
   return local.toISOString().slice(0, 16)
 }
 
+// Convert a `datetime-local` value (interpreted in the admin's local timezone)
+// into a UTC ISO string so timestamptz columns store the correct instant.
+function toUTCISO(localDatetime: string) {
+  if (!localDatetime) return localDatetime
+  return new Date(localDatetime).toISOString()
+}
+
 export default function EditAuctionPage() {
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -77,7 +84,13 @@ export default function EditAuctionPage() {
       const res = await fetch(`/api/admin/auctions/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          registration_start: toUTCISO(formData.registration_start),
+          registration_end: toUTCISO(formData.registration_end),
+          auction_start: toUTCISO(formData.auction_start),
+          auction_end: toUTCISO(formData.auction_end),
+        }),
       })
 
       if (!res.ok) {
