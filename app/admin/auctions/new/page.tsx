@@ -6,6 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp } from 'lucide-react'
 
+// Convert a `datetime-local` value (interpreted in the admin's local timezone)
+// into a UTC ISO string so timestamptz columns store the correct instant.
+function toUTCISO(localDatetime: string) {
+  if (!localDatetime) return localDatetime
+  return new Date(localDatetime).toISOString()
+}
+
 export default function NewAuctionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,10 +54,10 @@ export default function NewAuctionPage() {
           description: formData.description || null,
           banner_image_url: formData.banner_image_url || null,
           auction_type: formData.auction_type,
-          registration_start: formData.registration_start,
-          registration_end: formData.registration_end,
-          auction_start: formData.auction_start,
-          auction_end: formData.auction_end,
+          registration_start: toUTCISO(formData.registration_start),
+          registration_end: toUTCISO(formData.registration_end),
+          auction_start: toUTCISO(formData.auction_start),
+          auction_end: toUTCISO(formData.auction_end),
           max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
           entry_fee: parseFloat(formData.entry_fee) || 0,
           status: 'draft',
