@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import AutoRefresh from "@/components/layout/AutoRefresh";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRole } from "@/lib/auth";
 
@@ -34,9 +35,11 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-[var(--foreground)]`}
       >
+        <AutoRefresh />
         <Navbar user={user} role={role} />
         {children}
       </body>
     </html>
   );
 }
+
