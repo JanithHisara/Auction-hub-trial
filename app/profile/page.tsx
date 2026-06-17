@@ -1,7 +1,8 @@
 import { requireAuth } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
+import LocalTime from '@/components/ui/LocalTime'
 
 export default async function ProfilePage() {
   const user = await requireAuth()
@@ -74,7 +75,7 @@ export default async function ProfilePage() {
                     {userData?.role === 'super_admin' ? 'SUPER ADMIN' : userData?.role?.toUpperCase()}
                   </span>
                   <span className="text-xs text-[var(--text-muted)]">
-                    Since {userData?.created_at ? formatDate(userData.created_at) : 'N/A'}
+                    Since {userData?.created_at ? <LocalTime date={userData.created_at} format="full" /> : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -127,7 +128,7 @@ export default async function ProfilePage() {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-white truncate">{gem?.name || 'Item'}</h4>
                         <p className="text-sm text-[var(--text-muted)]">
-                          Won on {win.selected_at ? formatDate(win.selected_at) : 'N/A'}
+                          Won on {win.selected_at ? <LocalTime date={win.selected_at} format="full" /> : 'N/A'}
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">

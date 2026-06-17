@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import MediaRenderer from '@/components/gems/MediaRenderer'
+import LocalTime from '@/components/ui/LocalTime'
 
 interface BidItem {
   id: string
@@ -141,7 +142,7 @@ export default function MyBidsClient({ bids }: Props) {
                             </div>
                             <div>
                               <p className="text-[10px] sm:text-xs text-[var(--text-muted)]">Placed</p>
-                              <p className="text-[var(--text-secondary)] text-xs">{formatDate(bid.created_at)}</p>
+                              <p className="text-[var(--text-secondary)] text-xs"><LocalTime date={bid.created_at} format="full" /></p>
                             </div>
                           </div>
 

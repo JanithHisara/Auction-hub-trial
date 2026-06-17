@@ -5,6 +5,7 @@ import { Auction, Gem } from '@/types/database'
 import RegisterButton from '@/components/auctions/RegisterButton'
 import AuctionCountdown from '@/components/auctions/AuctionCountdown'
 import AuctionLobbyClient from '@/components/auctions/AuctionLobbyClient'
+import LocalTime from '@/components/ui/LocalTime'
 
 async function getAuction(id: string) {
   const supabase = await createClient()
@@ -55,17 +56,6 @@ async function getAuction(id: string) {
     registration,
     user_id: user?.id,
   }
-}
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 function formatCurrency(amount: number) {
@@ -238,11 +228,11 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-[var(--text-muted)]">Opens</span>
-                    <span className="text-white text-right">{formatDate(auction.registration_start)}</span>
+                    <span className="text-white text-right"><LocalTime date={auction.registration_start} format="long" /></span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-[var(--text-muted)]">Closes</span>
-                    <span className="text-white text-right">{formatDate(auction.registration_end)}</span>
+                    <span className="text-white text-right"><LocalTime date={auction.registration_end} format="long" /></span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-[var(--text-muted)]">Registered</span>
@@ -300,12 +290,12 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                   <div className="relative pl-6 pb-6 border-l-2 border-[var(--border)]">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[var(--gold)] border-4 border-[var(--background)]" />
                     <p className="text-sm text-[var(--text-muted)]">Auction Starts</p>
-                    <p className="font-bold text-white">{formatDate(auction.auction_start)}</p>
+                    <p className="font-bold text-white"><LocalTime date={auction.auction_start} format="long" /></p>
                   </div>
                   <div className="relative pl-6 border-l-2 border-[var(--border)]">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[var(--surface)] border-4 border-[var(--border)]" />
                     <p className="text-sm text-[var(--text-muted)]">Auction Ends</p>
-                    <p className="font-bold text-white">{formatDate(auction.auction_end)}</p>
+                    <p className="font-bold text-white"><LocalTime date={auction.auction_end} format="long" /></p>
                   </div>
                 </div>
               </div>

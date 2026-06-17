@@ -40,6 +40,12 @@ export default function EditAuctionPage() {
     max_participants: '',
     entry_fee: '0',
   })
+  const [originalData, setOriginalData] = useState<{
+    registration_start: string
+    registration_end: string
+    auction_start: string
+    auction_end: string
+  } | null>(null)
 
   useEffect(() => {
     async function fetchAuction() {
@@ -59,6 +65,12 @@ export default function EditAuctionPage() {
           auction_end: toLocalDatetime(auction.auction_end),
           max_participants: auction.max_participants?.toString() || '',
           entry_fee: auction.entry_fee?.toString() || '0',
+        })
+        setOriginalData({
+          registration_start: auction.registration_start || '',
+          registration_end: auction.registration_end || '',
+          auction_start: auction.auction_start || '',
+          auction_end: auction.auction_end || '',
         })
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to load auction'
@@ -81,6 +93,38 @@ export default function EditAuctionPage() {
     setLoading(true)
 
     try {
+      const regStart = new Date(formData.registration_start)
+      const regEnd = new Date(formData.registration_end)
+      const aucStart = new Date(formData.auction_start)
+      const aucEnd = new Date(formData.auction_end)
+
+      const now = new Date()
+      const checkFuture = (val: string, origVal: string | undefined, label: string) => {
+        if (!val) return
+        const dateVal = new Date(val)
+        const origDate = origVal ? new Date(origVal) : null
+        if (dateVal < now && (!origDate || dateVal.getTime() !== origDate.getTime())) {
+          throw new Error(`${label} must be in the future`)
+        }
+      }
+
+      if (originalData) {
+        checkFuture(formData.registration_start, originalData.registration_start, 'Registration start time')
+        checkFuture(formData.registration_end, originalData.registration_end, 'Registration end time')
+        checkFuture(formData.auction_start, originalData.auction_start, 'Auction start time')
+        checkFuture(formData.auction_end, originalData.auction_end, 'Auction end time')
+      }
+
+      if (regEnd <= regStart) {
+        throw new Error('Registration end time must be after registration start time')
+      }
+      if (aucStart <= regEnd) {
+        throw new Error('Auction start time must be after registration end time')
+      }
+      if (aucEnd <= aucStart) {
+        throw new Error('Auction end time must be after auction start time')
+      }
+
       const res = await fetch(`/api/admin/auctions/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

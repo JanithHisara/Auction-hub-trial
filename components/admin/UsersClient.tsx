@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Search, Loader2, ChevronLeft, ChevronRight, UserCog } from 'lucide-react'
 import { ROLE_LABELS, ASSIGNABLE_ROLES } from '@/lib/permissions'
 import type { UserRole } from '@/types/database'
+import LocalTime from '@/components/ui/LocalTime'
 
 interface UserRow {
   id: string
@@ -107,13 +108,6 @@ export default function UsersClient() {
     }
   }
 
-  function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
 
   return (
     <div className="space-y-4">
@@ -205,7 +199,7 @@ export default function UsersClient() {
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className="text-sm text-[var(--text-secondary)]">
-                        {formatDate(user.created_at)}
+                        <LocalTime date={user.created_at} format="full" />
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">

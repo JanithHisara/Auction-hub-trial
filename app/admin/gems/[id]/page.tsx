@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import LocalTime from '@/components/ui/LocalTime'
 import PublishButton from '@/components/admin/PublishButton'
 import AdminControls from '@/components/admin/AdminControls'
 import GemDetailClient from '@/components/admin/GemDetailClient'
@@ -130,8 +131,8 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
             <div className="grid grid-cols-2 gap-4">
               <InfoItem label="Starting Price" value={formatCurrency(gem.starting_price)} highlight />
               <InfoItem label="Min Increment" value={formatCurrency(gem.min_bid_increment)} />
-              <InfoItem label="Start Time" value={formatDate(gem.start_time)} />
-              <InfoItem label="End Time" value={formatDate(gem.end_time)} />
+              <InfoItem label="Start Time" value={<LocalTime date={gem.start_time} format="full" />} />
+              <InfoItem label="End Time" value={<LocalTime date={gem.end_time} format="full" />} />
             </div>
             {gem.carat_weight && (
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[var(--border)]">
@@ -261,9 +262,9 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
                       <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-mono opacity-60">ID: {bidUser.id.slice(0, 8)}...</p>
                     )}
                   </div>
-                  <div className="text-right flex-shrink-0 ml-4">
+                   <div className="text-right flex-shrink-0 ml-4">
                     {idx === 0 && <span className="text-xs text-[var(--gold)] font-bold">LEADING</span>}
-                    <p className="text-xs text-[var(--text-muted)]">{formatDate(bid.created_at)}</p>
+                    <p className="text-xs text-[var(--text-muted)]"><LocalTime date={bid.created_at} format="full" /></p>
                   </div>
                 </div>
               )
@@ -278,7 +279,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   )
 }
 
-function InfoItem({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+function InfoItem({ label, value, highlight = false }: { label: string; value: React.ReactNode; highlight?: boolean }) {
   return (
     <div>
       <label className="text-xs text-[var(--text-muted)] uppercase">{label}</label>

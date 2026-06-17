@@ -95,15 +95,6 @@ import BidderHoldManager from '@/components/admin/BidderHoldManager'
 import AuctionChatButton from '@/components/admin/AuctionChatButton'
 import AddUserToAuctionButton from '@/components/admin/AddUserToAuctionButton'
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-US', {
@@ -220,10 +211,10 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
       <div className="card-glass rounded-xl p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Schedule</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <ScheduleItem label="Reg Opens" value={formatDate(auction.registration_start)} />
-          <ScheduleItem label="Reg Closes" value={formatDate(auction.registration_end)} />
-          <ScheduleItem label="Starts" value={formatDate(auction.auction_start)} />
-          <ScheduleItem label="Ends" value={formatDate(auction.auction_end)} />
+          <ScheduleItem label="Reg Opens" value={<LocalTime date={auction.registration_start} format="full" />} />
+          <ScheduleItem label="Reg Closes" value={<LocalTime date={auction.registration_end} format="full" />} />
+          <ScheduleItem label="Starts" value={<LocalTime date={auction.auction_start} format="full" />} />
+          <ScheduleItem label="Ends" value={<LocalTime date={auction.auction_end} format="full" />} />
         </div>
       </div>
 
@@ -443,7 +434,7 @@ function StatCard({ icon, label, value, accent = false }: { icon: string; label:
   )
 }
 
-function ScheduleItem({ label, value }: { label: string; value: string }) {
+function ScheduleItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="p-3 bg-[var(--surface)] rounded-lg">
       <p className="text-xs text-[var(--text-muted)] uppercase mb-1">{label}</p>

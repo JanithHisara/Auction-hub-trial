@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AuctionRegistration, Auction } from '@/types/database'
+import LocalTime from '@/components/ui/LocalTime'
 
 async function getMyRegistrations() {
   const supabase = await createClient()
@@ -46,14 +47,6 @@ async function getUserRewards() {
   return rewards ? { ...rewards, auctions_won: winsCount || 0 } : null
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 function getAuctionStatus(auction: Auction) {
   const now = new Date()
@@ -221,8 +214,8 @@ function AuctionCard({ registration }: { registration: AuctionRegistration & { a
         </div>
         
         <div className="flex flex-wrap gap-4 text-sm text-[var(--text-muted)]">
-          <span>📅 {formatDate(auction.auction_start)}</span>
-          <span>🎫 Registered {formatDate(registration.registered_at)}</span>
+          <span>📅 <LocalTime date={auction.auction_start} format="short" /></span>
+          <span>🎫 Registered <LocalTime date={registration.registered_at} format="short" /></span>
           {registration.access_count > 0 && (
             <span>👁️ {registration.access_count} visits</span>
           )}

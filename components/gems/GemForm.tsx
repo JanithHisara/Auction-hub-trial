@@ -40,6 +40,30 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     setLoading(true)
 
     try {
+      const now = new Date()
+      if (formData.start_time) {
+        const start = new Date(formData.start_time)
+        const originalStart = gem?.start_time ? new Date(gem.start_time) : null
+        if (start < now && (!originalStart || start.getTime() !== originalStart.getTime())) {
+          throw new Error('Start time must be in the future')
+        }
+      }
+      if (formData.end_time) {
+        const end = new Date(formData.end_time)
+        const originalEnd = gem?.end_time ? new Date(gem.end_time) : null
+        if (end < now && (!originalEnd || end.getTime() !== originalEnd.getTime())) {
+          throw new Error('End time must be in the future')
+        }
+      }
+
+      if (formData.start_time && formData.end_time) {
+        const start = new Date(formData.start_time)
+        const end = new Date(formData.end_time)
+        if (end <= start) {
+          throw new Error('End time must be after start time')
+        }
+      }
+
       const url = gem ? `/api/gems/${gem.id}` : '/api/gems'
       const method = gem ? 'PUT' : 'POST'
 

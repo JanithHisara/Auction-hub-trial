@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import { GemStatus } from '@/types/database'
+import LocalTime from '@/components/ui/LocalTime'
 
 export default async function GemsPage() {
   const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
@@ -107,7 +108,7 @@ export default async function GemsPage() {
                   <div className="mt-3 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs">
                     <span className="text-[var(--text-muted)]">{gem.bidCount} bids</span>
                     {gem.status === 'active' && gem.end_time && (
-                      <span className="text-amber-400">Ends {formatDate(gem.end_time)}</span>
+                      <span className="text-amber-400">Ends <LocalTime date={gem.end_time} format="full" /></span>
                     )}
                   </div>
                 )}

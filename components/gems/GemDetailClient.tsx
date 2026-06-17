@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import CountdownTimer from '@/components/auctions/CountdownTimer'
 import BidForm from '@/components/auctions/BidForm'
 import BidHistory from '@/components/auctions/BidHistory'

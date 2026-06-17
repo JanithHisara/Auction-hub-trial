@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Auction } from '@/types/database'
 import Logo from '@/components/brand/Logo'
+import LocalTime from '@/components/ui/LocalTime'
 
 async function getUpcomingAuctions() {
   const supabase = await createClient()
@@ -59,15 +60,6 @@ function getStatusConfig(status: string, auction: Auction) {
   }
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 function getTimeUntil(dateStr: string) {
   const now = new Date()
@@ -301,7 +293,7 @@ function AuctionCard({
         <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--text-muted)] mb-6">
           <div className="flex items-center gap-1.5">
             <span>📅</span>
-            <span>{formatDate(auction.auction_start)}</span>
+            <span><LocalTime date={auction.auction_start} format="weekday-short" /></span>
           </div>
           <div className="flex items-center gap-1.5">
             <span>💎</span>
@@ -330,7 +322,7 @@ function AuctionCard({
             </span>
           ) : (
             <span className="text-[var(--text-muted)] text-sm">
-              Registration opens {formatDate(auction.registration_start)}
+              Registration opens <LocalTime date={auction.registration_start} format="weekday-short" />
             </span>
           )}
           

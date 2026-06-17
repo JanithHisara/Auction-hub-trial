@@ -43,6 +43,35 @@ export default function NewAuctionPage() {
     setLoading(true)
 
     try {
+      const regStart = new Date(formData.registration_start)
+      const regEnd = new Date(formData.registration_end)
+      const aucStart = new Date(formData.auction_start)
+      const aucEnd = new Date(formData.auction_end)
+
+      const now = new Date()
+      if (regStart < now) {
+        throw new Error('Registration start time must be in the future')
+      }
+      if (regEnd < now) {
+        throw new Error('Registration end time must be in the future')
+      }
+      if (aucStart < now) {
+        throw new Error('Auction start time must be in the future')
+      }
+      if (aucEnd < now) {
+        throw new Error('Auction end time must be in the future')
+      }
+
+      if (regEnd <= regStart) {
+        throw new Error('Registration end time must be after registration start time')
+      }
+      if (aucStart <= regEnd) {
+        throw new Error('Auction start time must be after registration end time')
+      }
+      if (aucEnd <= aucStart) {
+        throw new Error('Auction end time must be after auction start time')
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 

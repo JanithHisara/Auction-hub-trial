@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 
 interface Props {
   date: string | Date
-  format?: 'full' | 'short' | 'time'
+  format?: 'full' | 'short' | 'time' | 'long' | 'weekday-short'
   className?: string
 }
 
@@ -16,7 +16,26 @@ export default function LocalTime({ date, format = 'full', className }: Props) {
     
     let options: Intl.DateTimeFormatOptions = {}
     
-    if (format === 'full') {
+    if (format === 'long') {
+      options = {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }
+    } else if (format === 'weekday-short') {
+      options = {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }
+    } else if (format === 'full') {
       options = {
         month: 'short',
         day: 'numeric',

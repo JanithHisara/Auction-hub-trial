@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction } from '@/types/database'
 import { ADMIN_ROLES } from '@/lib/permissions'
+import LocalTime from '@/components/ui/LocalTime'
 
 async function getAuctions() {
   const supabase = await createClient()
@@ -45,15 +46,6 @@ async function getAuctions() {
   return auctionsWithCounts as (Auction & { items_count: number; registered_count: number })[]
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 const statusColors: Record<string, string> = {
   draft: 'bg-gray-500/20 text-gray-400',
@@ -159,7 +151,7 @@ export default async function AdminAuctionsPage() {
                     <td className="px-6 py-4 text-white">{auction.items_count}</td>
                     <td className="px-6 py-4 text-white">{auction.registered_count}</td>
                     <td className="px-6 py-4 text-[var(--text-secondary)] text-sm">
-                      {formatDate(auction.auction_start)}
+                      <LocalTime date={auction.auction_start} format="full" />
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -223,7 +215,7 @@ export default async function AdminAuctionsPage() {
                     <p className="text-xs text-[var(--text-muted)]">Registered</p>
                   </div>
                   <div>
-                    <p className="text-xs text-[var(--text-secondary)]">{formatDate(auction.auction_start)}</p>
+                    <p className="text-xs text-[var(--text-secondary)]"><LocalTime date={auction.auction_start} format="full" /></p>
                     <p className="text-xs text-[var(--text-muted)]">Start</p>
                   </div>
                 </div>
