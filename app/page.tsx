@@ -92,7 +92,7 @@ export default async function HomePage() {
   const pastAuctions = auctions.filter(a => ['ended', 'completed'].includes(a.status))
 
   return (
-    <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] relative overflow-x-hidden">
       {/* Animated background */}
       <div className="fixed inset-0 bg-grid-pattern opacity-50" />
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
