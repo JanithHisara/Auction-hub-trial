@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Auction } from '@/types/database'
 import Logo from '@/components/brand/Logo'
 
-async function getUpcomingAuctions() {
+async function getAuctions() {
   const supabase = await createClient()
   const now = new Date().toISOString()
 
@@ -13,7 +13,7 @@ async function getUpcomingAuctions() {
       *,
       gems:gems(count)
     `)
-    .in('status', ['upcoming', 'registration_open', 'live'])
+    .in('status', ['upcoming', 'registration_open', 'live', 'ended', 'completed'])
     .order('auction_start', { ascending: true })
 
   if (!auctions) return []
@@ -50,6 +50,10 @@ function getStatusConfig(status: string, auction: Auction) {
         return { label: 'Coming Soon', color: 'bg-blue-500', pulse: false, icon: '🗓️' }
       }
       return { label: 'Upcoming', color: 'bg-amber-500', pulse: false, icon: '⏳' }
+    case 'ended':
+      return { label: 'Ended', color: 'bg-zinc-600', pulse: false, icon: '🏁' }
+    case 'completed':
+      return { label: 'Completed', color: 'bg-purple-600', pulse: false, icon: '✅' }
     default:
       return { label: status, color: 'bg-gray-500', pulse: false, icon: '📦' }
   }
@@ -82,12 +86,13 @@ function getTimeUntil(dateStr: string) {
 }
 
 export default async function HomePage() {
-  const auctions = await getUpcomingAuctions()
+  const auctions = await getAuctions()
   const liveAuctions = auctions.filter(a => a.status === 'live')
-  const upcomingAuctions = auctions.filter(a => a.status !== 'live')
+  const upcomingAuctions = auctions.filter(a => ['upcoming', 'registration_open'].includes(a.status))
+  const pastAuctions = auctions.filter(a => ['ended', 'completed'].includes(a.status))
 
   return (
-    <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] relative overflow-x-hidden">
       {/* Animated background */}
       <div className="fixed inset-0 bg-grid-pattern opacity-50" />
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -200,6 +205,25 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Past Auctions */}
+        {pastAuctions.length > 0 && (
+          <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-[var(--border)]/20">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-between mb-12">
+                <h2 className="text-3xl sm:text-4xl font-bold text-white">
+                  Past <span className="text-gradient-gold">Auctions</span>
+                </h2>
+              </div>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {pastAuctions.map((auction, idx) => (
+                  <AuctionCard key={auction.id} auction={auction} delay={idx * 100} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* How It Works */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[var(--background-secondary)]">
           <div className="max-w-5xl mx-auto">
@@ -273,7 +297,7 @@ function AuctionCard({
         </div>
         
         {/* Time until */}
-        {!isLive && auction.status !== 'live' && (
+        {!isLive && !['ended', 'completed'].includes(auction.status) && (
           <div className="absolute top-4 right-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
             <span className="text-xs text-[var(--text-muted)]">Starts in </span>
             <span className="text-sm font-bold text-white">{getTimeUntil(auction.auction_start)}</span>
@@ -320,13 +344,17 @@ function AuctionCard({
               <span className="live-dot" />
               Enter Auction
             </span>
+          ) : ['ended', 'completed'].includes(auction.status) ? (
+            <span className="btn-outline text-sm py-2 px-4">
+              View Results
+            </span>
           ) : (
             <span className="text-[var(--text-muted)] text-sm">
               Registration opens {formatDate(auction.registration_start)}
             </span>
           )}
           
-          {auction.max_participants && (
+          {auction.status !== 'ended' && auction.status !== 'completed' && auction.max_participants && (
             <span className="text-xs text-[var(--text-muted)]">
               {auction.max_participants - auction.registered_count} spots left
             </span>
