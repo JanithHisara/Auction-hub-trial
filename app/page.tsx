@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Auction } from '@/types/database'
 import Logo from '@/components/brand/Logo'
 
-async function getAuctions() {
+async function getUpcomingAuctions() {
   const supabase = await createClient()
   const now = new Date().toISOString()
 
@@ -13,7 +13,7 @@ async function getAuctions() {
       *,
       gems:gems(count)
     `)
-    .in('status', ['upcoming', 'registration_open', 'live', 'ended', 'completed'])
+    .in('status', ['upcoming', 'registration_open', 'live'])
     .order('auction_start', { ascending: true })
 
   if (!auctions) return []
@@ -86,10 +86,9 @@ function getTimeUntil(dateStr: string) {
 }
 
 export default async function HomePage() {
-  const auctions = await getAuctions()
+  const auctions = await getUpcomingAuctions()
   const liveAuctions = auctions.filter(a => a.status === 'live')
-  const upcomingAuctions = auctions.filter(a => ['upcoming', 'registration_open'].includes(a.status))
-  const pastAuctions = auctions.filter(a => ['ended', 'completed'].includes(a.status))
+  const upcomingAuctions = auctions.filter(a => a.status !== 'live')
 
   return (
     <div className="min-h-screen bg-[var(--background)] relative overflow-x-hidden">
@@ -204,25 +203,6 @@ export default async function HomePage() {
             )}
           </div>
         </section>
-
-        {/* Past Auctions */}
-        {pastAuctions.length > 0 && (
-          <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-[var(--border)]/20">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex items-center justify-between mb-12">
-                <h2 className="text-3xl sm:text-4xl font-bold text-white">
-                  Past <span className="text-gradient-gold">Auctions</span>
-                </h2>
-              </div>
-
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {pastAuctions.map((auction, idx) => (
-                  <AuctionCard key={auction.id} auction={auction} delay={idx * 100} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* How It Works */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[var(--background-secondary)]">
