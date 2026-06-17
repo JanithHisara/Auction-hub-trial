@@ -50,6 +50,10 @@ function getStatusConfig(status: string, auction: Auction) {
         return { label: 'Coming Soon', color: 'bg-blue-500', pulse: false, icon: '🗓️' }
       }
       return { label: 'Upcoming', color: 'bg-amber-500', pulse: false, icon: '⏳' }
+    case 'ended':
+      return { label: 'Ended', color: 'bg-zinc-600', pulse: false, icon: '🏁' }
+    case 'completed':
+      return { label: 'Completed', color: 'bg-purple-600', pulse: false, icon: '✅' }
     default:
       return { label: status, color: 'bg-gray-500', pulse: false, icon: '📦' }
   }
@@ -87,7 +91,7 @@ export default async function HomePage() {
   const upcomingAuctions = auctions.filter(a => a.status !== 'live')
 
   return (
-    <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] relative overflow-x-hidden">
       {/* Animated background */}
       <div className="fixed inset-0 bg-grid-pattern opacity-50" />
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -273,7 +277,7 @@ function AuctionCard({
         </div>
         
         {/* Time until */}
-        {!isLive && auction.status !== 'live' && (
+        {!isLive && !['ended', 'completed'].includes(auction.status) && (
           <div className="absolute top-4 right-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
             <span className="text-xs text-[var(--text-muted)]">Starts in </span>
             <span className="text-sm font-bold text-white">{getTimeUntil(auction.auction_start)}</span>
@@ -320,13 +324,17 @@ function AuctionCard({
               <span className="live-dot" />
               Enter Auction
             </span>
+          ) : ['ended', 'completed'].includes(auction.status) ? (
+            <span className="btn-outline text-sm py-2 px-4">
+              View Results
+            </span>
           ) : (
             <span className="text-[var(--text-muted)] text-sm">
               Registration opens {formatDate(auction.registration_start)}
             </span>
           )}
           
-          {auction.max_participants && (
+          {auction.status !== 'ended' && auction.status !== 'completed' && auction.max_participants && (
             <span className="text-xs text-[var(--text-muted)]">
               {auction.max_participants - auction.registered_count} spots left
             </span>
