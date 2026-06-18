@@ -10,8 +10,9 @@ import {
 } from './types';
 
 const AUCTION_TYPE_LABELS: Record<string, string> = {
-  progressive_elimination_auction: 'Progressive Elimination',
+  progressive_elimination_auction: 'English Auction',
   tender_base_fixed_bid: 'Sealed Bid Auction',
+  incremental_approval_auction: 'Progressive Elimination Auction',
 };
 
 const AUCTION_STATUS_LABELS: Record<string, string> = {

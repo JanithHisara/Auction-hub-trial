@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Auction } from '@/types/database'
 import { AuctionHammerIcon } from '@/components/brand/Logo'
+import { getAuctionTypeLabel } from '@/lib/auction-types'
 
 interface ItemBid {
   bid_amount: number
@@ -168,8 +169,14 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           <div className="flex items-center gap-4 sm:gap-8 w-full sm:w-auto justify-between sm:justify-end">
             <div className="text-left sm:text-right">
               <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">Type</div>
-              <div className={`text-sm sm:text-lg font-bold ${isProgressiveElimination ? 'text-purple-400' : 'text-emerald-400'}`}>
-                {isProgressiveElimination ? 'Progressive Elimination' : 'Sealed Bid'}
+              <div className={`text-sm sm:text-lg font-bold ${
+                auction.auction_type === 'progressive_elimination_auction'
+                  ? 'text-purple-400'
+                  : auction.auction_type === 'incremental_approval_auction'
+                    ? 'text-red-400'
+                    : 'text-emerald-400'
+              }`}>
+                {getAuctionTypeLabel(auction.auction_type, true)}
               </div>
             </div>
             <div className="monitor-clock">

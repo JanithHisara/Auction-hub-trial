@@ -848,9 +848,9 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                   : 'bg-emerald-500/20 text-emerald-400'
             }`}>
               {isIncrementalApproval
-                ? '🎯 Incremental Approval Auction'
+                ? '🎯 Progressive Elimination Auction'
                 : isFixedIncrement
-                  ? 'Progressive Elimination Auction'
+                  ? 'English Auction'
                   : 'Sealed Bid Auction'}
             </span>
           </div>

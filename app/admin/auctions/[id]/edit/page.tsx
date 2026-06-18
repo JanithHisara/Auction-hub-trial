@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp, Target } from 'lucide-react'
 
 function toLocalDatetime(isoStr: string) {
   if (!isoStr) return ''
@@ -32,7 +32,7 @@ export default function EditAuctionPage() {
     name: '',
     description: '',
     banner_image_url: '',
-    auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid',
+    auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction',
     registration_start: '',
     registration_end: '',
     auction_start: '',
@@ -300,15 +300,50 @@ export default function EditAuctionPage() {
                     <Gavel className={`w-5 h-5 ${formData.auction_type === 'progressive_elimination_auction' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Progressive Elimination</h3>
+                    <h3 className="font-bold text-white">English Auction</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
-                      Price increases at intervals. Bidders accept or drop out.
+                      Price increases automatically at intervals. Bidders accept or drop out.
                     </p>
                   </div>
                 </div>
                 {formData.auction_type === 'progressive_elimination_auction' && (
                   <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
                     <span className="text-black text-xs">✓</span>
+                  </div>
+                )}
+              </label>
+
+              <label 
+                className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
+                  formData.auction_type === 'incremental_approval_auction' 
+                    ? 'border-red-400 bg-red-500/10' 
+                    : 'border-[var(--border)] hover:border-red-400/50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="auction_type"
+                  value="incremental_approval_auction"
+                  checked={formData.auction_type === 'incremental_approval_auction'}
+                  onChange={handleChange}
+                  className="sr-only"
+                />
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    formData.auction_type === 'incremental_approval_auction' ? 'bg-red-500' : 'bg-[var(--surface)]'
+                  }`}>
+                    <Target className={`w-5 h-5 ${formData.auction_type === 'incremental_approval_auction' ? 'text-white' : 'text-[var(--text-muted)]'}`} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">Progressive Elimination Auction</h3>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">
+                      Admin raises price each round. Bidders who don&apos;t approve are permanently eliminated. Last bidder wins.
+                    </p>
+                  </div>
+                </div>
+                {formData.auction_type === 'incremental_approval_auction' && (
+                  <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
                   </div>
                 )}
               </label>

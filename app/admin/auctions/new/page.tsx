@@ -245,7 +245,7 @@ export default function NewAuctionPage() {
                     <Gavel className={`w-5 h-5 ${formData.auction_type === 'progressive_elimination_auction' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Progressive Elimination Auction</h3>
+                    <h3 className="font-bold text-white">English Auction</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
                       Price increases automatically at intervals. Bidders accept or drop out.
                     </p>
@@ -280,7 +280,7 @@ export default function NewAuctionPage() {
                     <Target className={`w-5 h-5 ${formData.auction_type === 'incremental_approval_auction' ? 'text-white' : 'text-[var(--text-muted)]'}`} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Incremental Approval Auction</h3>
+                    <h3 className="font-bold text-white">Progressive Elimination Auction</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
                       Admin raises price each round. Bidders who don&apos;t approve are permanently eliminated. Last bidder wins.
                     </p>

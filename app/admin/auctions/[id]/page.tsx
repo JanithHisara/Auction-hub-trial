@@ -140,9 +140,15 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${
             auction.auction_type === 'progressive_elimination_auction' 
               ? 'bg-purple-500/20 text-purple-400' 
-              : 'bg-emerald-500/20 text-emerald-400'
+              : auction.auction_type === 'incremental_approval_auction'
+                ? 'bg-red-500/20 text-red-400'
+                : 'bg-emerald-500/20 text-emerald-400'
           }`}>
-            {auction.auction_type === 'progressive_elimination_auction' ? '⏱ Progressive Elimination' : '📈 Sealed Bid'}
+            {auction.auction_type === 'progressive_elimination_auction' 
+              ? '⏱ English Auction' 
+              : auction.auction_type === 'incremental_approval_auction'
+                ? '🎯 Progressive Elimination'
+                : '📈 Sealed Bid'}
           </span>
           <span className={`px-4 py-2 rounded-full text-sm font-bold ${statusColors[auction.status]}`}>
             {auction.status.replace('_', ' ').toUpperCase()}

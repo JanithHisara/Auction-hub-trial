@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Auction } from '@/types/database'
 import { ADMIN_ROLES } from '@/lib/permissions'
 import LocalTime from '@/components/ui/LocalTime'
+import { getAuctionTypeLabel } from '@/lib/auction-types'
 
 async function getAuctions() {
   const supabase = await createClient()
@@ -142,9 +143,11 @@ export default async function AdminAuctionsPage() {
                         <span className={`px-2 py-0.5 rounded text-xs inline-block w-fit ${
                           auction.auction_type === 'progressive_elimination_auction' 
                             ? 'bg-purple-500/20 text-purple-400' 
-                            : 'bg-emerald-500/20 text-emerald-400'
+                            : auction.auction_type === 'incremental_approval_auction'
+                              ? 'bg-red-500/20 text-red-400'
+                              : 'bg-emerald-500/20 text-emerald-400'
                         }`}>
-                          {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Sealed Bid'}
+                          {getAuctionTypeLabel(auction.auction_type, true)}
                         </span>
                       </div>
                     </td>
@@ -197,9 +200,11 @@ export default async function AdminAuctionsPage() {
                       <span className={`px-2 py-0.5 rounded text-xs ${
                         auction.auction_type === 'progressive_elimination_auction' 
                           ? 'bg-purple-500/20 text-purple-400' 
-                          : 'bg-emerald-500/20 text-emerald-400'
+                          : auction.auction_type === 'incremental_approval_auction'
+                            ? 'bg-red-500/20 text-red-400'
+                            : 'bg-emerald-500/20 text-emerald-400'
                       }`}>
-                        {auction.auction_type === 'progressive_elimination_auction' ? 'Progressive Elimination' : 'Sealed Bid'}
+                        {getAuctionTypeLabel(auction.auction_type, true)}
                       </span>
                     </div>
                   </div>

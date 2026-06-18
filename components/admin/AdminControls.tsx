@@ -230,9 +230,9 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 : 'bg-emerald-500/20 text-emerald-400'
           }`}>
             {isProgressiveElimination
-              ? '⏱ Progressive Elimination Auction'
+              ? '⏱ English Auction'
               : isIncrementalApproval
-                ? '🎯 Incremental Approval Auction'
+                ? '🎯 Progressive Elimination Auction'
                 : '📈 Sealed Bid Auction'}
           </span>
         </div>

@@ -2,16 +2,16 @@ import type { AuctionType } from '@/types/database'
 
 /** Display labels for auction types */
 export const AUCTION_TYPE_LABELS: Record<AuctionType, string> = {
-  progressive_elimination_auction: 'Progressive Elimination Auction',
+  progressive_elimination_auction: 'English Auction',
   tender_base_fixed_bid: 'Sealed Bid Auction',
-  incremental_approval_auction: 'Incremental Approval Auction',
+  incremental_approval_auction: 'Progressive Elimination Auction',
 }
 
 /** Short labels for compact UI (e.g. badges, monitor) */
 export const AUCTION_TYPE_SHORT_LABELS: Record<AuctionType, string> = {
-  progressive_elimination_auction: 'Progressive Elimination',
+  progressive_elimination_auction: 'English',
   tender_base_fixed_bid: 'Sealed Bid',
-  incremental_approval_auction: 'Incremental Approval',
+  incremental_approval_auction: 'Progressive Elimination',
 }
 
 export function getAuctionTypeLabel(type: AuctionType, short = false): string {
