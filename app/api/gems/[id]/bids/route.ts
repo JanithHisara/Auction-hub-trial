@@ -104,7 +104,45 @@ export async function POST(
       if (existingBid) {
         return NextResponse.json({ error: 'You have already accepted this price' }, { status: 400 })
       }
+    } else if (auctionType === 'incremental_approval_auction') {
+      // Incremental Approval: user accepts current price; non-approvers are eliminated
+      bidAmount = gem.current_price || gem.starting_price
+
+      // Check if bidding round is active
+      if (!gem.round_end_time) {
+        return NextResponse.json({ error: 'Bidding has not started yet' }, { status: 400 })
+      }
+      const roundEndTime = new Date(gem.round_end_time)
+      if (now >= roundEndTime) {
+        return NextResponse.json({ error: 'Bidding time has ended for this round' }, { status: 400 })
+      }
+
+      // Check if user is eliminated from this item
+      const { data: elimination } = await supabase
+        .from('gem_eliminations')
+        .select('id')
+        .eq('gem_id', id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (elimination) {
+        return NextResponse.json({ error: 'You have been eliminated from this auction item' }, { status: 403 })
+      }
+
+      // Check if user already accepted this price
+      const { data: existingBid } = await supabase
+        .from('bids')
+        .select('id')
+        .eq('gem_id', id)
+        .eq('user_id', user.id)
+        .eq('bid_amount', bidAmount)
+        .single()
+
+      if (existingBid) {
+        return NextResponse.json({ error: 'You have already accepted this price' }, { status: 400 })
+      }
     } else {
+
       // Tender base / fixed bid: user submits custom amount (one bid only)
       
       // Check if bidding round is active

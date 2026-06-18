@@ -24,6 +24,7 @@ interface Props {
   token: string
   initialIsHeld?: boolean
   adminPhone?: string | null
+  initialEliminations?: { gem_id: string }[]
 }
 
 function formatCurrency(amount: number) {
@@ -35,7 +36,7 @@ function formatCurrency(amount: number) {
   }).format(amount)
 }
 
-export default function AuctionRoomClient({ auction: initialAuction, items: initialItems, user, rewards: initialRewards, initialIsHeld = false, adminPhone = null }: Props) {
+export default function AuctionRoomClient({ auction: initialAuction, items: initialItems, user, rewards: initialRewards, initialIsHeld = false, adminPhone = null, initialEliminations = [] }: Props) {
   const [auction, setAuction] = useState(initialAuction)
   const [items, setItems] = useState(initialItems)
   const [selectedItem, setSelectedItem] = useState(() => {
@@ -62,6 +63,10 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const [isHeld, setIsHeld] = useState(initialIsHeld)
   const [holdAdminPhone] = useState(adminPhone)
   const [showLeavePopup, setShowLeavePopup] = useState(false)
+  // Incremental Approval: track eliminated items for the current user
+  const [eliminatedGemIds, setEliminatedGemIds] = useState<Set<string>>(
+    () => new Set(initialEliminations.map(e => e.gem_id))
+  )
   const supabase = createClient()
   const bidsContainerRef = useRef<HTMLDivElement>(null)
   const selectedItemIdRef = useRef<string | null>(selectedItem?.id || null)
@@ -96,8 +101,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   }, [items, selectedItem])
 
   const isFixedIncrement = auction.auction_type === 'progressive_elimination_auction'
-  const isFreeForm = !isFixedIncrement
+  const isIncrementalApproval = auction.auction_type === 'incremental_approval_auction'
+  const isFreeForm = !isFixedIncrement && !isIncrementalApproval
   const isBiddingActive = isFreeForm && selectedItem?.round_end_time && new Date(selectedItem.round_end_time) > new Date()
+
+  // Is the current user eliminated for the selected item?
+  const isEliminated = isIncrementalApproval && selectedItem ? eliminatedGemIds.has(selectedItem.id) : false
 
   // Calculate current bid and next minimum
   const currentBid = selectedItem?.bids?.length
@@ -130,10 +139,10 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     return () => clearInterval(interval)
   }, [auction.id, supabase])
 
-  // Check if user has placed bid (for free-form) or accepted price (for fixed)
+  // Check if user has placed bid (for free-form) or accepted price (for fixed/incremental)
   useEffect(() => {
     if (selectedItem) {
-      if (isFixedIncrement) {
+      if (isFixedIncrement || isIncrementalApproval) {
         const userBid = selectedItem.bids?.find(
           b => b.user_id === user.id && b.bid_amount === fixedPrice
         )
@@ -145,7 +154,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         setUserBidAmount(userBid?.bid_amount || null)
       }
     }
-  }, [selectedItem, fixedPrice, user.id, isFixedIncrement])
+  }, [selectedItem, fixedPrice, user.id, isFixedIncrement, isIncrementalApproval])
 
   // Countdown timer for bidding rounds (both auction types)
   useEffect(() => {
@@ -462,7 +471,32 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [auction.id, items, user.id, supabase, isFixedIncrement, isFreeForm])
+  }, [auction.id, items, user.id, supabase, isFixedIncrement, isFreeForm, isIncrementalApproval])
+
+  // Subscribe to elimination events (incremental approval auctions only)
+  useEffect(() => {
+    if (!isIncrementalApproval) return
+
+    const elimChannel = supabase
+      .channel(`eliminations-${auction.id}-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'gem_eliminations',
+        },
+        (payload) => {
+          const record = payload.new as { gem_id: string; user_id: string }
+          if (record.user_id === user.id) {
+            setEliminatedGemIds(prev => new Set([...prev, record.gem_id]))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(elimChannel) }
+  }, [auction.id, user.id, supabase, isIncrementalApproval])
 
   // Subscribe to hold status changes
   useEffect(() => {
@@ -647,6 +681,19 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         </div>
       )}
 
+      {/* Elimination Overlay — shown when user is eliminated from the selected item (Incremental Approval) */}
+      {isEliminated && !isHeld && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[65] w-full max-w-sm px-4">
+          <div className="bg-gradient-to-br from-[#2a0a0a] to-[#1a0505] border-2 border-red-500/60 rounded-2xl p-5 text-center shadow-2xl animate-bounce-in">
+            <div className="text-4xl mb-2">💀</div>
+            <h3 className="text-lg font-black text-red-400 mb-1">You&apos;ve Been Eliminated!</h3>
+            <p className="text-sm text-[var(--text-secondary)]">
+              You did not approve the price in time. You can watch, but can no longer bid on this item.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Status Overlay - shown when auction is not live */}
       {!isAuctionLive && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm">
@@ -793,9 +840,18 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               <span className="hidden sm:inline">{currentStatus.text}</span>
             </div>
             <h1 className="text-base sm:text-xl font-bold text-white truncate">{auction.name}</h1>
-            <span className={`hidden sm:inline px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${isFixedIncrement ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
-              }`}>
-              {isFixedIncrement ? 'Progressive Elimination Auction' : 'Sealed Bid Auction'}
+            <span className={`hidden sm:inline px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
+              isIncrementalApproval
+                ? 'bg-red-500/20 text-red-400'
+                : isFixedIncrement
+                  ? 'bg-purple-500/20 text-purple-400'
+                  : 'bg-emerald-500/20 text-emerald-400'
+            }`}>
+              {isIncrementalApproval
+                ? '🎯 Incremental Approval Auction'
+                : isFixedIncrement
+                  ? 'Progressive Elimination Auction'
+                  : 'Sealed Bid Auction'}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -992,6 +1048,101 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                         <p className="text-center text-xs text-[var(--text-muted)]">
                           Winner will be announced shortly
                         </p>
+                      )}
+                    </div>
+                  ) : isIncrementalApproval ? (
+                    /* Incremental Approval UI */
+                    <div className="space-y-4">
+                      {isEliminated ? (
+                        /* User has been eliminated from this item */
+                        <div className="p-6 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-center">
+                          <div className="text-5xl mb-3">💀</div>
+                          <h3 className="text-xl font-bold text-red-400 mb-2">You Were Eliminated</h3>
+                          <p className="text-[var(--text-secondary)] text-sm mb-4">
+                            You did not approve the price increase in time and were eliminated from this item.
+                          </p>
+                          <div className="p-4 bg-[var(--surface)] rounded-lg">
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Final Price You Declined</p>
+                            <p className="text-3xl font-black text-red-400">{formatCurrency(fixedPrice)}</p>
+                          </div>
+                        </div>
+                      ) : !selectedItem.round_end_time ? (
+                        /* Waiting for admin to start the first round */
+                        <div className="p-6 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl text-center">
+                          <div className="text-4xl mb-3">⏳</div>
+                          <h3 className="text-xl font-bold text-blue-400 mb-2">Waiting for Round</h3>
+                          <p className="text-[var(--text-secondary)] text-sm mb-4">
+                            The auction host will start the first round shortly. Be ready to approve the price!
+                          </p>
+                          <div className="p-4 bg-[var(--surface)] rounded-lg">
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Starting Price</p>
+                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(fixedPrice)}</p>
+                          </div>
+                          <div className="flex items-center justify-center gap-2 text-emerald-400 mt-4">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                            <span className="text-sm">Waiting for host...</span>
+                          </div>
+                        </div>
+                      ) : biddingTimeExpired ? (
+                        /* Round time expired */
+                        <div className="p-6 bg-purple-500/10 border-2 border-purple-500/30 rounded-xl text-center">
+                          <div className="text-4xl mb-3">⏰</div>
+                          <h3 className="text-xl font-bold text-purple-400 mb-2">Round Ended</h3>
+                          <p className="text-[var(--text-secondary)] text-sm mb-4">
+                            {hasAcceptedPrice
+                              ? '✅ You approved! Waiting for the next round...'
+                              : '⚠️ Time ran out. The host will now eliminate non-approvers.'}
+                          </p>
+                          <div className="p-4 bg-[var(--surface)] rounded-lg">
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Round Price</p>
+                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(fixedPrice)}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {biddingCountdown && biddingCountdown !== '00:00' && (
+                            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
+                              <p className="text-xs text-red-400 uppercase mb-1">Approve before time runs out!</p>
+                              <p className="text-3xl font-mono font-bold text-red-400">{biddingCountdown}</p>
+                            </div>
+                          )}
+
+                          <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[var(--text-muted)]">Current Price</span>
+                              <span className="text-2xl font-bold text-[var(--gold)]">{formatCurrency(fixedPrice)}</span>
+                            </div>
+                            <p className="text-xs text-red-400 font-medium">
+                              ⚠️ You must approve this price or you will be permanently eliminated!
+                            </p>
+                          </div>
+
+                          {hasAcceptedPrice ? (
+                            <div className="flex items-center justify-center gap-3 py-4 px-6 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
+                              <Check className="w-6 h-6 text-emerald-400" />
+                              <span className="font-bold text-emerald-400">Price Approved! You&apos;re still in.</span>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={handleFixedBid}
+                              disabled={isSubmitting || biddingTimeExpired}
+                              className="btn-gold w-full py-4 text-lg flex items-center justify-center gap-2"
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                  <span>Approving...</span>
+                                </>
+                              ) : (
+                                <span>✅ Approve {formatCurrency(fixedPrice)}</span>
+                              )}
+                            </button>
+                          )}
+
+                          <p className="text-center text-xs text-[var(--text-muted)]">
+                            Not approving = permanent elimination from this item
+                          </p>
+                        </>
                       )}
                     </div>
                   ) : isFixedIncrement ? (
@@ -1281,7 +1432,80 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
 
           {/* Bid History / Status Panel */}
           <div className="lg:col-span-1">
-            {isFixedIncrement ? (
+            {isIncrementalApproval ? (
+              /* Incremental Approval: Show approvals and elimination status */
+              <>
+                <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">
+                  🎯 Round Status
+                </h2>
+
+                {/* User status */}
+                <div className={`p-4 rounded-xl border mb-4 ${
+                  isEliminated
+                    ? 'bg-red-500/10 border-red-500/30'
+                    : hasAcceptedPrice
+                      ? 'bg-emerald-500/10 border-emerald-500/30'
+                      : 'bg-[var(--surface)] border-[var(--border)]'
+                }`}>
+                  <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Your Status</p>
+                  <p className={`font-bold text-lg ${
+                    isEliminated ? 'text-red-400' : hasAcceptedPrice ? 'text-emerald-400' : 'text-white'
+                  }`}>
+                    {isEliminated ? '💀 Eliminated' : hasAcceptedPrice ? '✅ Approved' : '⏳ Pending'}
+                  </p>
+                </div>
+
+                {/* Participation stats */}
+                <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)] mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[var(--text-muted)]">Approvals</span>
+                    <span className="text-xl font-bold text-[var(--gold)]">{bidderPercentage}%</span>
+                  </div>
+                  <div className="w-full bg-[var(--background)] rounded-full h-3 mb-2">
+                    <div
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${bidderPercentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {currentPriceBidders} of {registeredCount} active bidders approved
+                  </p>
+                </div>
+
+                <div
+                  ref={bidsContainerRef}
+                  className="bid-ticker max-h-[40vh] lg:max-h-[calc(100vh-400px)] overflow-y-auto"
+                >
+                  {selectedItem?.bids?.filter(b => b.bid_amount >= fixedPrice).length ? (
+                    selectedItem.bids
+                      .filter(b => b.bid_amount >= fixedPrice)
+                      .map((bid) => (
+                        <div
+                          key={bid.id}
+                          className={`bid-item ${newBidHighlight === bid.id ? 'animate-bid-flash' : ''}`}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-emerald-400" />
+                              <span className="text-white font-medium">
+                                {bid.user?.anonymous_name || 'Anonymous'}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-xs text-[var(--text-muted)]">
+                            {new Date(bid.created_at).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="p-8 text-center text-[var(--text-muted)]">
+                      <span className="text-4xl block mb-2">⏳</span>
+                      No approvals yet this round
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : isFixedIncrement ? (
               /* Fixed Increment: Show bidders list and percentage */
               <>
                 <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">

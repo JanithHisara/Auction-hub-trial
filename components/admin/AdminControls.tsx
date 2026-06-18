@@ -31,7 +31,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
   const [countdown, setCountdown] = useState('')
 
   const isProgressiveElimination = auctionType === 'progressive_elimination_auction'
-  const isTenderBaseFixedBid = !isProgressiveElimination
+  const isIncrementalApproval = auctionType === 'incremental_approval_auction'
+  const isTenderBaseFixedBid = !isProgressiveElimination && !isIncrementalApproval
   const isRoundActive = !!roundEndTime && new Date(roundEndTime) > new Date()
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
     return () => clearInterval(interval)
   }, [roundEndTime, router])
 
-  const handleAction = async (action: 'start' | 'increment' | 'end' | 'end-round' | 'activate', options?: { duration?: number; increment?: number }) => {
+  const handleAction = async (action: 'start' | 'increment' | 'end' | 'end-round' | 'activate' | 'eliminate-and-increment', options?: { duration?: number; increment?: number }) => {
     setLoading(true)
     try {
       let endpoint = ''
@@ -84,6 +85,27 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           body = { duration: options.duration }
         }
       } else if (action === 'increment') {
+        endpoint = `/api/admin/auctions/${gemId}/increment`
+        if (options?.increment !== undefined) {
+          body.increment = options.increment
+        }
+        if (options?.duration !== undefined) {
+          body.duration = options.duration
+        }
+      } else if (action === 'eliminate-and-increment') {
+        // Step 1: Eliminate non-approvers for the current price
+        const elimRes = await fetch(`/api/admin/auctions/${gemId}/eliminate-non-approvers`, { method: 'POST' })
+        if (!elimRes.ok) {
+          const err = await elimRes.json()
+          alert(err.error || 'Failed to eliminate non-approvers')
+          setLoading(false)
+          return
+        }
+        const elimData = await elimRes.json()
+        if (elimData.eliminated_count > 0) {
+          console.log(`Eliminated ${elimData.eliminated_count} non-approvers`)
+        }
+        // Step 2: Increment price and start next round
         endpoint = `/api/admin/auctions/${gemId}/increment`
         if (options?.increment !== undefined) {
           body.increment = options.increment
@@ -141,8 +163,11 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
       alert('Please enter a valid duration')
       return
     }
-    handleAction('increment', { increment, duration })
+    // For Incremental Approval: eliminate non-approvers first, then increment
+    const action = isIncrementalApproval ? 'eliminate-and-increment' : 'increment'
+    handleAction(action, { increment, duration })
   }
+
 
   const handleStartBidding = () => {
     const duration = parseInt(biddingDuration)
@@ -198,9 +223,17 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         {/* Auction Type Badge */}
         <div className="mb-4">
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-            isProgressiveElimination ? 'bg-purple-500/20 text-purple-400' : 'bg-emerald-500/20 text-emerald-400'
+            isProgressiveElimination
+              ? 'bg-purple-500/20 text-purple-400'
+              : isIncrementalApproval
+                ? 'bg-red-500/20 text-red-400'
+                : 'bg-emerald-500/20 text-emerald-400'
           }`}>
-            {isProgressiveElimination ? '⏱ Progressive Elimination Auction' : '📈 Sealed Bid Auction'}
+            {isProgressiveElimination
+              ? '⏱ Progressive Elimination Auction'
+              : isIncrementalApproval
+                ? '🎯 Incremental Approval Auction'
+                : '📈 Sealed Bid Auction'}
           </span>
         </div>
 
@@ -300,6 +333,70 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                     Custom Round
                   </button>
                 </>
+              )}
+
+              {(status === 'active' || status === 'ended') && (
+                <button
+                  onClick={() => setShowAnnounceWinnerModal(true)}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
+                  Announce Winner
+                </button>
+              )}
+            </>
+          )}
+
+          {/* INCREMENTAL APPROVAL CONTROLS */}
+          {isIncrementalApproval && (
+            <>
+              {status === 'pending' && (
+                <button
+                  onClick={() => {
+                    if (confirm('Activate this item? It will become the current active item for bidding.')) {
+                      handleAction('activate')
+                    }
+                  }}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                  Activate Item
+                </button>
+              )}
+
+              {status === 'active' && !roundEndTime && (
+                <button
+                  onClick={() => setShowNextRoundModal(true)}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                  Start First Round
+                </button>
+              )}
+
+              {status === 'active' && roundEndTime && !isRoundActive && (
+                <button
+                  onClick={() => setShowNextRoundModal(true)}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SkipForward className="w-4 h-4" />}
+                  Eliminate & Next Round
+                </button>
+              )}
+
+              {status === 'active' && isRoundActive && (
+                <button
+                  onClick={() => handleAction('end-round')}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Square className="w-4 h-4" />}
+                  End Round Early
+                </button>
               )}
 
               {(status === 'active' || status === 'ended') && (

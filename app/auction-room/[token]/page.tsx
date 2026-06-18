@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AuctionRoomClient from '@/components/auction-room/AuctionRoomClient'
-import { Gem, Bid, Auction, AuctionRegistration, UserRewards, User } from '@/types/database'
+import { Gem, Bid, Auction, AuctionRegistration, UserRewards, User, GemElimination } from '@/types/database'
 
 type ItemWithRelations = Gem & { gem_images: { image_url: string }[]; bids: Bid[] }
 
@@ -14,6 +14,7 @@ type ValidAccessResult = {
   rewards: UserRewards | null
   isHeld: boolean
   adminPhone: string | null
+  eliminations: Pick<GemElimination, 'gem_id'>[]
 }
 
 type InvalidAccessResult = {
@@ -95,6 +96,20 @@ async function validateAccess(token: string): Promise<AccessResult> {
       : (item.bids || [])
   }))
 
+  // Get elimination status for this user (for incremental approval auctions)
+  let eliminations: Pick<GemElimination, 'gem_id'>[] = []
+  if (auction.auction_type === 'incremental_approval_auction') {
+    const itemIds = (items || []).map(i => i.id)
+    if (itemIds.length > 0) {
+      const { data: elimData } = await supabase
+        .from('gem_eliminations')
+        .select('gem_id')
+        .eq('user_id', user.id)
+        .in('gem_id', itemIds)
+      eliminations = elimData || []
+    }
+  }
+
   // Get user rewards
   const { data: rewards } = await supabase
     .from('user_rewards')
@@ -135,6 +150,7 @@ async function validateAccess(token: string): Promise<AccessResult> {
     rewards: rewards as UserRewards | null,
     isHeld,
     adminPhone,
+    eliminations,
   }
 }
 
@@ -204,6 +220,7 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
       token={token}
       initialIsHeld={result.isHeld}
       adminPhone={result.adminPhone}
+      initialEliminations={result.eliminations}
     />
   )
 }

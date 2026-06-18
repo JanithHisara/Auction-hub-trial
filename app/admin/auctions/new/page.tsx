@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp, Target } from 'lucide-react'
 
 // Convert a `datetime-local` value (interpreted in the admin's local timezone)
 // into a UTC ISO string so timestamptz columns store the correct instant.
@@ -23,7 +23,7 @@ export default function NewAuctionPage() {
     name: '',
     description: '',
     banner_image_url: '',
-    auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid',
+    auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction',
     registration_start: '',
     registration_end: '',
     auction_start: '',
@@ -187,7 +187,7 @@ export default function NewAuctionPage() {
               Auction Type
             </h2>
             
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               <label 
                 className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
                   formData.auction_type === 'tender_base_fixed_bid' 
@@ -254,6 +254,41 @@ export default function NewAuctionPage() {
                 {formData.auction_type === 'progressive_elimination_auction' && (
                   <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
                     <span className="text-black text-xs">✓</span>
+                  </div>
+                )}
+              </label>
+
+              <label 
+                className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
+                  formData.auction_type === 'incremental_approval_auction' 
+                    ? 'border-red-400 bg-red-500/10' 
+                    : 'border-[var(--border)] hover:border-red-400/50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="auction_type"
+                  value="incremental_approval_auction"
+                  checked={formData.auction_type === 'incremental_approval_auction'}
+                  onChange={handleChange}
+                  className="sr-only"
+                />
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    formData.auction_type === 'incremental_approval_auction' ? 'bg-red-500' : 'bg-[var(--surface)]'
+                  }`}>
+                    <Target className={`w-5 h-5 ${formData.auction_type === 'incremental_approval_auction' ? 'text-white' : 'text-[var(--text-muted)]'}`} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">Incremental Approval Auction</h3>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">
+                      Admin raises price each round. Bidders who don&apos;t approve are permanently eliminated. Last bidder wins.
+                    </p>
+                  </div>
+                </div>
+                {formData.auction_type === 'incremental_approval_auction' && (
+                  <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
                   </div>
                 )}
               </label>

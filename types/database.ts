@@ -1,7 +1,7 @@
 export type UserRole = 'user' | 'moderator' | 'admin' | 'super_admin'
 export type GemStatus = 'draft' | 'pending' | 'active' | 'ended' | 'completed'
 export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
-export type AuctionType = 'progressive_elimination_auction' | 'tender_base_fixed_bid'
+export type AuctionType = 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction'
 export type PaymentStatus = 'pending' | 'completed' | 'failed'
 export type RegistrationApprovalStatus = 'pending' | 'approved' | 'rejected'
 
@@ -183,6 +183,14 @@ export interface BidderHold {
   is_active: boolean
   user?: User
   admin?: User
+}
+
+export interface GemElimination {
+  id: string
+  gem_id: string
+  user_id: string
+  eliminated_at: string
+  eliminated_at_price: number
 }
 
 // Chat
