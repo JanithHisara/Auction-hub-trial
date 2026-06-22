@@ -734,6 +734,9 @@ CREATE POLICY "Users can register for auctions"
 
 -- Migration: 20241205_add_auction_type.sql
 
+-- Add auction type enum
+CREATE TYPE auction_type AS ENUM ('fixed_increment', 'variable_increment');
+
 -- Add auction_type column to auctions table
 ALTER TABLE public.auctions 
 ADD COLUMN auction_type auction_type NOT NULL DEFAULT 'fixed_increment';
