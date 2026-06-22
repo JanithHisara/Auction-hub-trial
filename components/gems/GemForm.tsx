@@ -85,8 +85,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         throw new Error(data.error || 'Failed to save item')
       }
 
-      router.push('/admin/gems')
-      router.refresh()
+      window.location.href = '/admin/gems'
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to save'
       setError(message)
