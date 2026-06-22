@@ -542,6 +542,8 @@ CREATE TABLE public.auction_registrations (
   
   -- Approval Status
   approval_status TEXT NOT NULL DEFAULT 'pending',
+  approved_at TIMESTAMP WITH TIME ZONE,
+  approved_by UUID REFERENCES public.users(id) ON DELETE SET NULL,
   
   UNIQUE(auction_id, user_id),
   UNIQUE(access_token)
