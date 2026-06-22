@@ -12,6 +12,20 @@ interface GemFormProps {
   defaultAuctionId?: string
 }
 
+// Convert a date into local YYYY-MM-DDTHH:MM for datetime-local inputs
+function toLocalDatetimeString(dateInput: string | Date | undefined) {
+  if (!dateInput) return ''
+  const date = new Date(dateInput)
+  const tzOffset = date.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16)
+}
+
+// Convert local datetime-local string to UTC ISO string
+function toUTCISO(localDatetime: string) {
+  if (!localDatetime) return localDatetime
+  return new Date(localDatetime).toISOString()
+}
+
 export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -23,8 +37,8 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     starting_price: gem?.starting_price || 0,
     min_bid_increment: gem?.min_bid_increment || 100,
     increment_interval: gem?.increment_interval || 60,
-    start_time: gem?.start_time ? new Date(gem.start_time).toISOString().slice(0, 16) : '',
-    end_time: gem?.end_time ? new Date(gem.end_time).toISOString().slice(0, 16) : '',
+    start_time: gem?.start_time ? toLocalDatetimeString(gem.start_time) : '',
+    end_time: gem?.end_time ? toLocalDatetimeString(gem.end_time) : '',
     carat_weight: gem?.carat_weight || '',
     color: gem?.color || '',
     provenance: gem?.provenance || '',
@@ -72,6 +86,8 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          start_time: toUTCISO(formData.start_time),
+          end_time: toUTCISO(formData.end_time),
           auction_id: formData.auction_id || null,
           images: formData.images.filter(url => url.trim() !== ''),
           media_types: formData.media_types.filter((_, i) => formData.images[i]?.trim() !== ''),
