@@ -1,4 +1,4 @@
-﻿-- Enable UUID extension
+-- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create enum types
@@ -475,28 +475,39 @@ BEGIN
   WHERE gem_id = p_gem_id AND bid_amount = v_current_price;
 
   RETURN NEXT;
+
+-- Function to get monitor stats bypassing RLS
+CREATE OR REPLACE FUNCTION public.get_monitor_stats(p_gem_id UUID)
+RETURNS TABLE (
+  total_registered BIGINT,
+  active_bidders BIGINT
+) 
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_current_price DECIMAL;
+BEGIN
+  -- Get current price of the gem
+  SELECT current_price INTO v_current_price FROM public.gems WHERE id = p_gem_id;
+
+  -- Count total registrations
+  SELECT count(*) INTO total_registered
+  FROM public.auction_registrations
+  WHERE gem_id = p_gem_id;
+
+  -- Count bidders at current price
+  SELECT count(DISTINCT user_id) INTO active_bidders
+  FROM public.bids
+  WHERE gem_id = p_gem_id AND bid_amount = v_current_price;
+
+  RETURN NEXT;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Grant access to anon and authenticated users
 GRANT EXECUTE ON FUNCTION public.get_monitor_stats(UUID) TO anon, authenticated, service_role;
 
-
--- Migration: 20241204_fix_registration_rls.sql
-
--- Fix RLS policy: Allow registration based on status only, not time
-DROP POLICY IF EXISTS "Users can register for auctions" ON public.auction_registrations;
-
-CREATE POLICY "Users can register for auctions"
-  ON public.auction_registrations FOR INSERT
-  WITH CHECK (
-    auth.uid() = user_id
-    AND EXISTS (
-      SELECT 1 FROM public.auctions a
-      WHERE a.id = auction_registrations.auction_id
-      AND a.status = 'registration_open'
-    )
-  );
 
 
 -- Migration: 20241204_restructure_auctions.sql
@@ -531,6 +542,9 @@ CREATE TABLE public.auctions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   published_at TIMESTAMP WITH TIME ZONE
 );
+
+-- Drop old table before recreating during restructure
+DROP TABLE IF EXISTS public.auction_registrations CASCADE;
 
 -- Create auction registrations table with unique access tokens
 CREATE TABLE public.auction_registrations (
@@ -640,18 +654,6 @@ CREATE POLICY "Admins can view registrations for their auctions"
     )
   );
 
-CREATE POLICY "Users can register for auctions"
-  ON public.auction_registrations FOR INSERT
-  WITH CHECK (
-    auth.uid() = user_id
-    AND EXISTS (
-      SELECT 1 FROM public.auctions a
-      WHERE a.id = auction_registrations.auction_id
-      AND a.status = 'registration_open'
-      AND NOW() BETWEEN a.registration_start AND a.registration_end
-    )
-  );
-
 -- RLS for user_rewards
 CREATE POLICY "Users can view their own rewards"
   ON public.user_rewards FOR SELECT
@@ -740,10 +742,24 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.auctions;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.auction_registrations;
 
 
--- Migration: 20241205_add_auction_type.sql
+-- Migration: 20241204_fix_registration_rls.sql (Moved here to satisfy table dependencies)
 
--- Add auction type enum
-CREATE TYPE auction_type AS ENUM ('fixed_increment', 'variable_increment');
+-- Fix RLS policy: Allow registration based on status only, not time
+DROP POLICY IF EXISTS "Users can register for auctions" ON public.auction_registrations;
+
+CREATE POLICY "Users can register for auctions"
+  ON public.auction_registrations FOR INSERT
+  WITH CHECK (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1 FROM public.auctions a
+      WHERE a.id = auction_registrations.auction_id
+      AND a.status = 'registration_open'
+    )
+  );
+
+
+-- Migration: 20241205_add_auction_type.sql
 
 -- Add auction_type column to auctions table
 ALTER TABLE public.auctions 
