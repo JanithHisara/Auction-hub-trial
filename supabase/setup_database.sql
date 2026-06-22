@@ -540,6 +540,9 @@ CREATE TABLE public.auction_registrations (
   -- Status
   is_active BOOLEAN DEFAULT true,
   
+  -- Approval Status
+  approval_status TEXT NOT NULL DEFAULT 'pending',
+  
   UNIQUE(auction_id, user_id),
   UNIQUE(access_token)
 );
