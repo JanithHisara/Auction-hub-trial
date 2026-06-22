@@ -632,6 +632,29 @@ CREATE POLICY "Admins can view registrations for their auctions"
     )
   );
 
+CREATE POLICY "Admins can update registrations for their auctions"
+  ON public.auction_registrations FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.users
+      WHERE users.id = auth.uid() AND users.role = 'admin'
+    )
+    AND EXISTS (
+      SELECT 1 FROM public.auctions a
+      WHERE a.id = auction_registrations.auction_id
+      AND a.admin_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Super admins can update any registration"
+  ON public.auction_registrations FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.users
+      WHERE users.id = auth.uid() AND users.role = 'super_admin'
+    )
+  );
+
 -- RLS for user_rewards
 CREATE POLICY "Users can view their own rewards"
   ON public.user_rewards FOR SELECT
