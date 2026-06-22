@@ -8,7 +8,7 @@ import ImageUploader from './ImageUploader'
 
 interface GemFormProps {
   gem?: Gem & { images?: GemImage[]; certificates?: GemCertificate[] }
-  auctions?: Pick<Auction, 'id' | 'name' | 'status'>[]
+  auctions?: Pick<Auction, 'id' | 'name' | 'status' | 'auction_start' | 'auction_end'>[]
   defaultAuctionId?: string
 }
 
@@ -75,6 +75,27 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         const end = new Date(formData.end_time)
         if (end <= start) {
           throw new Error('End time must be after start time')
+        }
+      }
+
+      if (formData.auction_id) {
+        const selectedAuction = auctions.find(a => a.id === formData.auction_id)
+        if (selectedAuction) {
+          const aucStart = new Date(selectedAuction.auction_start)
+          const aucEnd = new Date(selectedAuction.auction_end)
+          
+          if (formData.start_time) {
+            const start = new Date(formData.start_time)
+            if (start < aucStart || start > aucEnd) {
+              throw new Error(`Item start time must be between the selected auction's start time (${new Date(selectedAuction.auction_start).toLocaleString()}) and end time (${new Date(selectedAuction.auction_end).toLocaleString()})`)
+            }
+          }
+          if (formData.end_time) {
+            const end = new Date(formData.end_time)
+            if (end < aucStart || end > aucEnd) {
+              throw new Error(`Item end time must be between the selected auction's start time (${new Date(selectedAuction.auction_start).toLocaleString()}) and end time (${new Date(selectedAuction.auction_end).toLocaleString()})`)
+            }
+          }
         }
       }
 

@@ -63,6 +63,7 @@ export async function PUT(
     const { data: gem, error } = await supabase
       .from('gems')
       .update({
+        auction_id: body.auction_id || null,
         name: body.name,
         description: body.description,
         starting_price: body.starting_price,

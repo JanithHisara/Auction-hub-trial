@@ -10,7 +10,7 @@ async function getAuctions() {
 
   const { data: auctions } = await supabase
     .from('auctions')
-    .select('id, name, status')
+    .select('id, name, status, auction_start, auction_end')
     .eq('admin_id', user.id)
     .in('status', ['draft', 'upcoming', 'registration_open'])
     .order('auction_start', { ascending: true })
