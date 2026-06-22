@@ -351,21 +351,6 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           {/* INCREMENTAL APPROVAL CONTROLS */}
           {isIncrementalApproval && (
             <>
-              {status === 'pending' && (
-                <button
-                  onClick={() => {
-                    if (confirm('Activate this item? It will become the current active item for bidding.')) {
-                      handleAction('activate')
-                    }
-                  }}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                  Activate Item
-                </button>
-              )}
-
               {status === 'active' && !roundEndTime && (
                 <button
                   onClick={() => setShowNextRoundModal(true)}
