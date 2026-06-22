@@ -10,11 +10,6 @@ export default function AutoRefresh() {
   const supabase = createClient()
 
   useEffect(() => {
-    // Do not auto-refresh on admin pages to avoid disrupting admin inputs/actions
-    if (pathname?.startsWith('/admin')) {
-      return
-    }
-
     // Subscribe to Postgres changes on tables that can be changed by admins
     const channel = supabase
       .channel('global-admin-changes')
