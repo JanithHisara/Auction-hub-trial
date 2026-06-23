@@ -19,6 +19,8 @@ interface GemDetailClientProps {
     bids: Bid[]
     winner?: Record<string, unknown>
     isActive: boolean
+    currentUserId?: string | null
+    isRegisteredForAuction?: boolean
   }
 }
 
@@ -208,14 +210,33 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
             {gem.isActive ? (
               <BidForm gem={gem} currentBid={highestBid} />
             ) : gem.winner ? (
-              <div className="p-5 bg-emerald-500/20 border border-emerald-500/30 rounded-xl">
-                <p className="text-sm font-semibold text-emerald-400 uppercase mb-2">Auction Ended</p>
-                <p className="text-xs text-[var(--text-muted)] mb-1">Winner</p>
-                <p className="text-lg font-bold text-white mb-4">
-                  {(gem.winner.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'}
-                </p>
-                <WinnerPaymentLink gemId={gem.id} />
-              </div>
+              gem.isRegisteredForAuction && gem.winner.user_id !== gem.currentUserId ? (
+                <div className="p-5 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-4">
+                  <div className="flex items-center gap-2 text-amber-500 font-semibold">
+                    <span>😔</span>
+                    <span>Auction Ended</span>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                    We are sorry, you did not win this gem. Better luck in the next auction!
+                  </p>
+                  <div className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-lg">
+                    <p className="text-xs text-[var(--text-muted)] uppercase mb-1 font-semibold">Winning Price</p>
+                    <p className="text-2xl font-bold text-[var(--gold)]">
+                      {formatCurrency(highestBid)}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-5 bg-emerald-500/20 border border-emerald-500/30 rounded-xl">
+                  <p className="text-sm font-semibold text-emerald-400 uppercase mb-2">Auction Ended</p>
+                  <p className="text-xs text-[var(--text-muted)] mb-1">Winner</p>
+                  <p className="text-lg font-bold text-white mb-4">
+                    {(gem.winner.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'}
+                    {gem.currentUserId && gem.winner.user_id === gem.currentUserId && ' (You)'}
+                  </p>
+                  <WinnerPaymentLink gemId={gem.id} />
+                </div>
+              )
             ) : (
               <div className="p-5 bg-[var(--surface)] border border-[var(--border)] rounded-xl">
                 <p className="text-[var(--text-secondary)]">Auction has ended</p>

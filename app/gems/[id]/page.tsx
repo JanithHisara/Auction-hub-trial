@@ -5,6 +5,7 @@ import GemDetailClient from '@/components/gems/GemDetailClient'
 async function getGem(id: string) {
   const supabase = await createClient()
   const now = new Date().toISOString()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: gem } = await supabase
     .from('gems')
@@ -47,6 +48,17 @@ async function getGem(id: string) {
       .eq('gem_id', id)
       .single()
 
+    let isRegistered = false
+    if (user && endedGem.auction_id) {
+      const { data: reg } = await supabase
+        .from('auction_registrations')
+        .select('id')
+        .eq('auction_id', endedGem.auction_id)
+        .eq('user_id', user.id)
+        .single()
+      isRegistered = !!reg
+    }
+
     return {
       ...endedGem,
       images: images || [],
@@ -54,6 +66,8 @@ async function getGem(id: string) {
       bids: bids || [],
       winner,
       isActive: false,
+      currentUserId: user?.id || null,
+      isRegisteredForAuction: isRegistered,
     }
   }
 
@@ -74,12 +88,25 @@ async function getGem(id: string) {
     .eq('gem_id', id)
     .order('bid_amount', { ascending: false })
 
+  let isRegistered = false
+  if (user && gem.auction_id) {
+    const { data: reg } = await supabase
+      .from('auction_registrations')
+      .select('id')
+      .eq('auction_id', gem.auction_id)
+      .eq('user_id', user.id)
+      .single()
+    isRegistered = !!reg
+  }
+
   return {
     ...gem,
     images: images || [],
     certificates: certificates || [],
     bids: bids || [],
     isActive: true,
+    currentUserId: user?.id || null,
+    isRegisteredForAuction: isRegistered,
   }
 }
 
