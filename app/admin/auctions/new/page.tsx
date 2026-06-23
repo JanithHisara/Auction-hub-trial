@@ -344,7 +344,8 @@ export default function NewAuctionPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
                   Registration Closes *
                 </label>
                 <input
@@ -360,7 +361,8 @@ export default function NewAuctionPage() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
                   Auction Starts *
                 </label>
                 <input
@@ -373,7 +375,8 @@ export default function NewAuctionPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
                   Auction Ends *
                 </label>
                 <input
