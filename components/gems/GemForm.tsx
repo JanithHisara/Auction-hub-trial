@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Gem, GemImage, GemCertificate, Auction, MediaType } from '@/types/database'
 import { Loader2, Plus, X, FileText, DollarSign, Clock } from 'lucide-react'
 import ImageUploader from './ImageUploader'
+import DateTimePicker from '@/components/ui/DateTimePicker'
 
 interface GemFormProps {
   gem?: Gem & { images?: GemImage[]; certificates?: GemCertificate[] }
@@ -238,22 +239,22 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
               <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                 <Clock className="w-4 h-4" /> Start Time *
               </label>
-              <input
-                type="datetime-local"
-                required
+              <DateTimePicker
                 value={formData.start_time}
-                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                className="w-full"
+                onChange={(val) => setFormData({ ...formData, start_time: val })}
+                required
+                placeholder="Select start time"
               />
             </div>
             <div>
-              <label className="block text-sm text-[var(--text-secondary)] mb-2">End Time *</label>
-              <input
-                type="datetime-local"
-                required
+              <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" /> End Time *
+              </label>
+              <DateTimePicker
                 value={formData.end_time}
-                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                className="w-full"
+                onChange={(val) => setFormData({ ...formData, end_time: val })}
+                required
+                placeholder="Select end time"
               />
             </div>
           </div>
