@@ -216,7 +216,8 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
       {/* Schedule */}
       <div className="card-glass rounded-xl p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Schedule</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+          <ScheduleItem label="Publishes" value={auction.published_at ? <LocalTime date={auction.published_at} format="full" /> : 'Immediate'} />
           <ScheduleItem label="Reg Opens" value={<LocalTime date={auction.registration_start} format="full" />} />
           <ScheduleItem label="Reg Closes" value={<LocalTime date={auction.registration_end} format="full" />} />
           <ScheduleItem label="Starts" value={<LocalTime date={auction.auction_start} format="full" />} />

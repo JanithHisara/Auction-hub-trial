@@ -24,6 +24,7 @@ export default function NewAuctionPage() {
     description: '',
     banner_image_url: '',
     auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction',
+    published_at: '',
     registration_start: '',
     registration_end: '',
     auction_start: '',
@@ -43,12 +44,16 @@ export default function NewAuctionPage() {
     setLoading(true)
 
     try {
+      const pubStart = formData.published_at ? new Date(formData.published_at) : null
       const regStart = new Date(formData.registration_start)
       const regEnd = new Date(formData.registration_end)
       const aucStart = new Date(formData.auction_start)
       const aucEnd = new Date(formData.auction_end)
 
       const now = new Date()
+      if (pubStart && pubStart < now) {
+        throw new Error('Publish time must be in the future')
+      }
       if (regStart < now) {
         throw new Error('Registration start time must be in the future')
       }
@@ -62,6 +67,9 @@ export default function NewAuctionPage() {
         throw new Error('Auction end time must be in the future')
       }
 
+      if (pubStart && pubStart >= regStart) {
+        throw new Error('Publish time must be before registration start time')
+      }
       if (regEnd <= regStart) {
         throw new Error('Registration end time must be after registration start time')
       }
@@ -83,6 +91,7 @@ export default function NewAuctionPage() {
           description: formData.description || null,
           banner_image_url: formData.banner_image_url || null,
           auction_type: formData.auction_type,
+          published_at: toUTCISO(formData.published_at),
           registration_start: toUTCISO(formData.registration_start),
           registration_end: toUTCISO(formData.registration_end),
           auction_start: toUTCISO(formData.auction_start),
@@ -302,6 +311,23 @@ export default function NewAuctionPage() {
               Schedule
             </h2>
             
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Publish Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  name="published_at"
+                  value={formData.published_at}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                />
+              </div>
+            </div>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
