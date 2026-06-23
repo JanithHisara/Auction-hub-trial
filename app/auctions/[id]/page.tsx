@@ -74,7 +74,11 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
     notFound()
   }
 
-  const registrationOpen = auction.status === 'registration_open'
+  const now = new Date()
+  const registrationOpen = 
+    auction.status === 'registration_open' &&
+    now >= new Date(auction.registration_start) &&
+    now <= new Date(auction.registration_end)
   const isLive = auction.status === 'live'
   // Registration allowed when admin sets status to 'registration_open'
   const canRegister = registrationOpen && !auction.is_registered
@@ -125,6 +129,16 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
               <div className="px-4 py-2 bg-emerald-500 text-white rounded-full text-sm font-bold uppercase">
                 Registration Open
               </div>
+            ) : auction.status === 'registration_open' ? (
+              now < new Date(auction.registration_start) ? (
+                <div className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-bold uppercase">
+                  Registration Not Started
+                </div>
+              ) : (
+                <div className="px-4 py-2 bg-zinc-600 text-white rounded-full text-sm font-bold uppercase">
+                  Registration Closed
+                </div>
+              )
             ) : (
               <div className="px-4 py-2 bg-[var(--surface)] text-[var(--text-secondary)] rounded-full text-sm font-medium">
                 {auction.status}
@@ -277,7 +291,9 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                   </Link>
                 ) : (
                   <div className="text-center text-[var(--text-muted)] py-4">
-                    Registration is currently closed
+                    {now < new Date(auction.registration_start)
+                      ? 'Registration has not started yet'
+                      : 'Registration is currently closed'}
                   </div>
                 )}
               </div>

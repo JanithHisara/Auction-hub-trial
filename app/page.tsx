@@ -39,15 +39,22 @@ async function getUpcomingAuctions() {
 function getStatusConfig(status: string, auction: Auction) {
   const now = new Date()
   const start = new Date(auction.auction_start)
+  const regStart = new Date(auction.registration_start)
   const regEnd = new Date(auction.registration_end)
   
   switch (status) {
     case 'live':
       return { label: 'LIVE NOW', color: 'bg-red-500', pulse: true, icon: '🔴' }
     case 'registration_open':
+      if (now < regStart) {
+        return { label: 'Registration Not Started', color: 'bg-blue-500', pulse: false, icon: '🗓️' }
+      }
+      if (now > regEnd) {
+        return { label: 'Registration Closed', color: 'bg-zinc-600', pulse: false, icon: '🔒' }
+      }
       return { label: 'Registration Open', color: 'bg-emerald-500', pulse: false, icon: '✨' }
     case 'upcoming':
-      if (now < new Date(auction.registration_start)) {
+      if (now < regStart) {
         return { label: 'Coming Soon', color: 'bg-blue-500', pulse: false, icon: '🗓️' }
       }
       return { label: 'Upcoming', color: 'bg-amber-500', pulse: false, icon: '⏳' }
@@ -236,6 +243,13 @@ function AuctionCard({
   delay?: number 
 }) {
   const statusConfig = getStatusConfig(auction.status, auction)
+  const now = new Date()
+  const regStart = new Date(auction.registration_start)
+  const regEnd = new Date(auction.registration_end)
+  const registrationOpen = 
+    auction.status === 'registration_open' &&
+    now >= regStart &&
+    now <= regEnd
   
   return (
     <Link 
@@ -307,7 +321,7 @@ function AuctionCard({
 
         {/* CTA */}
         <div className="flex items-center justify-between">
-          {auction.status === 'registration_open' ? (
+          {registrationOpen ? (
             <span className="btn-gold text-sm py-2 px-4">
               <span>Register Now →</span>
             </span>
@@ -319,6 +333,10 @@ function AuctionCard({
           ) : ['ended', 'completed'].includes(auction.status) ? (
             <span className="btn-outline text-sm py-2 px-4">
               View Results
+            </span>
+          ) : auction.status === 'registration_open' && now > regEnd ? (
+            <span className="text-[var(--text-muted)] text-sm">
+              Registration closed
             </span>
           ) : (
             <span className="text-[var(--text-muted)] text-sm">

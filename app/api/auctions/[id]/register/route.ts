@@ -32,6 +32,18 @@ export async function POST(
       return NextResponse.json({ message: 'Registration is not open' }, { status: 400 })
     }
 
+    // Enforce registration time limits
+    const now = new Date()
+    const regStart = new Date(auction.registration_start)
+    const regEnd = new Date(auction.registration_end)
+
+    if (now < regStart) {
+      return NextResponse.json({ message: 'Registration has not started yet' }, { status: 400 })
+    }
+    if (now > regEnd) {
+      return NextResponse.json({ message: 'Registration has closed' }, { status: 400 })
+    }
+
     // Check if already registered
     const { data: existing } = await supabase
       .from('auction_registrations')
