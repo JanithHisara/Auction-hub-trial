@@ -11,18 +11,13 @@ export async function GET(request: Request) {
 
   try {
     const supabase = await createClient()
-    const now = new Date().toISOString()
 
-    // Update active auctions that have passed their end time to 'ended'
-    const { error } = await supabase
-      .from('gems')
-      .update({ status: 'ended' })
-      .eq('status', 'active')
-      .lt('end_time', now)
+    // Call the database function to process all auction and gem schedule transitions
+    const { error } = await supabase.rpc('process_auction_schedule')
 
     if (error) throw error
 
-    return NextResponse.json({ success: true, message: 'Auctions updated' })
+    return NextResponse.json({ success: true, message: 'Auctions and gems schedule processed' })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
