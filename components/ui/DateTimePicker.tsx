@@ -14,7 +14,7 @@ import {
   isToday,
   isValid
 } from 'date-fns'
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock } from 'lucide-react'
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react'
 
 interface DateTimePickerProps {
   value: string // Format: YYYY-MM-DDTHH:mm
@@ -50,8 +50,6 @@ export default function DateTimePicker({
   const [currentMonth, setCurrentMonth] = useState(isValidDate ? parsedDate! : new Date())
 
   // Selected date components
-  const selectedYear = isValidDate ? parsedDate!.getFullYear() : new Date().getFullYear()
-  const selectedMonth = isValidDate ? parsedDate!.getMonth() : new Date().getMonth()
   const selectedDay = isValidDate ? parsedDate!.getDate() : new Date().getDate()
 
   // Selected time components (12-hour format)
@@ -61,7 +59,7 @@ export default function DateTimePicker({
     const ampm = hr >= 12 ? 'PM' : 'AM'
     hr = hr % 12
     hr = hr ? hr : 12 // the hour '0' should be '12'
-    return { hour: hr, minute: parsedDate!.getMinutes(), ampm: ampm as 'AM' | 'PM' }
+    return { hour: hr, minute: parsedDate!.getMinutes(), ampm }
   }
 
   const [time, setTime] = useState<{ hour: number; minute: number; ampm: 'AM' | 'PM' }>(getInitialTime())
@@ -106,13 +104,13 @@ export default function DateTimePicker({
   const handleDaySelect = (day: Date) => {
     setCurrentMonth(day)
     updateValue(day.getDate(), time.hour, time.minute, time.ampm)
-    // Switch to time picker tab after a brief delay
+    // On mobile, switch to time tab automatically after a small delay
     setTimeout(() => {
       setActiveTab('time')
     }, 250)
   }
 
-  // Handle time spinner change
+  // Handle time grid change
   const handleTimeChange = (type: 'hour' | 'minute' | 'ampm', newVal: any) => {
     const updatedTime = {
       hour: type === 'hour' ? (newVal as number) : time.hour,
@@ -123,10 +121,21 @@ export default function DateTimePicker({
     if (isValidDate) {
       updateValue(selectedDay, updatedTime.hour, updatedTime.minute, updatedTime.ampm)
     } else {
-      // If no day is selected yet, default to today
       const today = new Date()
       updateValue(today.getDate(), updatedTime.hour, updatedTime.minute, updatedTime.ampm)
     }
+  }
+
+  const incrementMinute = () => {
+    let nextMin = time.minute + 1
+    if (nextMin >= 60) nextMin = 0
+    handleTimeChange('minute', nextMin)
+  }
+
+  const decrementMinute = () => {
+    let prevMin = time.minute - 1
+    if (prevMin < 0) prevMin = 59
+    handleTimeChange('minute', prevMin)
   }
 
   // Generate calendar days
@@ -134,19 +143,17 @@ export default function DateTimePicker({
   const monthEnd = endOfMonth(monthStart)
   const startDate = startOfWeek(monthStart)
   const endDate = endOfWeek(monthEnd)
-
   const days = eachDayOfInterval({ start: startDate, end: endDate })
 
-  // Hours options (1-12)
-  const hoursList = Array.from({ length: 12 }, (_, i) => i + 1)
-  // Minutes options (00-59)
-  const minutesList = Array.from({ length: 60 }, (_, i) => i)
+  // Button option lists
+  const hoursList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  const minutesList = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {name && <input type="hidden" name={name} value={value} required={required} />}
       
-      {/* Display trigger button */}
+      {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -160,15 +167,15 @@ export default function DateTimePicker({
         <CalendarIcon className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--gold)] transition-colors" />
       </button>
 
-      {/* Popover */}
+      {/* Popover Card */}
       {isOpen && (
-        <div className="absolute z-[999] bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 p-4 bg-white border border-zinc-200 rounded-2xl shadow-xl w-72 flex flex-col gap-4 animate-fade-in">
+        <div className="absolute z-[999] bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 p-4 bg-white border border-zinc-200 rounded-2xl shadow-2xl flex flex-col gap-4 animate-fade-in w-72 md:w-[480px]">
           
           {/* Caret pointing down to trigger */}
-          <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-zinc-200 z-10" />
+          <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 md:left-10 md:translate-x-0 w-3 h-3 rotate-45 bg-white border-r border-b border-zinc-200 z-10" />
 
-          {/* iOS Style Tab Switcher */}
-          <div className="bg-zinc-100 p-1 rounded-xl flex gap-1 z-20">
+          {/* iOS Style Tab Switcher (Mobile Only) */}
+          <div className="bg-zinc-100 p-1 rounded-xl flex gap-1 z-20 md:hidden">
             <button
               type="button"
               onClick={() => setActiveTab('date')}
@@ -193,263 +200,185 @@ export default function DateTimePicker({
             </button>
           </div>
 
-          {/* Tab Content */}
-          <div className="z-20 min-h-[220px] flex flex-col justify-center">
-            {activeTab === 'date' ? (
-              /* Calendar View */
-              <div className="w-full">
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <span className="text-zinc-900 font-bold text-sm">
-                    {formatDate(currentMonth, 'MMMM yyyy')}
-                  </span>
+          {/* Main Content Layout */}
+          <div className="flex flex-col md:flex-row gap-4 items-stretch z-20">
+            
+            {/* Left Panel: Calendar Grid */}
+            <div className={`w-full md:w-52 flex flex-col ${activeTab === 'date' ? 'block' : 'hidden md:block'}`}>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <span className="text-zinc-900 font-bold text-sm">
+                  {formatDate(currentMonth, 'MMMM yyyy')}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                    className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                    className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Weekdays */}
+              <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-zinc-400 mb-1 uppercase tracking-wider">
+                {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+                  <div key={day} className="py-1">{day}</div>
+                ))}
+              </div>
+
+              {/* Days grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {days.map((day, idx) => {
+                  const isCurrentMonth = day.getMonth() === currentMonth.getMonth()
+                  const isSelected = isValidDate && isSameDay(day, parsedDate!)
+                  const isCurrentToday = isToday(day)
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleDaySelect(day)}
+                      className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                        isSelected 
+                          ? 'bg-[var(--gold)] text-black font-bold shadow-md shadow-[var(--gold)]/20' 
+                          : isCurrentToday
+                            ? 'border border-[var(--gold)] text-[var(--gold)]'
+                            : isCurrentMonth
+                              ? 'text-zinc-800 hover:bg-zinc-100'
+                              : 'text-zinc-300 hover:bg-zinc-50'
+                      }`}
+                    >
+                      {day.getDate()}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Vertical Divider (Desktop Only) */}
+            <div className="hidden md:block w-[1px] bg-zinc-200 self-stretch" />
+
+            {/* Right Panel: Clickable Time Selector Grids */}
+            <div className={`w-full md:w-52 flex flex-col gap-3 ${activeTab === 'time' ? 'block' : 'hidden md:block'}`}>
+              
+              {/* Active display */}
+              <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-2 flex items-center justify-between">
+                <span className="text-zinc-950 font-bold text-xs uppercase tracking-wide">Selected Time</span>
+                <span className="text-zinc-900 font-extrabold text-sm bg-white px-2 py-0.5 border border-zinc-200 rounded-md">
+                  {time.hour}:{String(time.minute).padStart(2, '0')} {time.ampm}
+                </span>
+              </div>
+
+              {/* Hour Grid */}
+              <div>
+                <span className="text-zinc-400 font-bold text-[10px] uppercase tracking-wider block mb-1">Hour</span>
+                <div className="grid grid-cols-4 gap-1">
+                  {hoursList.map(hr => (
+                    <button
+                      key={hr}
+                      type="button"
+                      onClick={() => handleTimeChange('hour', hr)}
+                      className={`py-1 text-xs font-bold rounded-lg transition-all ${
+                        time.hour === hr
+                          ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
+                          : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {hr}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Minute Grid */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-zinc-400 font-bold text-[10px] uppercase tracking-wider">Minute</span>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                      className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition-colors"
+                      onClick={decrementMinute}
+                      className="p-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 active:scale-90 transition-all"
+                      title="Subtract 1 minute"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <Minus className="w-3 h-3" />
                     </button>
                     <button
                       type="button"
-                      onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                      className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition-colors"
+                      onClick={incrementMinute}
+                      className="p-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 active:scale-90 transition-all"
+                      title="Add 1 minute"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <Plus className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
-
-                {/* Weekdays */}
-                <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-zinc-400 mb-1">
-                  {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                    <div key={day} className="py-1">{day}</div>
+                <div className="grid grid-cols-4 gap-1">
+                  {minutesList.map(min => (
+                    <button
+                      key={min}
+                      type="button"
+                      onClick={() => handleTimeChange('minute', min)}
+                      className={`py-1 text-xs font-bold rounded-lg transition-all ${
+                        time.minute === min
+                          ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
+                          : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {String(min).padStart(2, '0')}
+                    </button>
                   ))}
                 </div>
-
-                {/* Days grid */}
-                <div className="grid grid-cols-7 gap-1">
-                  {days.map((day, idx) => {
-                    const isCurrentMonth = day.getMonth() === currentMonth.getMonth()
-                    const isSelected = isValidDate && isSameDay(day, parsedDate!)
-                    const isCurrentToday = isToday(day)
-
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleDaySelect(day)}
-                        className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                          isSelected 
-                            ? 'bg-[var(--gold)] text-black font-bold shadow-md shadow-[var(--gold)]/20' 
-                            : isCurrentToday
-                              ? 'border border-[var(--gold)] text-[var(--gold)]'
-                              : isCurrentMonth
-                                ? 'text-zinc-800 hover:bg-zinc-100'
-                                : 'text-zinc-300 hover:bg-zinc-50'
-                        }`}
-                      >
-                        {day.getDate()}
-                      </button>
-                    )
-                  })}
-                </div>
               </div>
-            ) : (
-              /* Smooth Time Spinner View */
-              <div className="w-full flex flex-col items-center">
-                
-                {/* Spinner Columns Wrapper */}
-                <div className="relative w-full max-w-[220px] flex items-center justify-center bg-zinc-50 border border-zinc-100 rounded-2xl py-2 px-1 overflow-hidden h-[120px]">
-                  
-                  {/* Highlight selector bar overlay */}
-                  <div className="absolute inset-x-2 top-[calc(50%-16px)] h-8 bg-zinc-200/60 rounded-md pointer-events-none" />
 
-                  {/* Hour Column */}
-                  <TimeSpinnerColumn
-                    options={hoursList}
-                    selected={time.hour}
-                    onChange={(val) => handleTimeChange('hour', val)}
-                  />
-
-                  {/* Separator */}
-                  <span className="text-zinc-400 font-bold px-1 select-none">:</span>
-
-                  {/* Minute Column */}
-                  <TimeSpinnerColumn
-                    options={minutesList}
-                    selected={time.minute}
-                    onChange={(val) => handleTimeChange('minute', val)}
-                    formatLabel={(val) => String(val).padStart(2, '0')}
-                  />
-
-                  {/* Space */}
-                  <div className="w-2" />
-
-                  {/* AM/PM Column */}
-                  <TimeSpinnerColumn
-                    options={['AM', 'PM']}
-                    selected={time.ampm}
-                    onChange={(val) => handleTimeChange('ampm', val)}
-                  />
-                </div>
+              {/* Period Switcher (AM/PM) */}
+              <div className="flex gap-1 mt-1">
+                <button
+                  type="button"
+                  onClick={() => handleTimeChange('ampm', 'AM')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    time.ampm === 'AM'
+                      ? 'bg-[var(--gold)] text-black shadow-sm font-extrabold'
+                      : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
+                  }`}
+                >
+                  AM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTimeChange('ampm', 'PM')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    time.ampm === 'PM'
+                      ? 'bg-[var(--gold)] text-black shadow-sm font-extrabold'
+                      : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
+                  }`}
+                >
+                  PM
+                </button>
               </div>
-            )}
+
+            </div>
           </div>
 
-          {/* Done Button */}
+          {/* Close / Confirm Done Button */}
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="w-full py-2 bg-zinc-900 text-white font-bold text-xs rounded-xl hover:bg-zinc-800 active:scale-[0.98] transition-all uppercase tracking-wider"
+            className="w-full py-2 bg-zinc-950 text-white font-bold text-xs rounded-xl hover:bg-zinc-800 active:scale-[0.98] transition-all uppercase tracking-wider z-20 mt-1"
           >
             Done
           </button>
           
         </div>
       )}
-    </div>
-  )
-}
-
-/* Custom time spinner column using CSS Snap with debounced committing */
-interface SpinnerColumnProps<T> {
-  options: T[]
-  selected: T
-  onChange: (val: T) => void
-  formatLabel?: (val: T) => string
-}
-
-function TimeSpinnerColumn({
-  options,
-  selected,
-  onChange,
-  formatLabel = (val) => String(val)
-}: SpinnerColumnProps<any>) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const isScrollingRef = useRef(false)
-  const [localSelected, setLocalSelected] = useState(selected)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Keep local state in sync with external prop changes when not scrolling
-  useEffect(() => {
-    if (!isScrollingRef.current) {
-      setLocalSelected(selected)
-    }
-  }, [selected])
-
-  // Scroll to selected item
-  const scrollToSelected = (smooth = true) => {
-    if (!containerRef.current) return
-    const index = options.indexOf(selected)
-    if (index === -1) return
-    const container = containerRef.current
-    const itemHeight = 32 // Each item is 32px high
-    const targetScroll = index * itemHeight
-
-    if (Math.abs(container.scrollTop - targetScroll) > 1) {
-      container.scrollTo({
-        top: targetScroll,
-        behavior: smooth ? 'smooth' : 'auto'
-      })
-    }
-  }
-
-  useEffect(() => {
-    // Delay scroll slightly to ensure ref is mounted and layout is ready
-    const timer = setTimeout(() => scrollToSelected(false), 50)
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    if (!isScrollingRef.current) {
-      scrollToSelected(true)
-    }
-  }, [selected])
-
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current)
-      }
-    }
-  }, [])
-
-  // Handle manual scroll snaps
-  const handleScroll = () => {
-    if (!containerRef.current) return
-    isScrollingRef.current = true
-    
-    const container = containerRef.current
-    const itemHeight = 32
-    const index = Math.round(container.scrollTop / itemHeight)
-    
-    if (index >= 0 && index < options.length) {
-      const val = options[index]
-      if (val !== localSelected) {
-        setLocalSelected(val)
-      }
-      
-      // Debounce parent onChange to eliminate main thread lag while scrolling
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current)
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        isScrollingRef.current = false
-        onChange(val)
-      }, 150)
-    }
-  }
-
-  return (
-    <div className="relative w-12 h-[96px] overflow-hidden select-none">
-      <style dangerouslySetInnerHTML={{__html: `
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-      `}} />
-      
-      {/* Scrollable list */}
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        className="h-full overflow-y-scroll snap-y snap-mandatory no-scrollbar py-[32px] scroll-smooth"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
-        }}
-      >
-        {options.map((opt, i) => {
-          const isSelected = opt === localSelected
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => {
-                setLocalSelected(opt)
-                onChange(opt)
-                if (containerRef.current) {
-                  containerRef.current.scrollTo({
-                    top: i * 32,
-                    behavior: 'smooth'
-                  })
-                }
-              }}
-              className={`w-full h-8 flex items-center justify-center snap-center text-sm font-semibold transition-all ${
-                isSelected 
-                  ? 'text-black font-extrabold text-base scale-110' 
-                  : 'text-zinc-400 hover:text-zinc-600'
-              }`}
-            >
-              {formatLabel(opt)}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Fade overlays for 3D wheel styling (light themed) */}
-      <div className="absolute inset-x-0 top-0 h-[32px] bg-gradient-to-b from-zinc-50 to-transparent pointer-events-none opacity-90 animate-fade-in" />
-      <div className="absolute inset-x-0 bottom-0 h-[32px] bg-gradient-to-t from-zinc-50 to-transparent pointer-events-none opacity-90 animate-fade-in" />
     </div>
   )
 }
