@@ -9,6 +9,12 @@ export async function GET() {
 
     const adminClient = createAdminClient()
 
+    try {
+      await adminClient.rpc('process_auction_schedule')
+    } catch (err) {
+      console.error('Failed to process auction schedule in admin list:', err)
+    }
+
     const { data: auctions, error } = await adminClient
       .from('auctions')
       .select('id, name, status')

@@ -10,6 +10,13 @@ import LocalTime from '@/components/ui/LocalTime'
 async function getAuction(id: string) {
   const supabase = await createClient()
   
+  // Auto-process status transitions on demand (covers draft -> upcoming when publish time passes)
+  try {
+    await supabase.rpc('process_auction_schedule')
+  } catch (err) {
+    console.error('Failed to process auction schedule on details page:', err)
+  }
+  
   const { data: auction } = await supabase
     .from('auctions')
     .select('*')
