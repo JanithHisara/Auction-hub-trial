@@ -629,11 +629,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   }
 
   // Check if current user won the selected item and get winning amount
-  const winnerInfo = selectedItem && winners.find(
-    w => w.gem_id === selectedItem.id && w.user_id === user.id
+  const selectedItemWinner = selectedItem && winners.find(
+    w => w.gem_id === selectedItem.id
   )
-  const isWinnerOfSelectedItem = !!winnerInfo
-  const selectedItemWinningAmount = winnerInfo?.winning_amount || currentBid
+  const isWinnerOfSelectedItem = selectedItemWinner?.user_id === user.id
+  const selectedItemWinningAmount = selectedItemWinner?.winning_amount || currentBid
 
   // Status badge config
   const statusConfig: Record<string, { color: string; text: string; icon: string }> = {
@@ -1033,14 +1033,14 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ) : (
                         /* Item ended but user didn't win */
                         <div className="p-6 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">🔔</div>
+                          <div className="text-4xl mb-3">😔</div>
                           <h3 className="text-xl font-bold text-amber-400 mb-2">Bidding Finished</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
-                            This item&apos;s auction has ended.
+                            We are sorry, you did not win this gem. Better luck in the next auction!
                           </p>
                           <div className="p-4 bg-[var(--surface)] rounded-lg">
-                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Final Price</p>
-                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(currentBid)}</p>
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Winning Price</p>
+                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(selectedItemWinningAmount)}</p>
                           </div>
                         </div>
                       )}
