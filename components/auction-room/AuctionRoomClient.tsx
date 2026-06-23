@@ -1012,39 +1012,54 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                   {/* Check if item bidding has ended */}
                   {(selectedItem.status === 'ended' || selectedItem.status === 'completed') ? (
                     <div className="space-y-4">
-                      {isWinnerOfSelectedItem ? (
-                        /* User won this item */
-                        <div className="p-6 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-xl text-center">
-                          <div className="flex items-center justify-center gap-2 mb-3">
-                            <Trophy className="w-10 h-10 text-[var(--gold)]" />
+                      {selectedItemWinner ? (
+                        isWinnerOfSelectedItem ? (
+                          /* User won this item */
+                          <div className="p-6 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-xl text-center">
+                            <div className="flex items-center justify-center gap-2 mb-3">
+                              <Trophy className="w-10 h-10 text-[var(--gold)]" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-emerald-400 mb-2">You Won!</h3>
+                            <p className="text-[var(--text-secondary)] text-sm mb-4">
+                              Congratulations! This item is yours.
+                            </p>
+                            <div className="p-4 bg-[var(--surface)] rounded-lg mb-4">
+                              <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Your Winning Bid</p>
+                              <p className="text-3xl font-black text-emerald-400">{formatCurrency(selectedItemWinningAmount)}</p>
+                            </div>
+                            <p className="text-sm text-[var(--gold)]">
+                              Check your email for payment instructions
+                            </p>
                           </div>
-                          <h3 className="text-2xl font-bold text-emerald-400 mb-2">You Won!</h3>
-                          <p className="text-[var(--text-secondary)] text-sm mb-4">
-                            Congratulations! This item is yours.
-                          </p>
-                          <div className="p-4 bg-[var(--surface)] rounded-lg mb-4">
-                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Your Winning Bid</p>
-                            <p className="text-3xl font-black text-emerald-400">{formatCurrency(selectedItemWinningAmount)}</p>
+                        ) : (
+                          /* Item ended and user didn't win (apology card) */
+                          <div className="p-6 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl text-center">
+                            <div className="text-4xl mb-3">😔</div>
+                            <h3 className="text-xl font-bold text-amber-400 mb-2">Bidding Finished</h3>
+                            <p className="text-[var(--text-secondary)] text-sm mb-4">
+                              We are sorry, you did not win this gem. Better luck in the next auction!
+                            </p>
+                            <div className="p-4 bg-[var(--surface)] rounded-lg">
+                              <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Winning Price</p>
+                              <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(selectedItemWinningAmount)}</p>
+                            </div>
                           </div>
-                          <p className="text-sm text-[var(--gold)]">
-                            Check your email for payment instructions
-                          </p>
-                        </div>
+                        )
                       ) : (
-                        /* Item ended but user didn't win */
+                        /* Winner is not announced/selected yet */
                         <div className="p-6 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">😔</div>
+                          <div className="text-4xl mb-3">🔔</div>
                           <h3 className="text-xl font-bold text-amber-400 mb-2">Bidding Finished</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
-                            We are sorry, you did not win this gem. Better luck in the next auction!
+                            This item&apos;s auction has ended.
                           </p>
                           <div className="p-4 bg-[var(--surface)] rounded-lg">
-                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Winning Price</p>
-                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(selectedItemWinningAmount)}</p>
+                            <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Final Price</p>
+                            <p className="text-3xl font-black text-[var(--gold)]">{formatCurrency(currentBid)}</p>
                           </div>
                         </div>
                       )}
-                      {!isWinnerOfSelectedItem && !winners.some(w => w.gem_id === selectedItem.id) && (
+                      {!selectedItemWinner && (
                         <p className="text-center text-xs text-[var(--text-muted)]">
                           Winner will be announced shortly
                         </p>
