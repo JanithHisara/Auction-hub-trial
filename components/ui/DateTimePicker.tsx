@@ -14,7 +14,7 @@ import {
   isToday,
   isValid
 } from 'date-fns'
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react'
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface DateTimePickerProps {
   value: string // Format: YYYY-MM-DDTHH:mm
@@ -110,7 +110,7 @@ export default function DateTimePicker({
     }, 250)
   }
 
-  // Handle time grid change
+  // Handle time change
   const handleTimeChange = (type: 'hour' | 'minute' | 'ampm', newVal: any) => {
     const updatedTime = {
       hour: type === 'hour' ? (newVal as number) : time.hour,
@@ -126,18 +126,6 @@ export default function DateTimePicker({
     }
   }
 
-  const incrementMinute = () => {
-    let nextMin = time.minute + 1
-    if (nextMin >= 60) nextMin = 0
-    handleTimeChange('minute', nextMin)
-  }
-
-  const decrementMinute = () => {
-    let prevMin = time.minute - 1
-    if (prevMin < 0) prevMin = 59
-    handleTimeChange('minute', prevMin)
-  }
-
   // Generate calendar days
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(monthStart)
@@ -147,7 +135,9 @@ export default function DateTimePicker({
 
   // Button option lists
   const hoursList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-  const minutesList = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+
+  const minuteTens = Math.floor(time.minute / 10) * 10
+  const minuteOnes = time.minute % 10
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
@@ -267,26 +257,26 @@ export default function DateTimePicker({
             <div className="hidden md:block w-[1px] bg-zinc-200 self-stretch" />
 
             {/* Right Panel: Clickable Time Selector Grids */}
-            <div className={`w-full md:w-52 flex flex-col gap-3 ${activeTab === 'time' ? 'block' : 'hidden md:block'}`}>
+            <div className={`w-full md:w-52 flex flex-col gap-3.5 ${activeTab === 'time' ? 'block' : 'hidden md:block'}`}>
               
-              {/* Active display */}
+              {/* Selected Time Display */}
               <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-2 flex items-center justify-between">
-                <span className="text-zinc-950 font-bold text-xs uppercase tracking-wide">Selected Time</span>
-                <span className="text-zinc-900 font-extrabold text-sm bg-white px-2 py-0.5 border border-zinc-200 rounded-md">
+                <span className="text-zinc-950 font-bold text-[10px] uppercase tracking-wider">Selected Time</span>
+                <span className="text-zinc-900 font-extrabold text-xs bg-white px-2 py-0.5 border border-zinc-200 rounded-md">
                   {time.hour}:{String(time.minute).padStart(2, '0')} {time.ampm}
                 </span>
               </div>
 
               {/* Hour Grid */}
               <div>
-                <span className="text-zinc-400 font-bold text-[10px] uppercase tracking-wider block mb-1">Hour</span>
+                <span className="text-zinc-400 font-bold text-[9px] uppercase tracking-wider block mb-1">Hour</span>
                 <div className="grid grid-cols-4 gap-1">
                   {hoursList.map(hr => (
                     <button
                       key={hr}
                       type="button"
                       onClick={() => handleTimeChange('hour', hr)}
-                      className={`py-1 text-xs font-bold rounded-lg transition-all ${
+                      className={`py-1 text-[11px] font-bold rounded-lg transition-all ${
                         time.hour === hr
                           ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
                           : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
@@ -298,53 +288,54 @@ export default function DateTimePicker({
                 </div>
               </div>
 
-              {/* Minute Grid */}
+              {/* Minute Tens Grid */}
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-zinc-400 font-bold text-[10px] uppercase tracking-wider">Minute</span>
-                  <div className="flex items-center gap-1">
+                <span className="text-zinc-400 font-bold text-[9px] uppercase tracking-wider block mb-1">Minute (Tens)</span>
+                <div className="grid grid-cols-6 gap-1">
+                  {[0, 10, 20, 30, 40, 50].map(tens => (
                     <button
+                      key={tens}
                       type="button"
-                      onClick={decrementMinute}
-                      className="p-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 active:scale-90 transition-all"
-                      title="Subtract 1 minute"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={incrementMinute}
-                      className="p-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 active:scale-90 transition-all"
-                      title="Add 1 minute"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-1">
-                  {minutesList.map(min => (
-                    <button
-                      key={min}
-                      type="button"
-                      onClick={() => handleTimeChange('minute', min)}
-                      className={`py-1 text-xs font-bold rounded-lg transition-all ${
-                        time.minute === min
+                      onClick={() => handleTimeChange('minute', tens + minuteOnes)}
+                      className={`py-1 text-[10px] font-bold rounded-lg transition-all ${
+                        minuteTens === tens
                           ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
                           : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
                       }`}
                     >
-                      {String(min).padStart(2, '0')}
+                      {tens}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Minute Ones Grid */}
+              <div>
+                <span className="text-zinc-400 font-bold text-[9px] uppercase tracking-wider block mb-1">Minute (Ones)</span>
+                <div className="grid grid-cols-5 gap-1">
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(ones => (
+                    <button
+                      key={ones}
+                      type="button"
+                      onClick={() => handleTimeChange('minute', minuteTens + ones)}
+                      className={`py-1 text-[10px] font-bold rounded-lg transition-all ${
+                        minuteOnes === ones
+                          ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
+                          : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {ones}
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Period Switcher (AM/PM) */}
-              <div className="flex gap-1 mt-1">
+              <div className="flex gap-1 mt-0.5">
                 <button
                   type="button"
                   onClick={() => handleTimeChange('ampm', 'AM')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all ${
                     time.ampm === 'AM'
                       ? 'bg-[var(--gold)] text-black shadow-sm font-extrabold'
                       : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
@@ -355,7 +346,7 @@ export default function DateTimePicker({
                 <button
                   type="button"
                   onClick={() => handleTimeChange('ampm', 'PM')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all ${
                     time.ampm === 'PM'
                       ? 'bg-[var(--gold)] text-black shadow-sm font-extrabold'
                       : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
