@@ -85,11 +85,12 @@ export async function POST(
       bidAmount = gem.current_price || gem.starting_price
 
       // Check if bidding round is active
-      if (gem.round_end_time) {
-        const roundEndTime = new Date(gem.round_end_time)
-        if (now >= roundEndTime) {
-          return NextResponse.json({ error: 'Bidding time has ended for this round' }, { status: 400 })
-        }
+      if (!gem.round_end_time) {
+        return NextResponse.json({ error: 'Bidding has not started yet' }, { status: 400 })
+      }
+      const roundEndTime = new Date(gem.round_end_time)
+      if (now >= roundEndTime) {
+        return NextResponse.json({ error: 'Bidding time has ended for this round' }, { status: 400 })
       }
 
       // Check if user already accepted this price

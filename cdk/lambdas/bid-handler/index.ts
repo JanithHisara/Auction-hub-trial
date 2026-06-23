@@ -108,8 +108,27 @@ export async function handler(event: BidSubmitPayload): Promise<void> {
     return;
   }
 
-  // 6. Validate bid amount
   const currentPrice = gemRow.current_price ?? gemRow.starting_price;
+
+  // 5.5 Validate round timing (all auctions only allow bidding during active round)
+  if (!gemRow.round_end_time) {
+    await publishToDevice(device_id, 'state', buildBidResultSchema(
+      deviceRow, userRow, nfc_uid, auctionRow, gemRow,
+      { accepted: false, amount, currentHighestBid: currentPrice, nextMinBid: 0, reasonCode: 16, reasonLabel: 'Bidding Not Started' },
+    ));
+    return;
+  }
+
+  const roundEndTime = new Date(gemRow.round_end_time);
+  if (new Date() >= roundEndTime) {
+    await publishToDevice(device_id, 'state', buildBidResultSchema(
+      deviceRow, userRow, nfc_uid, auctionRow, gemRow,
+      { accepted: false, amount, currentHighestBid: currentPrice, nextMinBid: 0, reasonCode: 17, reasonLabel: 'Bidding Round Ended' },
+    ));
+    return;
+  }
+
+  // 6. Validate bid amount
   const nextMinBid = currentPrice + gemRow.min_bid_increment;
 
   if (amount < nextMinBid) {
