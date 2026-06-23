@@ -46,20 +46,23 @@ export default function DateTimePicker({
   const parsedDate = value ? new Date(value) : null
   const isValidDate = parsedDate && isValid(parsedDate)
 
+  // Fallback to present date/time if no valid date selected yet
+  const selectedDateRef = isValidDate ? parsedDate! : new Date()
+
   // Calendar state (viewing month)
-  const [currentMonth, setCurrentMonth] = useState(isValidDate ? parsedDate! : new Date())
+  const [currentMonth, setCurrentMonth] = useState(selectedDateRef)
 
   // Selected date components
-  const selectedDay = isValidDate ? parsedDate!.getDate() : new Date().getDate()
+  const selectedDay = selectedDateRef.getDate()
 
   // Selected time components (12-hour format)
   const getInitialTime = (): { hour: number; minute: number; ampm: 'AM' | 'PM' } => {
-    if (!isValidDate) return { hour: 9, minute: 0, ampm: 'AM' }
-    let hr = parsedDate!.getHours()
+    const refDate = isValidDate ? parsedDate! : new Date()
+    let hr = refDate.getHours()
     const ampm = hr >= 12 ? 'PM' : 'AM'
     hr = hr % 12
     hr = hr ? hr : 12 // the hour '0' should be '12'
-    return { hour: hr, minute: parsedDate!.getMinutes(), ampm }
+    return { hour: hr, minute: refDate.getMinutes(), ampm: ampm as 'AM' | 'PM' }
   }
 
   const [time, setTime] = useState<{ hour: number; minute: number; ampm: 'AM' | 'PM' }>(getInitialTime())
@@ -228,7 +231,7 @@ export default function DateTimePicker({
               <div className="grid grid-cols-7 gap-1">
                 {days.map((day, idx) => {
                   const isCurrentMonth = day.getMonth() === currentMonth.getMonth()
-                  const isSelected = isValidDate && isSameDay(day, parsedDate!)
+                  const isSelected = isSameDay(day, selectedDateRef)
                   const isCurrentToday = isToday(day)
 
                   return (
@@ -362,7 +365,12 @@ export default function DateTimePicker({
           {/* Close / Confirm Done Button */}
           <button
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              if (!value) {
+                updateValue(selectedDay, time.hour, time.minute, time.ampm)
+              }
+              setIsOpen(false)
+            }}
             className="w-full py-2 bg-zinc-950 text-white font-bold text-xs rounded-xl hover:bg-zinc-800 active:scale-[0.98] transition-all uppercase tracking-wider z-20 mt-1"
           >
             Done
