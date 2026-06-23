@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AuctionRoomClient from '@/components/auction-room/AuctionRoomClient'
 import { Gem, Bid, Auction, AuctionRegistration, UserRewards, User, GemElimination } from '@/types/database'
+import LocalTime from '@/components/ui/LocalTime'
 
 type ItemWithRelations = Gem & { gem_images: { image_url: string }[]; bids: Bid[] }
 
@@ -196,7 +197,7 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
               </p>
               {result.auction && (
                 <p className="text-sm text-[var(--gold)]">
-                  Starts: {new Date(result.auction.auction_start).toLocaleString()}
+                  Starts: <LocalTime date={result.auction.auction_start} format="full" />
                 </p>
               )}
             </>
