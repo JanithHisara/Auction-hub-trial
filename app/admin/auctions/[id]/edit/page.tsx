@@ -316,8 +316,8 @@ export default function EditAuctionPage() {
               <label 
                 className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
                   formData.auction_type === 'incremental_approval_auction' 
-                    ? 'border-red-400 bg-red-500/10' 
-                    : 'border-[var(--border)] hover:border-red-400/50'
+                    ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
+                    : 'border-[var(--border)] hover:border-[var(--gold)]/50'
                 }`}
               >
                 <input
@@ -330,9 +330,9 @@ export default function EditAuctionPage() {
                 />
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    formData.auction_type === 'incremental_approval_auction' ? 'bg-red-500' : 'bg-[var(--surface)]'
+                    formData.auction_type === 'incremental_approval_auction' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
                   }`}>
-                    <Target className={`w-5 h-5 ${formData.auction_type === 'incremental_approval_auction' ? 'text-white' : 'text-[var(--text-muted)]'}`} />
+                    <Target className={`w-5 h-5 ${formData.auction_type === 'incremental_approval_auction' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
                   </div>
                   <div>
                     <h3 className="font-bold text-white">Progressive Elimination Auction</h3>
@@ -342,8 +342,8 @@ export default function EditAuctionPage() {
                   </div>
                 </div>
                 {formData.auction_type === 'incremental_approval_auction' && (
-                  <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">✓</span>
+                  <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
+                    <span className="text-black text-xs">✓</span>
                   </div>
                 )}
               </label>
