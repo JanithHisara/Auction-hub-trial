@@ -353,7 +353,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
             <>
               {status === 'active' && !roundEndTime && (
                 <button
-                  onClick={() => setShowNextRoundModal(true)}
+                  onClick={() => setShowProgressiveStartModal(true)}
                   disabled={loading}
                   className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
                 >
