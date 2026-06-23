@@ -148,7 +148,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
               ? '⏱ English Auction' 
               : auction.auction_type === 'incremental_approval_auction'
                 ? '🎯 Progressive Elimination'
-                : '📈 Sealed Bid'}
+                : '📈 Closed Bid'}
           </span>
           <span className={`px-4 py-2 rounded-full text-sm font-bold ${statusColors[auction.status]}`}>
             {auction.status.replace('_', ' ').toUpperCase()}

@@ -866,7 +866,7 @@ ALTER TYPE auction_type RENAME VALUE 'variable_increment' TO 'tender_base_fixed_
 ALTER TABLE public.auctions ALTER COLUMN auction_type SET DEFAULT 'progressive_elimination_auction'::auction_type;
 
 -- Update comment for clarity
-COMMENT ON COLUMN public.auctions.auction_type IS 'progressive_elimination_auction: price increases at intervals, bidders accept or drop out; tender_base_fixed_bid: sealed bids above minimum, highest bid wins';
+COMMENT ON COLUMN public.auctions.auction_type IS 'progressive_elimination_auction: price increases at intervals, bidders accept or drop out; tender_base_fixed_bid: closed bids above minimum, highest bid wins';
 
 -- Migration: 20260226_add_media_type_and_bidder_holds.sql
 
@@ -1294,7 +1294,7 @@ ALTER TABLE public.nfc_cards ADD CONSTRAINT nfc_cards_nfc_uid_key UNIQUE (nfc_ui
 
 -- Migration: 20260319_fix_bids_update_policy.sql
 
--- Allow users to update their own bids (needed for bid editing in Sealed Bid auctions)
+-- Allow users to update their own bids (needed for bid editing in Closed Bid auctions)
 CREATE POLICY "Users can update own bids"
   ON public.bids FOR UPDATE
   TO authenticated
@@ -1481,5 +1481,5 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 8. Update the column comment
 COMMENT ON COLUMN public.auctions.auction_type IS
   'progressive_elimination_auction: price increases at intervals, bidders accept or drop out; '
-  'tender_base_fixed_bid: sealed bids above minimum, highest bid wins; '
+  'tender_base_fixed_bid: closed bids above minimum, highest bid wins; '
   'incremental_approval_auction: admin raises price, non-approvers are permanently eliminated, last bidder wins.';

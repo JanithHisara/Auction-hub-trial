@@ -210,7 +210,7 @@ export default function NewAuctionPage() {
                     <TrendingUp className={`w-5 h-5 ${formData.auction_type === 'tender_base_fixed_bid' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Sealed Bid Auction</h3>
+                    <h3 className="font-bold text-white">Closed Bid Auction</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
                       Bidders submit any amount above minimum increment. Highest bid wins.
                     </p>

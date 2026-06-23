@@ -299,7 +299,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           }
         }
       )
-      // Listen for bid updates (edited bids in Sealed Bid auctions)
+      // Listen for bid updates (edited bids in Closed Bid auctions)
       .on(
         'postgres_changes',
         {
@@ -311,7 +311,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         (payload) => {
           const updatedBid = payload.new as Bid
 
-          // Only process own bid updates (sealed bids are private)
+          // Only process own bid updates (closed bids are private)
           if (updatedBid.user_id !== user.id) return
 
           if (isFreeForm) {
@@ -851,7 +851,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 ? '🎯 Progressive Elimination Auction'
                 : isFixedIncrement
                   ? 'English Auction'
-                  : 'Sealed Bid Auction'}
+                  : 'Closed Bid Auction'}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -1354,7 +1354,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
                                 <p className="text-xs text-[var(--text-muted)] uppercase mb-1 text-center">Note</p>
                                 <p className="text-sm text-[var(--text-secondary)] text-center">
-                                  Bids are sealed. You cannot see other participants&apos; bids.
+                                  Bids are closed. You cannot see other participants&apos; bids.
                                 </p>
                               </div>
                             </>
@@ -1413,7 +1413,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           </button>
 
                           <p className="text-center text-xs text-[var(--text-muted)]">
-                            🔒 Sealed bid - others cannot see your bid
+                            🔒 Closed bid - others cannot see your bid
                           </p>
                           </fieldset>
                         </form>
@@ -1563,7 +1563,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 </div>
               </>
             ) : (
-              /* Free-form: Sealed bids - show info panel */
+              /* Free-form: Closed bids - show info panel */
               <>
                 <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">
                   Auction Info
@@ -1571,7 +1571,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 <div className="space-y-4">
                   <div className="p-6 bg-[var(--surface)] rounded-xl border border-[var(--border)] text-center">
                     <span className="text-5xl block mb-3">🔒</span>
-                    <h3 className="text-lg font-bold text-white mb-2">Sealed Bids</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">Closed Bids</h3>
                     <p className="text-sm text-[var(--text-muted)]">
                       All bids are private. You cannot see other participants&apos; bids.
                     </p>

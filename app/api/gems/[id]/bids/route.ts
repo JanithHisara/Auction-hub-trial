@@ -245,7 +245,7 @@ export async function PATCH(
     }
 
     if (auctionType !== 'tender_base_fixed_bid') {
-      return NextResponse.json({ error: 'Bid editing is only available for Sealed Bid auctions' }, { status: 400 })
+      return NextResponse.json({ error: 'Bid editing is only available for Closed Bid auctions' }, { status: 400 })
     }
 
     if (!gem.round_end_time) {

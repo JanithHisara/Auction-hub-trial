@@ -11,7 +11,7 @@ import {
 
 const AUCTION_TYPE_LABELS: Record<string, string> = {
   progressive_elimination_auction: 'English Auction',
-  tender_base_fixed_bid: 'Sealed Bid Auction',
+  tender_base_fixed_bid: 'Closed Bid Auction',
   incremental_approval_auction: 'Progressive Elimination Auction',
 };
 

@@ -1,4 +1,4 @@
--- Allow users to update their own bids (needed for bid editing in Sealed Bid auctions)
+-- Allow users to update their own bids (needed for bid editing in Closed Bid auctions)
 CREATE POLICY "Users can update own bids"
   ON public.bids FOR UPDATE
   TO authenticated

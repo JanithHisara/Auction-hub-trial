@@ -112,5 +112,5 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 8. Update the column comment
 COMMENT ON COLUMN public.auctions.auction_type IS
   'progressive_elimination_auction: price increases at intervals, bidders accept or drop out; '
-  'tender_base_fixed_bid: sealed bids above minimum, highest bid wins; '
+  'tender_base_fixed_bid: closed bids above minimum, highest bid wins; '
   'incremental_approval_auction: admin raises price, non-approvers are permanently eliminated, last bidder wins.';
