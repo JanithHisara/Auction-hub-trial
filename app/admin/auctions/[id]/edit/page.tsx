@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp, Target } from 'lucide-react'
+import DateTimePicker from '@/components/ui/DateTimePicker'
 
 function toLocalDatetime(isoStr: string) {
   if (!isoStr) return ''
@@ -373,13 +374,11 @@ export default function EditAuctionPage() {
                   <Calendar className="w-4 h-4" />
                   Publish Time *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="published_at"
+                <DateTimePicker
                   value={formData.published_at}
-                  onChange={handleChange}
+                  onChange={(val) => setFormData(prev => ({ ...prev, published_at: val }))}
                   required
-                  className="w-full"
+                  placeholder="Select publish time"
                 />
               </div>
             </div>
@@ -390,13 +389,11 @@ export default function EditAuctionPage() {
                   <Calendar className="w-4 h-4" />
                   Registration Opens *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="registration_start"
+                <DateTimePicker
                   value={formData.registration_start}
-                  onChange={handleChange}
+                  onChange={(val) => setFormData(prev => ({ ...prev, registration_start: val }))}
                   required
-                  className="w-full"
+                  placeholder="Select registration open time"
                 />
               </div>
               <div>
@@ -404,13 +401,11 @@ export default function EditAuctionPage() {
                   <Calendar className="w-4 h-4" />
                   Registration Closes *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="registration_end"
+                <DateTimePicker
                   value={formData.registration_end}
-                  onChange={handleChange}
+                  onChange={(val) => setFormData(prev => ({ ...prev, registration_end: val }))}
                   required
-                  className="w-full"
+                  placeholder="Select registration close time"
                 />
               </div>
             </div>
@@ -421,13 +416,11 @@ export default function EditAuctionPage() {
                   <Calendar className="w-4 h-4" />
                   Auction Starts *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="auction_start"
+                <DateTimePicker
                   value={formData.auction_start}
-                  onChange={handleChange}
+                  onChange={(val) => setFormData(prev => ({ ...prev, auction_start: val }))}
                   required
-                  className="w-full"
+                  placeholder="Select auction start time"
                 />
               </div>
               <div>
@@ -435,13 +428,11 @@ export default function EditAuctionPage() {
                   <Calendar className="w-4 h-4" />
                   Auction Ends *
                 </label>
-                <input
-                  type="datetime-local"
-                  name="auction_end"
+                <DateTimePicker
                   value={formData.auction_end}
-                  onChange={handleChange}
+                  onChange={(val) => setFormData(prev => ({ ...prev, auction_end: val }))}
                   required
-                  className="w-full"
+                  placeholder="Select auction end time"
                 />
               </div>
             </div>
