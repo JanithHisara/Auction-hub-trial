@@ -34,7 +34,6 @@ export default function EditAuctionPage() {
     description: '',
     banner_image_url: '',
     auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction',
-    published_at: '',
     registration_start: '',
     registration_end: '',
     auction_start: '',
@@ -43,7 +42,6 @@ export default function EditAuctionPage() {
     entry_fee: '0',
   })
   const [originalData, setOriginalData] = useState<{
-    published_at: string
     registration_start: string
     registration_end: string
     auction_start: string
@@ -62,7 +60,6 @@ export default function EditAuctionPage() {
           description: auction.description || '',
           banner_image_url: auction.banner_image_url || '',
           auction_type: auction.auction_type || 'tender_base_fixed_bid',
-          published_at: toLocalDatetime(auction.published_at),
           registration_start: toLocalDatetime(auction.registration_start),
           registration_end: toLocalDatetime(auction.registration_end),
           auction_start: toLocalDatetime(auction.auction_start),
@@ -71,7 +68,6 @@ export default function EditAuctionPage() {
           entry_fee: auction.entry_fee?.toString() || '0',
         })
         setOriginalData({
-          published_at: auction.published_at || '',
           registration_start: auction.registration_start || '',
           registration_end: auction.registration_end || '',
           auction_start: auction.auction_start || '',
@@ -98,7 +94,6 @@ export default function EditAuctionPage() {
     setLoading(true)
 
     try {
-      const pubStart = formData.published_at ? new Date(formData.published_at) : null
       const regStart = new Date(formData.registration_start)
       const regEnd = new Date(formData.registration_end)
       const aucStart = new Date(formData.auction_start)
@@ -115,16 +110,12 @@ export default function EditAuctionPage() {
       }
 
       if (originalData) {
-        checkFuture(formData.published_at, originalData.published_at, 'Publish time')
         checkFuture(formData.registration_start, originalData.registration_start, 'Registration start time')
         checkFuture(formData.registration_end, originalData.registration_end, 'Registration end time')
         checkFuture(formData.auction_start, originalData.auction_start, 'Auction start time')
         checkFuture(formData.auction_end, originalData.auction_end, 'Auction end time')
       }
 
-      if (pubStart && pubStart >= regStart) {
-        throw new Error('Publish time must be before registration start time')
-      }
       if (regEnd <= regStart) {
         throw new Error('Registration end time must be after registration start time')
       }
@@ -140,7 +131,7 @@ export default function EditAuctionPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          published_at: toUTCISO(formData.published_at),
+          published_at: null, // Removed from edit form
           registration_start: toUTCISO(formData.registration_start),
           registration_end: toUTCISO(formData.registration_end),
           auction_start: toUTCISO(formData.auction_start),
@@ -368,20 +359,7 @@ export default function EditAuctionPage() {
               Schedule
             </h2>
             
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Publish Time *
-                </label>
-                <DateTimePicker
-                  value={formData.published_at}
-                  onChange={(val) => setFormData(prev => ({ ...prev, published_at: val }))}
-                  required
-                  placeholder="Select publish time"
-                />
-              </div>
-            </div>
+
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
