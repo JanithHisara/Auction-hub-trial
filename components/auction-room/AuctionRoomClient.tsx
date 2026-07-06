@@ -118,7 +118,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const fixedPrice = selectedItem?.current_price || selectedItem?.starting_price || 0
 
   // For fixed increment: count unique bidders who accepted current price (>= fixedPrice to include device bids)
-  const currentPriceBidders = isFixedIncrement && selectedItem?.bids
+  const currentPriceBidders = (isFixedIncrement || isIncrementalApproval) && selectedItem?.bids
     ? new Set(selectedItem.bids.filter(b => b.bid_amount >= fixedPrice).map(b => b.user_id)).size
     : 0
   const bidderPercentage = registeredCount > 0
@@ -255,8 +255,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
             user: bidUser ? { email: bidUser.email || '', anonymous_name: bidUser.anonymous_name } : undefined
           }
 
-          // For fixed increment, update bids list as normal
-          if (isFixedIncrement) {
+          // For fixed increment and incremental approval, update bids list as normal
+          if (isFixedIncrement || isIncrementalApproval) {
             setItems(prev => prev.map(item => {
               if (item.id === newBid.gem_id) {
                 return {
