@@ -53,7 +53,7 @@ export async function POST(
         .eq('gem_id', id)
         .order('bid_amount', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
       
       const revertedPrice = highestBid ? highestBid.bid_amount : gem.starting_price
 
