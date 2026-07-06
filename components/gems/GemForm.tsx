@@ -35,12 +35,12 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     name: gem?.name || '',
     description: gem?.description || '',
     auction_id: gem?.auction_id || defaultAuctionId || '',
-    starting_price: gem?.starting_price || 0,
-    min_bid_increment: gem?.min_bid_increment || 100,
-    increment_interval: gem?.increment_interval || 60,
+    starting_price: gem?.starting_price?.toString() || '0',
+    min_bid_increment: gem?.min_bid_increment?.toString() || '100',
+    increment_interval: gem?.increment_interval?.toString() || '60',
     start_time: gem?.start_time ? toLocalDatetimeString(gem.start_time) : '',
     end_time: gem?.end_time ? toLocalDatetimeString(gem.end_time) : '',
-    carat_weight: gem?.carat_weight || '',
+    carat_weight: gem?.carat_weight?.toString() || '',
     color: gem?.color || '',
     provenance: gem?.provenance || '',
     images: gem?.images?.map(img => img.image_url) || [''],
@@ -115,6 +115,9 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
           media_types: formData.media_types.filter((_, i) => formData.images[i]?.trim() !== ''),
           certificates: formData.certificates.filter(cert => cert.url.trim() !== ''),
           carat_weight: formData.carat_weight ? parseFloat(formData.carat_weight.toString()) : null,
+          starting_price: parseFloat(formData.starting_price.toString()) || 0,
+          min_bid_increment: parseFloat(formData.min_bid_increment.toString()) || 0,
+          increment_interval: parseInt(formData.increment_interval.toString()) || 0,
         }),
       })
 
@@ -219,7 +222,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
                 min="0"
                 step="0.01"
                 value={formData.starting_price}
-                onChange={(e) => setFormData({ ...formData, starting_price: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, starting_price: e.target.value.replace(/^0+(?=\d)/, '') })}
                 className="w-full"
               />
             </div>
@@ -231,7 +234,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
                 min="1"
                 step="0.01"
                 value={formData.min_bid_increment}
-                onChange={(e) => setFormData({ ...formData, min_bid_increment: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, min_bid_increment: e.target.value.replace(/^0+(?=\d)/, '') })}
                 className="w-full"
               />
             </div>
@@ -270,7 +273,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
                 min="0"
                 step="0.01"
                 value={formData.carat_weight}
-                onChange={(e) => setFormData({ ...formData, carat_weight: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, carat_weight: e.target.value.replace(/^0+(?=\d)/, '') })}
                 placeholder="e.g., 5.2"
                 className="w-full"
               />
