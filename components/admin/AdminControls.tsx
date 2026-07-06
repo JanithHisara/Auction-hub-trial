@@ -336,7 +336,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 </>
               )}
 
-              {(status === 'active' || status === 'ended') && (
+              {(status === 'active' || status === 'ended') && roundEndTime && !isRoundActive && (
                 <button
                   onClick={() => setShowAnnounceWinnerModal(true)}
                   disabled={loading}
@@ -392,7 +392,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 </>
               )}
 
-              {(status === 'active' || status === 'ended') && (
+              {(status === 'active' || status === 'ended') && roundEndTime && !isRoundActive && (
                 <button
                   onClick={() => setShowAnnounceWinnerModal(true)}
                   disabled={loading}
