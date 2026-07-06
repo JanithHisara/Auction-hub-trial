@@ -16,9 +16,11 @@ interface AdminControlsProps {
   auctionType: string
   highestBid?: { amount: number; bidderName: string } | null
   allRegisteredBiddersBid?: boolean
+  hasNoBidsInCurrentRound?: boolean
+  startingPrice?: number
 }
 
-export default function AdminControls({ gemId, currentPrice, minIncrement, status, roundEndTime, auctionType, highestBid, allRegisteredBiddersBid }: AdminControlsProps) {
+export default function AdminControls({ gemId, currentPrice, minIncrement, status, roundEndTime, auctionType, highestBid, allRegisteredBiddersBid, hasNoBidsInCurrentRound, startingPrice }: AdminControlsProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showNextRoundModal, setShowNextRoundModal] = useState(false)
@@ -663,8 +665,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
             {/* Price Preview */}
             <div className="p-4 bg-[var(--surface)] rounded-xl mb-6">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-[var(--text-muted)]">Current Price</span>
-                <span className="text-xl font-bold text-white">{formatCurrency(currentPrice)}</span>
+                <span className="text-[var(--text-muted)]">Current Price {hasNoBidsInCurrentRound && '(Reverted)'}</span>
+                <span className="text-xl font-bold text-white">{formatCurrency(hasNoBidsInCurrentRound ? (highestBid?.amount || startingPrice || currentPrice) : currentPrice)}</span>
               </div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[var(--text-muted)]">Increment</span>
@@ -676,7 +678,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 <div className="flex justify-between items-center">
                   <span className="text-[var(--text-muted)]">New Price</span>
                   <span className="text-2xl font-bold text-[var(--gold)]">
-                    {formatCurrency(new Decimal(currentPrice).plus(useCustomIncrement ? new Decimal(customIncrement || '0') : minIncrement).toNumber())}
+                    {formatCurrency(new Decimal(hasNoBidsInCurrentRound ? (highestBid?.amount || startingPrice || currentPrice) : currentPrice).plus(useCustomIncrement ? new Decimal(customIncrement || '0') : minIncrement).toNumber())}
                   </span>
                 </div>
               </div>

@@ -38,6 +38,40 @@ export async function POST(
 
     const currentPrice = gem.current_price || gem.starting_price
 
+    // Check if anyone bid at the current price
+    const { count: activeBiddersCount } = await supabase
+      .from('bids')
+      .select('*', { count: 'exact', head: true })
+      .eq('gem_id', id)
+      .eq('bid_amount', currentPrice)
+
+    if (activeBiddersCount === 0) {
+      // Revert price to highest bid or starting_price
+      const { data: highestBid } = await supabase
+        .from('bids')
+        .select('bid_amount')
+        .eq('gem_id', id)
+        .order('bid_amount', { ascending: false })
+        .limit(1)
+        .single()
+      
+      const revertedPrice = highestBid ? highestBid.bid_amount : gem.starting_price
+
+      const { error: updateError } = await supabase
+        .from('gems')
+        .update({ current_price: revertedPrice })
+        .eq('id', id)
+
+      if (updateError) throw updateError
+
+      return NextResponse.json({
+        message: 'No bids received. Price reverted, no one eliminated.',
+        eliminated_count: 0,
+        reverted_price: revertedPrice,
+        at_price: currentPrice,
+      })
+    }
+
     // Call the Postgres function to eliminate non-approvers
     const { data: eliminatedCount, error } = await supabase
       .rpc('eliminate_non_approvers', {

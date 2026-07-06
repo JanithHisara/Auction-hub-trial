@@ -62,6 +62,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   const currentPrice = gem.current_price || gem.starting_price
   const activeBiddersCount = new Set((bids || []).filter(b => b.bid_amount === currentPrice).map(b => b.user_id)).size
   const allRegisteredBiddersBid = registeredBiddersCount !== null && registeredBiddersCount > 0 && activeBiddersCount >= registeredBiddersCount
+  const hasNoBidsInCurrentRound = currentPrice > gem.starting_price && activeBiddersCount === 0
 
   const statusColors: Record<string, string> = {
     draft: 'bg-gray-500/20 text-gray-400',
@@ -125,6 +126,8 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
         auctionType={(gem.auction as { auction_type?: string } | null)?.auction_type || 'tender_base_fixed_bid'}
         highestBid={highestBidInfo}
         allRegisteredBiddersBid={allRegisteredBiddersBid}
+        hasNoBidsInCurrentRound={hasNoBidsInCurrentRound}
+        startingPrice={gem.starting_price}
       />
 
       {/* Main Content Grid */}
