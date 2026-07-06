@@ -85,7 +85,9 @@ export async function POST(
       .from('gems')
       .update({ 
           current_price: newPrice,
-          round_end_time: nextRoundEnd.toISOString() 
+          round_end_time: nextRoundEnd.toISOString(),
+          status: 'active',
+          end_time: nextRoundEnd.toISOString()
       })
       .eq('id', id)
 

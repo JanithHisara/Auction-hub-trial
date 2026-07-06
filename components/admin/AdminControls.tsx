@@ -298,7 +298,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           {/* PROGRESSIVE ELIMINATION CONTROLS */}
           {isProgressiveElimination && (
             <>
-              {status === 'active' && !roundEndTime && (
+              {(status === 'active' || status === 'ended') && !roundEndTime && (
                 <button
                   onClick={() => setShowProgressiveStartModal(true)}
                   disabled={loading}
@@ -309,7 +309,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 </button>
               )}
 
-              {status === 'active' && roundEndTime && (!isRoundActive || allRegisteredBiddersBid) && (
+              {(status === 'active' || status === 'ended') && roundEndTime && (!isRoundActive || allRegisteredBiddersBid) && (
                 <>
                   <button
                     onClick={() => {
@@ -354,7 +354,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           {/* INCREMENTAL APPROVAL CONTROLS */}
           {isIncrementalApproval && (
             <>
-              {status === 'active' && !roundEndTime && (
+              {(status === 'active' || status === 'ended') && !roundEndTime && (
                 <button
                   onClick={() => setShowProgressiveStartModal(true)}
                   disabled={loading}
@@ -365,7 +365,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 </button>
               )}
 
-              {status === 'active' && roundEndTime && (!isRoundActive || allRegisteredBiddersBid) && (
+              {(status === 'active' || status === 'ended') && roundEndTime && (!isRoundActive || allRegisteredBiddersBid) && (
                 <>
                   <button
                     onClick={() => {
