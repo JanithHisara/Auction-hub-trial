@@ -234,10 +234,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           event: 'INSERT',
           schema: 'public',
           table: 'bids',
-          filter: `gem_id=in.(${items.map(i => i.id).join(',')})`,
         },
         async (payload) => {
           const newBid = payload.new as Bid
+          
+          if (!initialItems.some(i => i.id === newBid.gem_id)) return
 
           // For free-form auctions, only process own bids (others are hidden)
           if (isFreeForm && newBid.user_id !== user.id) {
@@ -261,7 +262,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               if (item.id === newBid.gem_id) {
                 return {
                   ...item,
-                  bids: [bidWithUser, ...item.bids].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
+                  bids: [bidWithUser, ...(item.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
                 }
               }
               return item
@@ -270,7 +271,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
             if (selectedItemIdRef.current === newBid.gem_id) {
               setSelectedItem(prev => prev ? {
                 ...prev,
-                bids: [bidWithUser, ...prev.bids].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
+                bids: [bidWithUser, ...(prev.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
               } : prev)
             }
 
@@ -306,10 +307,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           event: 'UPDATE',
           schema: 'public',
           table: 'bids',
-          filter: `gem_id=in.(${items.map(i => i.id).join(',')})`,
         },
         (payload) => {
           const updatedBid = payload.new as Bid
+          
+          if (!initialItems.some(i => i.id === updatedBid.gem_id)) return
 
           // Only process own bid updates (closed bids are private)
           if (updatedBid.user_id !== user.id) return
@@ -435,7 +437,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           const newWinner = payload.new as { gem_id: string; user_id: string; winning_bid_id: string }
 
           // Check if this winner is for one of our items
-          const wonGem = items.find(i => i.id === newWinner.gem_id)
+          const wonGem = initialItems.find(i => i.id === newWinner.gem_id)
           if (!wonGem) return
 
           // Fetch the winning bid amount
@@ -471,7 +473,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [auction.id, items, user.id, supabase, isFixedIncrement, isFreeForm, isIncrementalApproval])
+  }, [auction.id, initialItems, user.id, supabase, isFixedIncrement, isFreeForm, isIncrementalApproval])
 
   // Subscribe to elimination events (incremental approval auctions only)
   useEffect(() => {
