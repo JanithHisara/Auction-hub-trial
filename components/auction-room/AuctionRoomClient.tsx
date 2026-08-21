@@ -617,30 +617,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         throw new Error(error.error || 'Failed to accept price')
       }
 
-      const newBid = await res.json()
-
-      // Proactively update UI for instant feedback
       setHasAcceptedPrice(true)
-      
-      const bidWithUser: Bid = {
-        ...newBid,
-        user: { anonymous_name: user.anonymous_name || 'You', email: user.email || '' }
-      }
-
-      setItems(prev => prev.map(item => {
-        if (item.id === selectedItem.id) {
-          return {
-            ...item,
-            bids: [bidWithUser, ...(item.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
-          }
-        }
-        return item
-      }))
-
-      setSelectedItem(prev => prev ? {
-        ...prev,
-        bids: [bidWithUser, ...(prev.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
-      } : prev)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to accept price'
       alert(message)
