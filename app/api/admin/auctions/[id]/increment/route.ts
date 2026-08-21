@@ -86,8 +86,7 @@ export async function POST(
       .update({ 
           current_price: newPrice,
           round_end_time: nextRoundEnd.toISOString(),
-          status: 'active',
-          end_time: nextRoundEnd.toISOString()
+          status: 'active'
       })
       .eq('id', id)
 
