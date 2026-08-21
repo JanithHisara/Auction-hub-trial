@@ -15,6 +15,7 @@ import {
   Trash2,
   Pencil,
   UserPlus,
+  Usb,
 } from 'lucide-react'
 
 // ---- Types ----
@@ -997,14 +998,12 @@ function CreateDeviceModal({
   onCreated: () => void
 }) {
   const [deviceId, setDeviceId] = useState('')
-  const [name, setName] = useState('')
   const [auctionId, setAuctionId] = useState('')
-  const [firmwareVersion, setFirmwareVersion] = useState('')
-  const [hardwareVersion, setHardwareVersion] = useState('')
   const [auctions, setAuctions] = useState<AuctionOption[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loadingAuctions, setLoadingAuctions] = useState(false)
+  const [readingUsb, setReadingUsb] = useState(false)
 
   useEffect(() => {
     async function loadAuctions() {
@@ -1022,6 +1021,74 @@ function CreateDeviceModal({
     loadAuctions()
   }, [])
 
+  async function readDeviceIdFromUSB() {
+    try {
+      if (!('serial' in navigator)) {
+        throw new Error('Web Serial API not supported in this browser. Use Chrome, Edge, or Opera.')
+      }
+      
+      setReadingUsb(true)
+      setError(null)
+      
+      // Request a port and open it
+      const navSerial = (navigator as any).serial;
+      const port = await navSerial.requestPort()
+      await port.open({ baudRate: 115200 }) // Common ESP32 baud rate
+      
+      // Auto-reset ESP32 using standard DTR/RTS sequence
+      try {
+        await port.setSignals({ dataTerminalReady: false, requestToSend: true })
+        await new Promise(resolve => setTimeout(resolve, 100))
+        await port.setSignals({ dataTerminalReady: false, requestToSend: false })
+      } catch (e) {
+        console.warn('Failed to set signals for auto-reset:', e)
+      }
+      
+      const reader = port.readable?.getReader()
+      if (!reader) throw new Error('Cannot read from port')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+      
+      // Read loop with 10s timeout
+      const timeout = setTimeout(() => {
+        reader.cancel()
+      }, 10000)
+      
+      try {
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+          if (value) {
+            buffer += decoder.decode(value, { stream: true })
+            
+            // Look for DEVICE_ID:XX:XX:XX:XX:XX:XX or just a MAC address pattern
+            // Allowing for plain MAC address format like 24:0A:C4:00:01:10
+            const macMatch = buffer.match(/(?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2})/)
+            if (macMatch) {
+              setDeviceId(macMatch[0].toUpperCase())
+              clearTimeout(timeout)
+              reader.cancel()
+              break
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock()
+        await port.close()
+      }
+      
+    } catch (err) {
+      if (err instanceof Error && err.name === 'NotFoundError') {
+        // User cancelled port selection
+        return;
+      }
+      setError(err instanceof Error ? err.message : 'Failed to read from USB')
+    } finally {
+      setReadingUsb(false)
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!deviceId.trim()) { setError('Device ID is required'); return }
@@ -1035,10 +1102,10 @@ function CreateDeviceModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           device_id: deviceId.trim(),
-          name: name.trim() || null,
+          name: null,
           auction_id: auctionId || null,
-          firmware_version: firmwareVersion.trim() || null,
-          hardware_version: hardwareVersion.trim() || null,
+          firmware_version: null,
+          hardware_version: null,
         }),
       })
 
@@ -1079,25 +1146,35 @@ function CreateDeviceModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Device ID *</label>
-            <input
-              type="text"
-              value={deviceId}
-              onChange={e => setDeviceId(e.target.value)}
-              placeholder="e.g. DEV_001"
-              className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white font-mono placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
-              required
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={deviceId}
+                onChange={e => setDeviceId(e.target.value)}
+                placeholder="e.g. 24:0A:C4:00:01:10"
+                className="flex-1 px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white font-mono placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
+                required
+              />
+              <button
+                type="button"
+                onClick={readDeviceIdFromUSB}
+                disabled={readingUsb}
+                className="px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] hover:border-[var(--gold)]/50 rounded-lg text-sm text-white font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                title="Connect ESP32 via USB and read its MAC Address"
+              >
+                {readingUsb ? (
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Usb className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">{readingUsb ? 'Reading...' : 'Read USB'}</span>
+              </button>
+            </div>
+            <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
+              Click &quot;Read USB&quot; to automatically restart your ESP32 and capture its ID.
+            </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="e.g. Handheld #3"
-              className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
-            />
-          </div>
+
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Assigned Auction</label>
             {loadingAuctions ? (
@@ -1117,28 +1194,7 @@ function CreateDeviceModal({
               </select>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Firmware Version</label>
-              <input
-                type="text"
-                value={firmwareVersion}
-                onChange={e => setFirmwareVersion(e.target.value)}
-                placeholder="e.g. 1.0.0"
-                className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Hardware Version</label>
-              <input
-                type="text"
-                value={hardwareVersion}
-                onChange={e => setHardwareVersion(e.target.value)}
-                placeholder="e.g. 1.0"
-                className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold)]/50"
-              />
-            </div>
-          </div>
+
 
           <div className="flex gap-3 justify-end pt-2">
             <button
