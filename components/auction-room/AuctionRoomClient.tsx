@@ -1187,8 +1187,10 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           <div className="text-4xl mb-3">⏰</div>
                           <h3 className="text-xl font-bold text-purple-400 mb-2">Round Ended</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
-                            {hasAcceptedPrice
-                              ? 'You won this round! Waiting for the next round...'
+                            {selectedItem?.bids?.some(b => b.bid_amount >= fixedPrice)
+                              ? selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user_id === user.id
+                                ? 'You won this round! Waiting for the next round...'
+                                : `Round claimed by ${selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name || 'Another User'}. Waiting for next round...`
                               : 'This round is over. Waiting for the host to proceed.'}
                           </p>
                           <div className="p-4 bg-[var(--surface)] rounded-lg">
@@ -1215,10 +1217,14 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                             </p>
                           </div>
 
-                          {hasAcceptedPrice ? (
+                          {selectedItem?.bids?.some(b => b.bid_amount >= fixedPrice) ? (
                             <div className="flex items-center justify-center gap-3 py-4 px-6 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
                               <Check className="w-6 h-6 text-emerald-400" />
-                              <span className="font-bold text-emerald-400">Bid Placed!</span>
+                              <span className="font-bold text-emerald-400">
+                                {selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user_id === user.id
+                                  ? 'You claimed this round!'
+                                  : `Claimed by ${selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name || 'Another User'}`}
+                              </span>
                             </div>
                           ) : (
                             <button
