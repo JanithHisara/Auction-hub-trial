@@ -996,8 +996,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       </div>
                       {isFixedIncrement && (
                         <div className="text-right">
-                          <p className="text-xs sm:text-sm text-[var(--text-muted)]">Bidders</p>
-                          <p className="text-sm sm:text-lg text-white">{bidderPercentage}% ({currentPriceBidders}/{registeredCount})</p>
+                          <p className="text-xs sm:text-sm text-[var(--text-muted)]">Round Status</p>
+                          <p className="text-sm sm:text-lg text-white">
+                            {selectedItem.bids?.some(b => b.bid_amount >= fixedPrice)
+                              ? 'Bid Placed'
+                              : 'Waiting for Bid'}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1184,8 +1188,8 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           <h3 className="text-xl font-bold text-purple-400 mb-2">Round Ended</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             {hasAcceptedPrice
-                              ? 'You accepted the price. Waiting for the next round...'
-                              : 'Time ran out for this round. Waiting for the host to proceed.'}
+                              ? 'You won this round! Waiting for the next round...'
+                              : 'This round is over. Waiting for the host to proceed.'}
                           </p>
                           <div className="p-4 bg-[var(--surface)] rounded-lg">
                             <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Round Price</p>
@@ -1207,14 +1211,14 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               <span className="text-2xl font-bold text-[var(--gold)]">{formatCurrency(fixedPrice)}</span>
                             </div>
                             <p className="text-xs text-[var(--text-muted)]">
-                              Accept this price to stay in the auction. Price increases each round.
+                              Be the first to bid at this price to win the round!
                             </p>
                           </div>
 
                           {hasAcceptedPrice ? (
                             <div className="flex items-center justify-center gap-3 py-4 px-6 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
                               <Check className="w-6 h-6 text-emerald-400" />
-                              <span className="font-bold text-emerald-400">Price Accepted!</span>
+                              <span className="font-bold text-emerald-400">Bid Placed!</span>
                             </div>
                           ) : (
                             <button
@@ -1225,16 +1229,16 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               {isSubmitting ? (
                                 <>
                                   <Loader2 className="w-5 h-5 animate-spin" />
-                                  <span>Accepting...</span>
+                                  <span>Placing Bid...</span>
                                 </>
                               ) : (
-                                <span>Accept {formatCurrency(fixedPrice)}</span>
+                                <span>Place Bid {formatCurrency(fixedPrice)}</span>
                               )}
                             </button>
                           )}
 
                           <p className="text-center text-xs text-[var(--text-muted)]">
-                            🎁 Earn 10 points for each round you accept!
+                            🎁 Earn 10 points for each round you win!
                           </p>
                         </>
                       )}
@@ -1521,36 +1525,19 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 </div>
               </>
             ) : isFixedIncrement ? (
-              /* Fixed Increment: Show bidders list and percentage */
+              /* Fixed Increment: Show bid history */
               <>
                 <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">
-                  Accepted This Round
+                  Bid History
                 </h2>
-
-                {/* Participation stats */}
-                <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)] mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[var(--text-muted)]">Participation</span>
-                    <span className="text-xl font-bold text-[var(--gold)]">{bidderPercentage}%</span>
-                  </div>
-                  <div className="w-full bg-[var(--background)] rounded-full h-3 mb-2">
-                    <div
-                      className="bg-gradient-to-r from-[var(--gold)] to-amber-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${bidderPercentage}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {currentPriceBidders} of {registeredCount} registered bidders
-                  </p>
-                </div>
 
                 <div
                   ref={bidsContainerRef}
-                  className="bid-ticker max-h-[40vh] lg:max-h-[calc(100vh-300px)] overflow-y-auto"
+                  className="bid-ticker max-h-[40vh] lg:max-h-[calc(100vh-200px)] overflow-y-auto"
                 >
-                  {selectedItem?.bids?.filter(b => b.bid_amount >= fixedPrice).length ? (
+                  {selectedItem?.bids?.length ? (
                     selectedItem.bids
-                      .filter(b => b.bid_amount >= fixedPrice)
+                      .sort((a, b) => b.bid_amount - a.bid_amount)
                       .map((bid) => (
                         <div
                           key={bid.id}
@@ -1563,6 +1550,9 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                                 {bid.user?.anonymous_name || 'Anonymous'}
                               </span>
                             </div>
+                            <div className="text-[var(--gold)] font-bold text-sm">
+                              {formatCurrency(bid.bid_amount)}
+                            </div>
                           </div>
                           <span className="text-xs text-[var(--text-muted)]">
                             {new Date(bid.created_at).toLocaleTimeString()}
@@ -1572,7 +1562,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                   ) : (
                     <div className="p-8 text-center text-[var(--text-muted)]">
                       <span className="text-4xl block mb-2">⏳</span>
-                      No one has accepted yet
+                      No bids yet
                     </div>
                   )}
                 </div>

@@ -93,17 +93,19 @@ export async function POST(
         return NextResponse.json({ error: 'Bidding time has ended for this round' }, { status: 400 })
       }
 
-      // Check if user already accepted this price
+      // Check if ANY user already bid on this price (only one winner per round)
       const { data: existingBid } = await supabase
         .from('bids')
-        .select('id')
+        .select('id, user_id')
         .eq('gem_id', id)
-        .eq('user_id', user.id)
         .eq('bid_amount', bidAmount)
-        .single()
+        .limit(1)
 
-      if (existingBid) {
-        return NextResponse.json({ error: 'You have already accepted this price' }, { status: 400 })
+      if (existingBid && existingBid.length > 0) {
+        if (existingBid[0].user_id === user.id) {
+          return NextResponse.json({ error: 'You have already placed a bid for this price' }, { status: 400 })
+        }
+        return NextResponse.json({ error: 'Another user has already claimed this price round' }, { status: 400 })
       }
     } else if (auctionType === 'incremental_approval_auction') {
       // Incremental Approval: user accepts current price; non-approvers are eliminated
@@ -199,6 +201,15 @@ export async function POST(
       .single()
 
     if (bidError) throw bidError
+
+    if (auctionType === 'progressive_elimination_auction') {
+      const { error: gemError } = await supabase
+        .from('gems')
+        .update({ round_end_time: new Date().toISOString() })
+        .eq('id', id)
+
+      if (gemError) throw gemError
+    }
 
     return NextResponse.json(bid)
   } catch (error: unknown) {
