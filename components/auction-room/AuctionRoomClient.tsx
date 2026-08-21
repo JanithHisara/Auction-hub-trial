@@ -234,10 +234,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           event: 'INSERT',
           schema: 'public',
           table: 'bids',
-          filter: `gem_id=in.(${initialItems.map(i => i.id).join(',')})`,
         },
         async (payload) => {
           const newBid = payload.new as Bid
+          
+          if (!initialItems.some(i => i.id === newBid.gem_id)) return
 
           // For free-form auctions, only process own bids (others are hidden)
           if (isFreeForm && newBid.user_id !== user.id) {
@@ -261,7 +262,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               if (item.id === newBid.gem_id) {
                 return {
                   ...item,
-                  bids: [bidWithUser, ...item.bids].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
+                  bids: [bidWithUser, ...(item.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
                 }
               }
               return item
@@ -270,7 +271,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
             if (selectedItemIdRef.current === newBid.gem_id) {
               setSelectedItem(prev => prev ? {
                 ...prev,
-                bids: [bidWithUser, ...prev.bids].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
+                bids: [bidWithUser, ...(prev.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
               } : prev)
             }
 
@@ -306,10 +307,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           event: 'UPDATE',
           schema: 'public',
           table: 'bids',
-          filter: `gem_id=in.(${initialItems.map(i => i.id).join(',')})`,
         },
         (payload) => {
           const updatedBid = payload.new as Bid
+          
+          if (!initialItems.some(i => i.id === updatedBid.gem_id)) return
 
           // Only process own bid updates (closed bids are private)
           if (updatedBid.user_id !== user.id) return
@@ -615,7 +617,30 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         throw new Error(error.error || 'Failed to accept price')
       }
 
+      const newBid = await res.json()
+
+      // Proactively update UI for instant feedback
       setHasAcceptedPrice(true)
+      
+      const bidWithUser: Bid = {
+        ...newBid,
+        user: { anonymous_name: user.anonymous_name || 'You', email: user.email || '' }
+      }
+
+      setItems(prev => prev.map(item => {
+        if (item.id === selectedItem.id) {
+          return {
+            ...item,
+            bids: [bidWithUser, ...(item.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
+          }
+        }
+        return item
+      }))
+
+      setSelectedItem(prev => prev ? {
+        ...prev,
+        bids: [bidWithUser, ...(prev.bids || [])].sort((a, b) => b.bid_amount - a.bid_amount) as Bid[],
+      } : prev)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to accept price'
       alert(message)
