@@ -1025,19 +1025,19 @@ function CreateDeviceModal({
   const [loadingPlaces, setLoadingPlaces] = useState(false)
 
   useEffect(() => {
-    async function loadAuctions() {
-      setLoadingAuctions(true)
+    async function loadPlaces() {
+      setLoadingPlaces(true)
       try {
-        const res = await fetch('/api/admin/auctions-list')
+        const res = await fetch('/api/admin/auction-places')
         if (res.ok) {
           const data = await res.json()
-          setAuctions(data.auctions || [])
+          setAuctionPlaces(data.places || [])
         }
       } catch { /* ignore */ } finally {
-        setLoadingAuctions(false)
+        setLoadingPlaces(false)
       }
     }
-    loadAuctions()
+    loadPlaces()
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -1117,19 +1117,19 @@ function CreateDeviceModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Assigned Auction</label>
-            {loadingAuctions ? (
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Auction Place</label>
+            {loadingPlaces ? (
               <div className="px-4 py-2.5 text-sm text-[var(--text-secondary)]">Loading auctions...</div>
             ) : (
               <select
-                value={auctionId}
-                onChange={e => setAuctionId(e.target.value)}
+                value={auctionPlaceId}
+                onChange={e => setAuctionPlaceId(e.target.value)}
                 className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)]/50"
               >
-                <option value="">No auction assigned</option>
-                {auctions.map(a => (
+                <option value="">Unassigned place</option>
+                {auctionPlaces.map(a => (
                   <option key={a.id} value={a.id}>
-                    {a.name} ({a.status})
+                    {a.name}
                   </option>
                 ))}
               </select>
