@@ -255,7 +255,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Your bidding is currently on hold. Please contact the auction administrator.' }, { status: 403 })
     }
 
-    if (auctionType !== 'tender_base_fixed_bid') {
+    const isClosed = auctionType.toLowerCase().includes('tender') || 
+                     auctionType.toLowerCase().includes('closed') || 
+                     auctionType.toLowerCase().includes('sealed');
+                     
+    if (!isClosed) {
       return NextResponse.json({ error: 'Bid editing is only available for Closed Bid auctions' }, { status: 400 })
     }
 
