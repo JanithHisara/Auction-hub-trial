@@ -69,32 +69,36 @@ export default function NfcManagementClient() {
     <div className="space-y-4">
       <div className="flex gap-2 border-b border-[var(--border)] pb-2">
         <button
-          onClick={() => setActiveTab('nfc')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'nfc'
-              ? 'bg-[var(--gold)]/15 text-[var(--gold)] border border-[var(--gold)]/30'
-              : 'text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface)]'
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          NFC Cards
-        </button>
-        <button
-          onClick={() => setActiveTab('devices')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'devices'
-              ? 'bg-[var(--gold)]/15 text-[var(--gold)] border border-[var(--gold)]/30'
-              : 'text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface)]'
-          }`}
-        >
-          <Cpu className="w-4 h-4" />
-          Devices
-        </button>
+            onClick={() => setActiveTab('nfc')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'nfc'
+                ? 'bg-[var(--gold)]/15 text-[var(--gold)] border border-[var(--gold)]/30'
+                : 'text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface)]'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            NFC Cards
+          </button>
 
+          <button
+            onClick={() => setActiveTab('devices')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'devices'
+                ? 'bg-[var(--gold)]/15 text-[var(--gold)] border border-[var(--gold)]/30'
+                : 'text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface)]'
+            }`}
+          >
+            <Smartphone className="w-4 h-4" />
+            Devices
+          </button>
           
           <button
             onClick={() => setActiveTab('places')}
-            className={lex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors }
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'places'
+                ? 'bg-[var(--gold)]/15 text-[var(--gold)] border border-[var(--gold)]/30'
+                : 'text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface)]'
+            }`}
           >
             <MapPin className="w-4 h-4" />
             Auction Places
