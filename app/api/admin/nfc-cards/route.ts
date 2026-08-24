@@ -69,13 +69,13 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
-    const { data: user } = await adminClient
+    const { data: targetUser } = await adminClient
       .from('users')
       .select('id')
       .eq('id', user_id)
       .single()
 
-    if (!user) {
+    if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
