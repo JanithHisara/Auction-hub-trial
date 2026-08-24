@@ -160,8 +160,9 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
     )
   }
 
-  const { currentItem, nextItem, finishedCount, totalItems } = data
+  const { currentItem, nextItem, finishedCount, totalItems, auction } = data
   const isItemFinished = !currentItem && finishedCount === totalItems
+  const isSealed = auction?.auction_type?.toUpperCase() === 'SEALED'
 
   return (
     <div className="monitor-display min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
@@ -252,25 +253,25 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
                 </div>
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-4">
-                  <StatCard label="Starting" value={formatCurrency(currentItem.starting_price)} />
-                  <StatCard label="Total Bids" value={currentItem.bidCount.toString()} highlight />
-                  <StatCard label="Bidders" value={currentItem.uniqueBidders.toString()} />
+                <div className={`grid ${isSealed ? 'grid-cols-1' : 'grid-cols-3'} gap-4`}>
+                  <StatCard label={isSealed ? "Initial Price" : "Starting"} value={formatCurrency(currentItem.starting_price)} />
+                  {!isSealed && <StatCard label="Total Bids" value={currentItem.bidCount.toString()} highlight />}
+                  {!isSealed && <StatCard label="Bidders" value={currentItem.uniqueBidders.toString()} />}
                 </div>
               </div>
               
               {/* Center: Current Price */}
-              <div className="lg:col-span-4 flex flex-col items-center justify-center">
+              <div className={`flex flex-col items-center justify-center ${isSealed ? 'lg:col-span-7' : 'lg:col-span-4'}`}>
                 <div className="price-display">
                   <div className="text-sm sm:text-lg text-[var(--gold)]/60 uppercase tracking-[0.2em] mb-4">
-                    Current Price
+                    {isSealed ? 'Initial Price' : 'Current Price'}
                   </div>
-                  <div className={`price-value ${flashPrice ? 'flash' : ''}`}>
-                    {formatCurrency(currentItem.highestBid)}
+                  <div className={`price-value ${flashPrice && !isSealed ? 'flash' : ''}`}>
+                    {formatCurrency(isSealed ? currentItem.starting_price : currentItem.highestBid)}
                   </div>
-                  {currentItem.highestBid > currentItem.starting_price && currentItem.starting_price > 0 && (
+                  {!isSealed && currentItem.highestBid > currentItem.starting_price && currentItem.starting_price > 0 && (
                     <div className="price-increase">
-                      ▲ +{Math.round(((currentItem.highestBid - currentItem.starting_price) / currentItem.starting_price) * 100)}% from starting
+                      ↑ +{Math.round(((currentItem.highestBid - currentItem.starting_price) / currentItem.starting_price) * 100)}% from starting
                     </div>
                   )}
                   
@@ -297,8 +298,9 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
               </div>
 
               {/* Right: Live Bids */}
-              <div className="lg:col-span-3">
-                <div className="activity-card">
+              {!isSealed && (
+              <div className=\"lg:col-span-3\">
+                <div className=\"activity-card\">
                   <div className="card-header">
                     <span className="pulse-dot" />
                     LIVE BIDS
@@ -318,11 +320,12 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
                       </div>
                     )}
                   </div>
-                  <div className="privacy-notice">
+                  <div className=\"privacy-notice\">
                     Bidder identities are hidden until auction ends
                   </div>
                 </div>
               </div>
+              )}
             </div>
           </>
         ) : isItemFinished ? (
