@@ -299,8 +299,8 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
 
               {/* Right: Live Bids */}
               {!isSealed && (
-              <div className=\"lg:col-span-3\">
-                <div className=\"activity-card\">
+              <div className="lg:col-span-3">
+                <div className="activity-card">
                   <div className="card-header">
                     <span className="pulse-dot" />
                     LIVE BIDS
@@ -320,7 +320,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
                       </div>
                     )}
                   </div>
-                  <div className=\"privacy-notice\">
+                  <div className="privacy-notice">
                     Bidder identities are hidden until auction ends
                   </div>
                 </div>
