@@ -1016,24 +1016,15 @@ function CreateDeviceModal({
   onCreated: () => void
 }) {
   const [deviceId, setDeviceId] = useState('')
-<<<<<<< HEAD
-  const [name, setName] = useState('')
-  const [auctionPlaceId, setAuctionPlaceId] = useState('')
-  const [firmwareVersion, setFirmwareVersion] = useState('')
-  const [hardwareVersion, setHardwareVersion] = useState('')
-  const [auctionPlaces, setAuctionPlaces] = useState<AuctionPlaceOption[]>([])
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [loadingPlaces, setLoadingPlaces] = useState(false)
-=======
-  const [auctionId, setAuctionId] = useState('')
-  const [auctions, setAuctions] = useState<AuctionOption[]>([])
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [loadingAuctions, setLoadingAuctions] = useState(false)
-  const [readingUsb, setReadingUsb] = useState(false)
->>>>>>> origin/main
-
+    const [name, setName] = useState('')
+    const [auctionPlaceId, setAuctionPlaceId] = useState('')
+    const [firmwareVersion, setFirmwareVersion] = useState('')
+    const [hardwareVersion, setHardwareVersion] = useState('')
+    const [auctionPlaces, setAuctionPlaces] = useState<AuctionPlaceOption[]>([])
+    const [submitting, setSubmitting] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [loadingPlaces, setLoadingPlaces] = useState(false)
+    const [readingUsb, setReadingUsb] = useState(false)
   useEffect(() => {
     async function loadPlaces() {
       setLoadingPlaces(true)
@@ -1131,17 +1122,10 @@ function CreateDeviceModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           device_id: deviceId.trim(),
-<<<<<<< HEAD
-          name: name.trim() || null,
-          auction_place_id: auctionPlaceId || null,
-          firmware_version: firmwareVersion.trim() || null,
-          hardware_version: hardwareVersion.trim() || null,
-=======
-          name: null,
-          auction_id: auctionId || null,
-          firmware_version: null,
-          hardware_version: null,
->>>>>>> origin/main
+            name: name.trim() || null,
+            auction_place_id: auctionPlaceId || null,
+            firmware_version: firmwareVersion.trim() || null,
+            hardware_version: hardwareVersion.trim() || null,
         }),
       })
 
