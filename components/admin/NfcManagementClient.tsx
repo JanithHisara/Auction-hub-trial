@@ -304,7 +304,8 @@ function NfcCardsTab() {
                         )}
                       </button>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-sm text-[var(--text-secondary)]">{card.created_by_user ? (card.created_by_user.display_name || card.created_by_user.email) : "Unknown"}</td>
+                      <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => setEditingCard(card)}
@@ -979,7 +980,18 @@ function DevicesTab() {
                         {formatLastSeen(device.last_seen_at)}
                       </span>
                     </td>
-                  </tr>
+                                        <td className="px-4 py-3 text-sm text-[var(--text-secondary)]">
+                        {device.created_by_user ? (device.created_by_user.display_name || device.created_by_user.email) : "Unknown"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right">
+                        <button onClick={() => { setEditingDevice(device); setEditForm({ name: device.name || '', auctionPlaceId: device.auction_place_id || '', firmwareVersion: device.firmware_version || '', hardwareVersion: device.hardware_version || '' }) }} className="p-1 text-[var(--text-secondary)] hover:text-white transition-colors">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setDeletingDevice(device)} className="p-1 text-[var(--text-secondary)] hover:text-red-400 transition-colors ml-2">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
                 ))
               )}
             </tbody>
@@ -1394,6 +1406,17 @@ function AuctionPlacesTab() {
                         {new Date(place.created_at).toLocaleDateString()}
                       </div>
                     </td>
+                      <td className="px-4 py-3 text-sm text-[var(--text-secondary)]">
+                        {place.created_by_user ? (place.created_by_user.display_name || place.created_by_user.email) : 'Unknown'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right">
+                        <button onClick={() => { setEditingPlace(place); setEditName(place.name) }} className="p-1 text-[var(--text-secondary)] hover:text-white transition-colors">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setDeletingPlace(place)} className="p-1 text-[var(--text-secondary)] hover:text-red-400 transition-colors ml-2">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
                   </tr>
                 ))}
                 {places.length === 0 && (
