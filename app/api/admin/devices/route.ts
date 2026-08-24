@@ -5,7 +5,7 @@ import { PERMISSIONS } from '@/lib/permissions'
 
 export async function GET(request: NextRequest) {
   try {
-    await requirePermission(PERMISSIONS.MANAGE_DEVICES)
+    const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
       .from('devices')
       .select(`
         *,
-        auction_places:auction_place_id (id, name)
+        auction_places:auction_place_id (id, name),
+        created_by_user:users!created_by (id, email, display_name)
       `, { count: 'exact' })
 
     if (search) {
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await requirePermission(PERMISSIONS.MANAGE_DEVICES)
+    const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
     const { device_id, name, auction_place_id, firmware_version, hardware_version } = body
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
         auction_place_id: auction_place_id || null,
         firmware_version: firmware_version || null,
         hardware_version: hardware_version || null,
+        created_by: user.id
       })
       .select()
       .single()

@@ -5,13 +5,13 @@ import { PERMISSIONS } from '@/lib/permissions'
 
 export async function GET(request: NextRequest) {
   try {
-    await requirePermission(PERMISSIONS.MANAGE_DEVICES) // using manage devices permission
+    const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES) // using manage devices permission
 
     const adminClient = createAdminClient()
 
     const { data: places, error } = await adminClient
       .from('auction_places')
-      .select('*')
+      .select('*, created_by_user:users!created_by (id, email, display_name)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await requirePermission(PERMISSIONS.MANAGE_DEVICES)
+    const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
     const { name } = body
@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     const { data: place, error } = await adminClient
       .from('auction_places')
       .insert({
-        name
+        name,
+        created_by: user.id
       })
       .select()
       .single()

@@ -24,6 +24,7 @@ import {
 // ---- Types ----
 
 interface NfcCard {
+  created_by_user?: { display_name: string | null; email: string } | null
   id: string
   nfc_uid: string
   user_id: string
@@ -35,6 +36,7 @@ interface NfcCard {
 }
 
 interface Device {
+  created_by_user?: { display_name: string | null; email: string } | null
   id: string
   device_id: string
   name: string | null
@@ -54,6 +56,7 @@ interface UserOption {
 }
 
 interface AuctionPlaceOption {
+  created_by_user?: { display_name: string | null; email: string } | null
   id: string
   name: string
 }
@@ -1437,6 +1440,65 @@ function AuctionPlacesTab() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingPlace && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">Edit Auction Place</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setSubmitting(true);
+              try {
+                const res = await fetch(`/api/admin/auction-places/${editingPlace.id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: editName })
+                });
+                if (!res.ok) throw new Error('Failed to update');
+                setEditingPlace(null);
+                loadPlaces();
+              } catch (err: any) {
+                alert(err.message);
+              } finally {
+                setSubmitting(false);
+              }
+            }}>
+              <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full px-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-white mb-4 focus:outline-none focus:border-[var(--gold)]/50" required />
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => setEditingPlace(null)} className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-white transition-colors">Cancel</button>
+                <button type="submit" disabled={submitting} className="px-4 py-2 bg-[var(--gold)] text-black rounded-lg text-sm font-medium hover:bg-[var(--gold-light)] transition-colors disabled:opacity-50">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {deletingPlace && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">Delete Auction Place?</h3>
+            <p className="text-sm text-[var(--text-secondary)] mb-6">Are you sure you want to delete "{deletingPlace.name}"? This cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setDeletingPlace(null)} className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-white transition-colors">Cancel</button>
+              <button onClick={async () => {
+                setSubmitting(true);
+                try {
+                  const res = await fetch(`/api/admin/auction-places/${deletingPlace.id}`, { method: 'DELETE' });
+                  if (!res.ok) throw new Error('Failed to delete');
+                  setDeletingPlace(null);
+                  loadPlaces();
+                } catch (err: any) {
+                  alert(err.message);
+                } finally {
+                  setSubmitting(false);
+                }
+              }} disabled={submitting} className="px-4 py-2 bg-red-500/20 text-red-500 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">Delete</button>
+            </div>
           </div>
         </div>
       )}

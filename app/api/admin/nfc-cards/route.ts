@@ -5,7 +5,7 @@ import { PERMISSIONS } from '@/lib/permissions'
 
 export async function GET(request: NextRequest) {
   try {
-    await requirePermission(PERMISSIONS.MANAGE_DEVICES)
+    const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
       .from('nfc_cards')
       .select(`
         id, nfc_uid, user_id, is_active, label, created_at, updated_at,
-        users!inner (id, email, display_name)
+        users:users!user_id (id, email, display_name),
+        created_by_user:users!created_by (id, email, display_name)
       `, { count: 'exact' })
 
     if (search) {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await requirePermission(PERMISSIONS.MANAGE_DEVICES)
+    const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
     const { nfc_uid, user_id, label } = body
@@ -102,7 +103,8 @@ export async function POST(request: NextRequest) {
       })
       .select(`
         id, nfc_uid, user_id, is_active, label, created_at, updated_at,
-        users!inner (id, email, display_name)
+        users:users!user_id (id, email, display_name),
+        created_by_user:users!created_by (id, email, display_name)
       `)
       .single()
 
