@@ -1289,6 +1289,9 @@ function AuctionPlacesTab() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [newPlaceName, setNewPlaceName] = useState('')
   const [submitting, setSubmitting] = useState(false)
+    const [editingPlace, setEditingPlace] = useState<any | null>(null)
+    const [deletingPlace, setDeletingPlace] = useState<any | null>(null)
+    const [editName, setEditName] = useState('')
 
   const loadPlaces = async () => {
     try {
