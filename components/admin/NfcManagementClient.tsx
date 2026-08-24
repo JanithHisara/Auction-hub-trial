@@ -256,7 +256,8 @@ function NfcCardsTab() {
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white">NFC Card</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white">User</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-white">Status</th>
-                <th className="text-center px-4 py-3 text-sm font-semibold text-white">Actions</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-white">Created By</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -927,6 +928,8 @@ function DevicesTab() {
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden lg:table-cell">Firmware</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-white">Status</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Last Seen</th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-white">Created By</th>
+                  <th className="text-right px-4 py-3 text-sm font-semibold text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1376,6 +1379,8 @@ function AuctionPlacesTab() {
                 <tr className="border-b border-[var(--border)] bg-[var(--surface-light)]/50">
                   <th className="text-left px-4 py-3 text-sm font-semibold text-white">Place Name</th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-white">Created At</th>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-white">Created By</th>
+                    <th className="text-right px-4 py-3 text-sm font-semibold text-white">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
