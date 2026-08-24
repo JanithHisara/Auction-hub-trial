@@ -93,9 +93,9 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
     const channel = supabase
       .channel(`item-monitor-${data.currentItem.id}`)
       .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'bids', 
+          event: '*', 
+          schema: 'public', 
+          table: 'bids', 
         filter: `gem_id=eq.${data.currentItem.id}` 
       }, () => fetchData())
       .on('postgres_changes', { 
