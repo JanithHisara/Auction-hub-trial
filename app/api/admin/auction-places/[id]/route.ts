@@ -3,7 +3,8 @@ import { requirePermission } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PERMISSIONS } from '@/lib/permissions'
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
@@ -17,7 +18,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const { data: place, error } = await adminClient
       .from('auction_places')
       .update({ name: body.name })
-      .eq('id', params.id)
+      .eq('id', id)
       .select('*, created_by_user:users!created_by (id, email, display_name)')
       .single()
 
@@ -31,7 +32,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
@@ -40,7 +42,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const { error } = await adminClient
       .from('auction_places')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })

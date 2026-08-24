@@ -3,7 +3,8 @@ import { requirePermission } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PERMISSIONS } from '@/lib/permissions'
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
@@ -20,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const { data: device, error } = await adminClient
       .from('devices')
       .update(updatePayload)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -34,7 +35,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
@@ -43,7 +45,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const { error } = await adminClient
       .from('devices')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
