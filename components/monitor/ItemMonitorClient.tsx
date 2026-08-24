@@ -162,7 +162,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
 
   const { currentItem, nextItem, finishedCount, totalItems, auction } = data
   const isItemFinished = !currentItem && finishedCount === totalItems
-  const isSealed = auction?.auction_type?.toUpperCase() === 'SEALED'
+  const isSealed = auction?.auction_type === 'tender_base_fixed_bid'
 
   return (
     <div className="monitor-display min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
