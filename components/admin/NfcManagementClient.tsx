@@ -826,6 +826,10 @@ function DevicesTab() {
   const [statusFilter, setStatusFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+    const [editingDevice, setEditingDevice] = useState<any | null>(null)
+    const [deletingDevice, setDeletingDevice] = useState<any | null>(null)
+    const [editForm, setEditForm] = useState({ name: '', auctionPlaceId: '', firmwareVersion: '', hardwareVersion: '' })
+    const [actionSubmitting, setActionSubmitting] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
 
