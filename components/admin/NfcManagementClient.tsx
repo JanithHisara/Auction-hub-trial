@@ -35,18 +35,23 @@ interface Device {
   device_id: string
   name: string | null
   status: string
-  auction_id: string | null
+  auction_place_id: string | null
   firmware_version: string | null
   hardware_version: string | null
   last_seen_at: string | null
   created_at: string
-  auction?: { id: string; name: string; status: string } | null
+  auction_place?: { id: string; name: string } | null
 }
 
 interface UserOption {
   id: string
   email: string
   display_name: string | null
+}
+
+interface AuctionPlaceOption {
+  id: string
+  name: string
 }
 
 interface AuctionOption {
@@ -58,7 +63,7 @@ interface AuctionOption {
 // ---- Component ----
 
 export default function NfcManagementClient() {
-  const [activeTab, setActiveTab] = useState<'nfc' | 'devices'>('nfc')
+  const [activeTab, setActiveTab] = useState<'nfc' | 'devices' | 'places'>('nfc')
 
   return (
     <div className="space-y-4">
@@ -85,9 +90,18 @@ export default function NfcManagementClient() {
           <Cpu className="w-4 h-4" />
           Devices
         </button>
+
+          
+          <button
+            onClick={() => setActiveTab('places')}
+            className={lex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors }
+          >
+            <MapPin className="w-4 h-4" />
+            Auction Places
+          </button>
       </div>
 
-      {activeTab === 'nfc' ? <NfcCardsTab /> : <DevicesTab />}
+      {activeTab === 'nfc' ? <NfcCardsTab /> : activeTab === 'devices' ? <DevicesTab /> : <AuctionPlacesTab />}
     </div>
   )
 }
@@ -891,7 +905,7 @@ function DevicesTab() {
             <thead>
               <tr className="bg-[var(--surface)]">
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white">Device</th>
-                <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Auction</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Auction Place</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden lg:table-cell">Firmware</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-white">Status</th>
                 <th className="text-left px-4 py-3 text-sm font-semibold text-white hidden md:table-cell">Last Seen</th>
@@ -998,13 +1012,13 @@ function CreateDeviceModal({
 }) {
   const [deviceId, setDeviceId] = useState('')
   const [name, setName] = useState('')
-  const [auctionId, setAuctionId] = useState('')
+  const [auctionPlaceId, setAuctionPlaceId] = useState('')
   const [firmwareVersion, setFirmwareVersion] = useState('')
   const [hardwareVersion, setHardwareVersion] = useState('')
-  const [auctions, setAuctions] = useState<AuctionOption[]>([])
+  const [auctionPlaces, setAuctionPlaces] = useState<AuctionPlaceOption[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadingAuctions, setLoadingAuctions] = useState(false)
+  const [loadingPlaces, setLoadingPlaces] = useState(false)
 
   useEffect(() => {
     async function loadAuctions() {
@@ -1036,7 +1050,7 @@ function CreateDeviceModal({
         body: JSON.stringify({
           device_id: deviceId.trim(),
           name: name.trim() || null,
-          auction_id: auctionId || null,
+          auction_place_id: auctionPlaceId || null,
           firmware_version: firmwareVersion.trim() || null,
           hardware_version: hardwareVersion.trim() || null,
         }),
@@ -1191,5 +1205,179 @@ function DeviceStatusBadge({ status }: { status: string }) {
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors[status] || colors.inactive}`}>
       {status}
     </span>
+  )
+}
+
+
+function AuctionPlacesTab() {
+  const [places, setPlaces] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [newPlaceName, setNewPlaceName] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const loadPlaces = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/admin/auction-places')
+      if (!res.ok) throw new Error('Failed to load auction places')
+      const data = await res.json()
+      setPlaces(data.places || [])
+      setError(null)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadPlaces()
+  }, [])
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newPlaceName.trim()) return
+
+    try {
+      setSubmitting(true)
+      const res = await fetch('/api/admin/auction-places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newPlaceName.trim() })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to create place')
+      }
+
+      setIsCreateModalOpen(false)
+      setNewPlaceName('')
+      loadPlaces()
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading && places.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[var(--gold)] animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-white">Auction Places</h2>
+          <p className="text-[var(--text-secondary)] mt-1">Manage physical locations for devices</p>
+        </div>
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="flex items-center gap-2 bg-[var(--gold)] text-black px-4 py-2 rounded-lg font-medium hover:bg-[var(--gold)]/90 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Create Place
+        </button>
+      </div>
+
+      {error ? (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex gap-3">
+          <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+          <p className="text-red-200 text-sm">{error}</p>
+        </div>
+      ) : (
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--border)] bg-[var(--surface-light)]/50">
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-white">Place Name</th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-white">Created At</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]">
+                {places.map((place) => (
+                  <tr key={place.id} className="hover:bg-[var(--surface-light)]/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="text-sm text-white font-medium">{place.name}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        {new Date(place.created_at).toLocaleDateString()}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {places.length === 0 && (
+                  <tr>
+                    <td colSpan={2} className="px-4 py-8 text-center text-[var(--text-secondary)]">
+                      No auction places found. Create one to get started.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Create Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !submitting && setIsCreateModalOpen(false)} />
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white">Create Auction Place</h3>
+              <button 
+                onClick={() => !submitting && setIsCreateModalOpen(false)}
+                className="p-2 hover:bg-[var(--surface-light)] rounded-lg transition-colors text-[var(--text-secondary)] hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Place Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newPlaceName}
+                  onChange={e => setNewPlaceName(e.target.value)}
+                  placeholder="e.g. Main Hall"
+                  className="w-full bg-[var(--surface-light)] border border-[var(--border)] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--gold)] transition-colors placeholder:text-gray-600"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  disabled={submitting}
+                  className="px-4 py-2 rounded-lg font-medium text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-light)] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting || !newPlaceName.trim()}
+                  className="px-4 py-2 rounded-lg font-medium bg-[var(--gold)] text-black hover:bg-[var(--gold)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Place'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

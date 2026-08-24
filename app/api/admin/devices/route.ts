@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PERMISSIONS } from '@/lib/permissions'
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       .from('devices')
       .select(`
         *,
-        auctions:auction_id (id, name, status)
+        auction_places:auction_place_id (id, name)
       `, { count: 'exact' })
 
     if (search) {
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
 
     const mapped = (devices || []).map(d => ({
       ...d,
-      auction: d.auctions || null,
-      auctions: undefined,
+      auction_place: d.auction_places || null,
+      auction_places: undefined,
     }))
 
     return NextResponse.json({
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
-    const { device_id, name, auction_id, firmware_version, hardware_version } = body
+    const { device_id, name, auction_place_id, firmware_version, hardware_version } = body
 
     if (!device_id) {
       return NextResponse.json(
@@ -85,15 +85,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (auction_id) {
-      const { data: auction } = await adminClient
-        .from('auctions')
+    if (auction_place_id) {
+      const { data: place } = await adminClient
+        .from('auction_places')
         .select('id')
-        .eq('id', auction_id)
+        .eq('id', auction_place_id)
         .single()
 
-      if (!auction) {
-        return NextResponse.json({ error: 'Auction not found' }, { status: 404 })
+      if (!place) {
+        return NextResponse.json({ error: 'Auction place not found' }, { status: 404 })
       }
     }
 
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         device_id,
         name: name || null,
         status: 'active',
-        auction_id: auction_id || null,
+        auction_place_id: auction_place_id || null,
         firmware_version: firmware_version || null,
         hardware_version: hardware_version || null,
       })
@@ -119,3 +119,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 }
+
