@@ -149,7 +149,10 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         setHasAcceptedPrice(!!userBid)
       } else {
         // Free-form: check if user already placed any bid
-        const userBid = selectedItem.bids?.find(b => b.user_id === user.id)
+        const userBids = selectedItem.bids?.filter(b => b.user_id === user.id) || []
+          const userBid = userBids.length > 0 
+            ? userBids.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] 
+            : null
         setHasPlacedBid(!!userBid)
         setUserBidAmount(userBid?.bid_amount || null)
       }
