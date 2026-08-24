@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useCallback } from 'react'
 import {
@@ -10,6 +10,9 @@ import {
   X,
   CreditCard,
   Cpu,
+  Smartphone,
+  MapPin,
+  AlertCircle,
   ToggleLeft,
   ToggleRight,
   Trash2,
@@ -1385,3 +1388,4 @@ function AuctionPlacesTab() {
     </div>
   )
 }
+
