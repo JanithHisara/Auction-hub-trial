@@ -946,11 +946,8 @@ function DevicesTab() {
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      {device.auction ? (
-                        <div>
-                          <div className="text-sm text-white">{device.auction.name}</div>
-                          <AuctionStatusBadge status={device.auction.status} />
-                        </div>
+                      {device.auction_place ? (
+                        <div className="text-sm text-white">{device.auction_place.name}</div>
                       ) : (
                         <span className="text-xs text-[var(--text-secondary)]">Not assigned</span>
                       )}
