@@ -87,9 +87,9 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
     const channel = supabase
       .channel(`item-monitor-${gemId}`)
       .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'bids', 
+          event: '*', 
+          schema: 'public', 
+          table: 'bids', 
         filter: `gem_id=eq.${gemId}` 
       }, () => fetchData())
       .on('postgres_changes', { 
