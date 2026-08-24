@@ -126,7 +126,8 @@ export async function POST(
         .select('id')
         .eq('gem_id', id)
         .eq('user_id', user.id)
-        .single()
+      .order('created_at', { ascending: false })
+      .limit(1)
 
       if (elimination) {
         return NextResponse.json({ error: 'You have been eliminated from this auction item' }, { status: 403 })
@@ -164,9 +165,10 @@ export async function POST(
         .select('id')
         .eq('gem_id', id)
         .eq('user_id', user.id)
-        .single()
+      .order('created_at', { ascending: false })
+      .limit(1)
 
-      if (existingBid) {
+      if (existingBid && existingBid.length > 0) {
         return NextResponse.json({ error: 'You have already placed a bid for this item' }, { status: 400 })
       }
 
@@ -277,9 +279,10 @@ export async function PATCH(
       .select('id')
       .eq('gem_id', id)
       .eq('user_id', user.id)
-      .single()
+      .order('created_at', { ascending: false })
+      .limit(1)
 
-    if (!existingBid) {
+    if (!existingBid || existingBid.length === 0) {
       return NextResponse.json({ error: 'No existing bid found to edit' }, { status: 404 })
     }
 
@@ -301,7 +304,7 @@ export async function PATCH(
     const { data: updatedBid, error: updateError } = await supabase
       .from('bids')
       .update({ bid_amount: newAmount })
-      .eq('id', existingBid.id)
+      .eq('id', existingBid[0].id)
       .eq('user_id', user.id)
       .select()
       .single()
