@@ -1,144 +1,158 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Auction } from '@/types/database'
-import { AuctionHammerIcon } from '@/components/brand/Logo'
-import { getAuctionTypeLabel } from '@/lib/auction-types'
+import { useState, useEffect, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Auction } from "@/types/database";
+import { AuctionHammerIcon } from "@/components/brand/Logo";
+import { getAuctionTypeLabel } from "@/lib/auction-types";
 
 interface ItemBid {
-  bid_amount: number
-  created_at: string
-  user: { anonymous_name: string } | null
+  bid_amount: number;
+  created_at: string;
+  user: { anonymous_name: string } | null;
 }
 
 interface MonitorItem {
-  id: string
-  name: string
-  starting_price: number
-  current_price: number
-  status: string
-  gem_images: { image_url: string }[]
-  bids: ItemBid[]
-  bidCount: number
-  bidderCount: number
-  highestBid: number
+  id: string;
+  name: string;
+  starting_price: number;
+  current_price: number;
+  status: string;
+  gem_images: { image_url: string }[];
+  bids: ItemBid[];
+  bidCount: number;
+  bidderCount: number;
+  highestBid: number;
 }
 
 interface MonitorAuction extends Auction {
-  items: MonitorItem[]
-  registeredCount: number
+  items: MonitorItem[];
+  registeredCount: number;
 }
 
 interface Props {
-  auction: MonitorAuction
+  auction: MonitorAuction;
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(amount);
 }
 
 function formatTime(dateStr: string) {
-  return new Date(dateStr).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
+  return new Date(dateStr).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
-export default function AuctionMonitorClient({ auction: initialAuction }: Props) {
-  const [auction, setAuction] = useState(initialAuction)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [recentBids, setRecentBids] = useState<{ item: string; amount: number; bidder: string; time: string }[]>([])
-  const [flashItem, setFlashItem] = useState<string | null>(null)
-  const tickerRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
+export default function AuctionMonitorClient({
+  auction: initialAuction,
+}: Props) {
+  const [auction, setAuction] = useState(initialAuction);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [recentBids, setRecentBids] = useState<
+    { item: string; amount: number; bidder: string; time: string }[]
+  >([]);
+  const [flashItem, setFlashItem] = useState<string | null>(null);
+  const tickerRef = useRef<HTMLDivElement>(null);
+  const supabase = createClient();
 
-  const hasItems = auction.items.length > 0
-  const totalBids = auction.items.reduce((sum, item) => sum + item.bidCount, 0)
-  const totalValue = auction.items.reduce((sum, item) => sum + item.highestBid, 0)
-  const activeItems = auction.items.filter(i => i.status === 'active').length
-  const isProgressiveElimination = auction.auction_type === 'progressive_elimination_auction'
+  const hasItems = auction.items.length > 0;
+  const totalBids = auction.items.reduce((sum, item) => sum + item.bidCount, 0);
+  const totalValue = auction.items.reduce(
+    (sum, item) => sum + item.highestBid,
+    0,
+  );
+  const activeItems = auction.items.filter((i) => i.status === "active").length;
+  const isProgressiveElimination =
+    auction.auction_type === "progressive_elimination_auction";
+  const isSealed = auction.auction_type === "tender_base_fixed_bid";
 
   // Update clock
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Realtime bid updates
   useEffect(() => {
     const channel = supabase
       .channel(`auction-monitor-${auction.id}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'bids',
+          event: "INSERT",
+          schema: "public",
+          table: "bids",
         },
         async (payload) => {
-          const newBid = payload.new as { gem_id: string; bid_amount: number; user_id: string; created_at: string }
-          
+          const newBid = payload.new as {
+            gem_id: string;
+            bid_amount: number;
+            user_id: string;
+            created_at: string;
+          };
+
           // Check if this bid belongs to our auction items
-          const item = auction.items.find(i => i.id === newBid.gem_id)
-          if (!item) return
+          const item = auction.items.find((i) => i.id === newBid.gem_id);
+          if (!item) return;
 
           // Get bidder name
           const { data: user } = await supabase
-            .from('users')
-            .select('anonymous_name')
-            .eq('id', newBid.user_id)
-            .single()
+            .from("users")
+            .select("anonymous_name")
+            .eq("id", newBid.user_id)
+            .single();
 
           // Add to recent bids ticker
-          setRecentBids(prev => [
+          setRecentBids((prev) => [
             {
               item: item.name,
               amount: newBid.bid_amount,
-              bidder: user?.anonymous_name || 'Anonymous',
+              bidder: user?.anonymous_name || "Anonymous",
               time: formatTime(newBid.created_at),
             },
             ...prev.slice(0, 19),
-          ])
+          ]);
 
           // Flash the item
-          setFlashItem(item.id)
-          setTimeout(() => setFlashItem(null), 1500)
+          setFlashItem(item.id);
+          setTimeout(() => setFlashItem(null), 1500);
 
           // Update item data
-          setAuction(prev => ({
+          setAuction((prev) => ({
             ...prev,
-            items: prev.items.map(i => {
+            items: prev.items.map((i) => {
               if (i.id === newBid.gem_id) {
                 return {
                   ...i,
                   highestBid: Math.max(i.highestBid, newBid.bid_amount),
                   bidCount: i.bidCount + 1,
-                }
+                };
               }
-              return i
+              return i;
             }),
-          }))
-        }
+          }));
+        },
       )
-      .subscribe()
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [auction.id, auction.items, supabase])
+      supabase.removeChannel(channel);
+    };
+  }, [auction.id, auction.items, supabase]);
 
   return (
     <div className="monitor-display min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
       {/* Scanline effect */}
       <div className="scanline" />
-      
+
       {/* Header Bar */}
       <header className="relative z-10 bg-gradient-to-r from-[#0f0f18] via-[#1a1a2e] to-[#0f0f18] border-b border-[var(--gold)]/30">
         <div className="max-w-[1920px] mx-auto px-4 sm:px-8 py-3 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
@@ -158,33 +172,43 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
             <div className="h-6 sm:h-10 w-px bg-[var(--gold)]/30" />
             <div className="live-indicator">
               <span className="live-dot" />
-              <span className="text-sm sm:text-xl font-bold tracking-wider">LIVE</span>
+              <span className="text-sm sm:text-xl font-bold tracking-wider">
+                LIVE
+              </span>
             </div>
             <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/30 hidden sm:block" />
             <h1 className="text-lg sm:text-2xl font-black tracking-wide text-white truncate flex-1">
               {auction.name}
             </h1>
           </div>
-          
+
           <div className="flex items-center gap-4 sm:gap-8 w-full sm:w-auto justify-between sm:justify-end">
             <div className="text-left sm:text-right">
-              <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">Type</div>
-              <div className={`text-sm sm:text-lg font-bold ${
-                auction.auction_type === 'progressive_elimination_auction'
-                  ? 'text-purple-400'
-                  : auction.auction_type === 'incremental_approval_auction'
-                    ? 'text-red-400'
-                    : 'text-emerald-400'
-              }`}>
+              <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">
+                Type
+              </div>
+              <div
+                className={`text-sm sm:text-lg font-bold ${
+                  auction.auction_type === "progressive_elimination_auction"
+                    ? "text-purple-400"
+                    : auction.auction_type === "incremental_approval_auction"
+                      ? "text-red-400"
+                      : "text-emerald-400"
+                }`}
+              >
                 {getAuctionTypeLabel(auction.auction_type, true)}
               </div>
             </div>
             <div className="monitor-clock">
               <div className="text-2xl sm:text-5xl font-mono font-bold tabular-nums text-[var(--gold)]">
-                {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+                {currentTime.toLocaleTimeString("en-US", { hour12: false })}
               </div>
               <div className="text-[10px] sm:text-sm text-[var(--gold)]/60 text-center uppercase tracking-widest hidden sm:block">
-                {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                {currentTime.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
               </div>
             </div>
           </div>
@@ -196,11 +220,24 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         <div className="max-w-[1920px] mx-auto px-4 sm:px-8 flex items-center justify-between gap-2 overflow-x-auto">
           <StatBox icon="👥" label="REG" value={auction.registeredCount} />
           <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
-          <StatBox icon="💎" label="ITEMS" value={`${activeItems}/${auction.items.length}`} />
+          <StatBox
+            icon="💎"
+            label="ITEMS"
+            value={`${activeItems}/${auction.items.length}`}
+          />
           <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
-          <StatBox icon="🎯" label="BIDS" value={totalBids} highlight />
-          <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
-          <StatBox icon="💰" label="VALUE" value={formatCurrency(totalValue)} gold />
+          {!isSealed && (
+            <>
+              <StatBox icon="🎯" label="BIDS" value={totalBids} highlight />
+              <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
+              <StatBox
+                icon="💰"
+                label="VALUE"
+                value={formatCurrency(totalValue)}
+                gold
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -212,16 +249,16 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
             <div className="board-header">
               <div className="col-item">ITEM</div>
               <div className="col-starting">STARTING</div>
-              <div className="col-current">CURRENT BID</div>
-              <div className="col-bids">BIDS</div>
+              {!isSealed && <div className="col-current">CURRENT BID</div>}
+              {!isSealed && <div className="col-bids">BIDS</div>}
               <div className="col-status">STATUS</div>
             </div>
-            
+
             <div className="board-body">
               {auction.items.map((item, idx) => (
-                <div 
-                  key={item.id} 
-                  className={`board-row ${flashItem === item.id ? 'flash' : ''}`}
+                <div
+                  key={item.id}
+                  className={`board-row ${flashItem === item.id ? "flash" : ""}`}
                   style={{ animationDelay: `${idx * 0.1}s` }}
                 >
                   <div className="col-item">
@@ -235,21 +272,37 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
                     <span className="item-name">{item.name}</span>
                   </div>
                   <div className="col-starting">
-                    <span className="price-dim">{formatCurrency(item.starting_price)}</span>
-                  </div>
-                  <div className="col-current">
-                    <span className={`price-current ${flashItem === item.id ? 'price-flash' : ''}`}>
-                      {formatCurrency(item.highestBid)}
+                    <span className="price-dim">
+                      {formatCurrency(item.starting_price)}
                     </span>
-                    {item.highestBid > item.starting_price && item.starting_price > 0 && (
-                      <span className="price-change">
-                        +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%
-                      </span>
-                    )}
                   </div>
-                  <div className="col-bids">
-                    <span className="bid-count">{item.bidCount}</span>
-                  </div>
+                  {!isSealed && (
+                    <>
+                      <div className="col-current">
+                        <span
+                          className={`price-current ${flashItem === item.id ? "price-flash" : ""}`}
+                        >
+                          {formatCurrency(item.highestBid)}
+                        </span>
+                        {!isSealed &&
+                          item.highestBid > item.starting_price &&
+                          item.starting_price > 0 && (
+                            <span className="price-change">
+                              +
+                              {Math.round(
+                                ((item.highestBid - item.starting_price) /
+                                  item.starting_price) *
+                                  100,
+                              )}
+                              %
+                            </span>
+                          )}
+                      </div>
+                      <div className="col-bids">
+                        <span className="bid-count">{item.bidCount}</span>
+                      </div>
+                    </>
+                  )}
                   <div className="col-status">
                     <span className={`status-badge ${item.status}`}>
                       {item.status.toUpperCase()}
@@ -262,47 +315,63 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         </div>
 
         {/* Right Sidebar */}
-        <div className="lg:col-span-4 space-y-4 sm:space-y-6">
-          {/* Top Bid */}
-          <div className="highlight-card">
-            <div className="highlight-label">HIGHEST BID</div>
-            <div className="highlight-value animate-glow">
-              {hasItems ? formatCurrency(Math.max(...auction.items.map(i => i.highestBid))) : formatCurrency(0)}
+        {!isSealed && (
+          <div className="lg:col-span-4 space-y-4 sm:space-y-6">
+            {/* Top Bid */}
+            <div className="highlight-card">
+              <div className="highlight-label">HIGHEST BID</div>
+              <div className="highlight-value animate-glow">
+                {hasItems
+                  ? formatCurrency(
+                      Math.max(...auction.items.map((i) => i.highestBid)),
+                    )
+                  : formatCurrency(0)}
+              </div>
+              <div className="highlight-item">
+                {hasItems
+                  ? auction.items.reduce(
+                      (max, item) =>
+                        item.highestBid > max.highestBid ? item : max,
+                      auction.items[0],
+                    )?.name
+                  : "No items yet"}
+              </div>
             </div>
-            <div className="highlight-item">
-              {hasItems
-                ? auction.items.reduce((max, item) => item.highestBid > max.highestBid ? item : max, auction.items[0])?.name
-                : 'No items yet'}
-            </div>
-          </div>
 
-          {/* Live Activity Feed */}
-          <div className="activity-feed">
-            <div className="feed-header">
-              <span className="pulse-dot" />
-              LIVE ACTIVITY
-            </div>
-            <div className="feed-list" ref={tickerRef}>
-              {recentBids.length > 0 ? (
-                recentBids.map((bid, idx) => (
-                  <div key={idx} className="feed-item" style={{ animationDelay: `${idx * 0.05}s` }}>
-                    <div className="feed-amount">{formatCurrency(bid.amount)}</div>
-                    <div className="feed-details">
-                      <span className="feed-item-name">{bid.item}</span>
-                      <span className="feed-bidder">{bid.bidder}</span>
+            {/* Live Activity Feed */}
+            <div className="activity-feed">
+              <div className="feed-header">
+                <span className="pulse-dot" />
+                LIVE ACTIVITY
+              </div>
+              <div className="feed-list" ref={tickerRef}>
+                {recentBids.length > 0 ? (
+                  recentBids.map((bid, idx) => (
+                    <div
+                      key={idx}
+                      className="feed-item"
+                      style={{ animationDelay: `${idx * 0.05}s` }}
+                    >
+                      <div className="feed-amount">
+                        {formatCurrency(bid.amount)}
+                      </div>
+                      <div className="feed-details">
+                        <span className="feed-item-name">{bid.item}</span>
+                        <span className="feed-bidder">{bid.bidder}</span>
+                      </div>
+                      <div className="feed-time">{bid.time}</div>
                     </div>
-                    <div className="feed-time">{bid.time}</div>
+                  ))
+                ) : (
+                  <div className="feed-empty">
+                    <span className="text-4xl mb-2">⏳</span>
+                    <span>Waiting for bids...</span>
                   </div>
-                ))
-              ) : (
-                <div className="feed-empty">
-                  <span className="text-4xl mb-2">⏳</span>
-                  <span>Waiting for bids...</span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Ticker */}
@@ -311,22 +380,54 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           {auction.items.map((item, idx) => (
             <span key={item.id} className="ticker-item">
               <span className="ticker-name">{item.name}</span>
-              <span className="ticker-price">{formatCurrency(item.highestBid)}</span>
-              {item.highestBid > item.starting_price && item.starting_price > 0 && (
-                <span className="ticker-up">▲ +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
+              {!isSealed && (
+                <span className="ticker-price">
+                  {formatCurrency(item.highestBid)}
+                </span>
               )}
-              {idx < auction.items.length - 1 && <span className="ticker-sep">•</span>}
+              {!isSealed &&
+                item.highestBid > item.starting_price &&
+                item.starting_price > 0 && (
+                  <span className="ticker-up">
+                    ▲ +
+                    {Math.round(
+                      ((item.highestBid - item.starting_price) /
+                        item.starting_price) *
+                        100,
+                    )}
+                    %
+                  </span>
+                )}
+              {idx < auction.items.length - 1 && (
+                <span className="ticker-sep">•</span>
+              )}
             </span>
           ))}
           {/* Duplicate for seamless loop */}
           {auction.items.map((item, idx) => (
             <span key={`dup-${item.id}`} className="ticker-item">
               <span className="ticker-name">{item.name}</span>
-              <span className="ticker-price">{formatCurrency(item.highestBid)}</span>
-              {item.highestBid > item.starting_price && item.starting_price > 0 && (
-                <span className="ticker-up">▲ +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
+              {!isSealed && (
+                <span className="ticker-price">
+                  {formatCurrency(item.highestBid)}
+                </span>
               )}
-              {idx < auction.items.length - 1 && <span className="ticker-sep">•</span>}
+              {!isSealed &&
+                item.highestBid > item.starting_price &&
+                item.starting_price > 0 && (
+                  <span className="ticker-up">
+                    ▲ +
+                    {Math.round(
+                      ((item.highestBid - item.starting_price) /
+                        item.starting_price) *
+                        100,
+                    )}
+                    %
+                  </span>
+                )}
+              {idx < auction.items.length - 1 && (
+                <span className="ticker-sep">•</span>
+              )}
             </span>
           ))}
         </div>
@@ -334,7 +435,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
 
       <style jsx>{`
         .monitor-display {
-          font-family: 'JetBrains Mono', 'SF Mono', monospace;
+          font-family: "JetBrains Mono", "SF Mono", monospace;
           position: relative;
         }
 
@@ -376,8 +477,15 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
 
         @keyframes pulse-live {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.9); }
+          0%,
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(0.9);
+          }
         }
 
         .monitor-clock {
@@ -456,8 +564,14 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
 
         @keyframes rowFlash {
-          0%, 100% { background: transparent; }
-          25%, 75% { background: rgba(212, 175, 55, 0.2); }
+          0%,
+          100% {
+            background: transparent;
+          }
+          25%,
+          75% {
+            background: rgba(212, 175, 55, 0.2);
+          }
         }
 
         .col-item {
@@ -511,7 +625,9 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           display: none;
         }
 
-        .col-current, .col-bids, .col-status {
+        .col-current,
+        .col-bids,
+        .col-status {
           display: flex;
           align-items: center;
         }
@@ -540,8 +656,15 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
 
         @keyframes priceFlash {
-          0%, 100% { color: var(--gold); transform: scale(1); }
-          50% { color: #10b981; transform: scale(1.1); }
+          0%,
+          100% {
+            color: var(--gold);
+            transform: scale(1);
+          }
+          50% {
+            color: #10b981;
+            transform: scale(1.1);
+          }
         }
 
         .price-change {
@@ -621,8 +744,12 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
 
         @keyframes glow {
-          from { text-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
-          to { text-shadow: 0 0 40px rgba(212, 175, 55, 0.7); }
+          from {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+          }
+          to {
+            text-shadow: 0 0 40px rgba(212, 175, 55, 0.7);
+          }
         }
 
         .highlight-item {
@@ -730,7 +857,12 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           bottom: 0;
           left: 0;
           right: 0;
-          background: linear-gradient(90deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+          background: linear-gradient(
+            90deg,
+            #0a0a0f 0%,
+            #1a1a2e 50%,
+            #0a0a0f 100%
+          );
           border-top: 1px solid var(--gold);
           padding: 1rem 0;
           overflow: hidden;
@@ -744,8 +876,12 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
 
         @keyframes ticker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
         }
 
         .ticker-item {
@@ -776,26 +912,35 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
         }
       `}</style>
     </div>
-  )
+  );
 }
 
-function StatBox({ icon, label, value, highlight = false, gold = false }: { 
-  icon: string
-  label: string
-  value: string | number
-  highlight?: boolean
-  gold?: boolean
+function StatBox({
+  icon,
+  label,
+  value,
+  highlight = false,
+  gold = false,
+}: {
+  icon: string;
+  label: string;
+  value: string | number;
+  highlight?: boolean;
+  gold?: boolean;
 }) {
   return (
     <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
       <span className="text-xl sm:text-3xl">{icon}</span>
       <div>
-        <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">{label}</div>
-        <div className={`text-lg sm:text-2xl font-bold tabular-nums ${gold ? 'text-[var(--gold)]' : highlight ? 'text-emerald-400' : 'text-white'}`}>
+        <div className="text-[10px] sm:text-xs text-[var(--gold)]/60 uppercase tracking-widest">
+          {label}
+        </div>
+        <div
+          className={`text-lg sm:text-2xl font-bold tabular-nums ${gold ? "text-[var(--gold)]" : highlight ? "text-emerald-400" : "text-white"}`}
+        >
           {value}
         </div>
       </div>
     </div>
-  )
+  );
 }
-
