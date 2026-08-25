@@ -1,168 +1,189 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { AuctionHammerIcon } from '@/components/brand/Logo'
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { AuctionHammerIcon } from "@/components/brand/Logo";
 
 interface ItemData {
-  id: string
-  name: string
-  description: string
-  starting_price: number
-  current_price: number
-  min_bid_increment: number
-  status: string
-  end_time: string
-  round_end_time: string | null
-  gem_images: { image_url: string }[]
-  bidCount: number
-  uniqueBidders: number
-  highestBid: number
-  recentBids: { id: string; bid_amount: number; created_at: string }[]
+  id: string;
+  name: string;
+  description: string;
+  starting_price: number;
+  current_price: number;
+  min_bid_increment: number;
+  status: string;
+  end_time: string;
+  round_end_time: string | null;
+  gem_images: { image_url: string }[];
+  bidCount: number;
+  uniqueBidders: number;
+  highestBid: number;
+  recentBids: { id: string; bid_amount: number; created_at: string }[];
 }
 
 interface MonitorData {
-  auction: { id: string; name: string; status: string; auction_type: string }
-  currentItem: ItemData | null
-  nextItem: { id: string; name: string; status: string } | null
-  allItems: { id: string; name: string; status: string }[]
-  finishedCount: number
-  totalItems: number
+  auction: { id: string; name: string; status: string; auction_type: string };
+  currentItem: ItemData | null;
+  nextItem: { id: string; name: string; status: string } | null;
+  allItems: { id: string; name: string; status: string }[];
+  finishedCount: number;
+  totalItems: number;
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(amount);
 }
 
 function formatTime(dateStr: string) {
-  return new Date(dateStr).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
+  return new Date(dateStr).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
-export default function ItemMonitorClient({ auctionId, auctionName }: { auctionId: string; auctionName: string }) {
-  const [data, setData] = useState<MonitorData | null>(null)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [timeLeft, setTimeLeft] = useState<string>('')
-  const [flashPrice, setFlashPrice] = useState(false)
-  const [showFinished, setShowFinished] = useState(false)
-  const supabase = createClient()
+export default function ItemMonitorClient({
+  auctionId,
+  auctionName,
+}: {
+  auctionId: string;
+  auctionName: string;
+}) {
+  const [data, setData] = useState<MonitorData | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [timeLeft, setTimeLeft] = useState<string>("");
+  const [flashPrice, setFlashPrice] = useState(false);
+  const [showFinished, setShowFinished] = useState(false);
+  const supabase = createClient();
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`/api/auctions/${auctionId}/current-item`)
+      const res = await fetch(`/api/auctions/${auctionId}/current-item`);
       if (res.ok) {
-        const newData = await res.json()
+        const newData = await res.json();
         if (data?.currentItem && newData.currentItem) {
           // Flash when price increases
           if (newData.currentItem.highestBid > data.currentItem.highestBid) {
-            setFlashPrice(true)
-            setTimeout(() => setFlashPrice(false), 1500)
+            setFlashPrice(true);
+            setTimeout(() => setFlashPrice(false), 1500);
           }
           // Show finished message when item changes
           if (newData.currentItem.id !== data.currentItem.id) {
-            setShowFinished(true)
-            setTimeout(() => setShowFinished(false), 3000)
+            setShowFinished(true);
+            setTimeout(() => setShowFinished(false), 3000);
           }
         }
-        setData(newData)
+        setData(newData);
       }
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
-  }
+  };
 
   // Initial fetch and clock
   useEffect(() => {
-    fetchData()
-    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(clockTimer)
-  }, [auctionId])
+    fetchData();
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(clockTimer);
+  }, [auctionId]);
 
   // Realtime subscriptions
   useEffect(() => {
-    if (!data?.currentItem) return
+    if (!data?.currentItem) return;
 
     const channel = supabase
       .channel(`item-monitor-${data.currentItem.id}`)
-      .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'bids', 
-        filter: `gem_id=eq.${data.currentItem.id}` 
-      }, () => fetchData())
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'gems', 
-        filter: `id=eq.${data.currentItem.id}` 
-      }, () => fetchData())
-      .subscribe()
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bids",
+          filter: `gem_id=eq.${data.currentItem.id}`,
+        },
+        () => fetchData(),
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "gems",
+          filter: `id=eq.${data.currentItem.id}`,
+        },
+        () => fetchData(),
+      )
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [data?.currentItem?.id, supabase])
+      supabase.removeChannel(channel);
+    };
+  }, [data?.currentItem?.id, supabase]);
 
   // Poll for item changes (backup for when item status changes)
   useEffect(() => {
-    const pollInterval = setInterval(fetchData, 5000)
-    return () => clearInterval(pollInterval)
-  }, [auctionId])
+    const pollInterval = setInterval(fetchData, 5000);
+    return () => clearInterval(pollInterval);
+  }, [auctionId]);
 
   // Countdown timer
   useEffect(() => {
     if (!data?.currentItem?.round_end_time && !data?.currentItem?.end_time) {
-      setTimeLeft('')
-      return
+      setTimeLeft("");
+      return;
     }
 
-    const targetTime = data.currentItem.round_end_time || data.currentItem.end_time
+    const targetTime =
+      data.currentItem.round_end_time || data.currentItem.end_time;
 
     const interval = setInterval(() => {
-      const now = new Date().getTime()
-      const end = new Date(targetTime).getTime()
-      const distance = end - now
+      const now = new Date().getTime();
+      const end = new Date(targetTime).getTime();
+      const distance = end - now;
 
       if (distance < 0) {
-        setTimeLeft('00:00')
+        setTimeLeft("00:00");
         // Refresh to check for next item
-        fetchData()
-        return
+        fetchData();
+        return;
       }
 
-      const hours = Math.floor(distance / (1000 * 60 * 60))
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000)
+      const hours = Math.floor(distance / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
       if (hours > 0) {
-        setTimeLeft(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+        setTimeLeft(
+          `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+        );
       } else {
-        setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+        setTimeLeft(
+          `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+        );
       }
-    }, 1000)
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [data?.currentItem?.round_end_time, data?.currentItem?.end_time])
+    return () => clearInterval(interval);
+  }, [data?.currentItem?.round_end_time, data?.currentItem?.end_time]);
 
   if (!data) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-[var(--gold)] text-xl animate-pulse">Loading Monitor...</div>
+        <div className="text-[var(--gold)] text-xl animate-pulse">
+          Loading Monitor...
+        </div>
       </div>
-    )
+    );
   }
 
-  const { currentItem, nextItem, finishedCount, totalItems, auction } = data
-  const isItemFinished = !currentItem && finishedCount === totalItems
-  const isSealed = auction?.auction_type === 'tender_base_fixed_bid'
+  const { currentItem, nextItem, finishedCount, totalItems, auction } = data;
+  const isItemFinished = !currentItem && finishedCount === totalItems;
+  const isSealed = auction?.auction_type === "tender_base_fixed_bid";
 
   return (
     <div className="monitor-display min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
@@ -174,12 +195,14 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
           <div className="text-center animate-fade-in">
             <div className="text-6xl mb-4">🔔</div>
-            <div className="text-3xl font-bold text-[var(--gold)] mb-2">Item Finished!</div>
+            <div className="text-3xl font-bold text-[var(--gold)] mb-2">
+              Item Finished!
+            </div>
             <div className="text-xl text-white/60">Loading next item...</div>
           </div>
         </div>
       )}
-      
+
       {/* Header */}
       <header className="relative z-10 bg-gradient-to-r from-[#0f0f18] via-[#1a1a2e] to-[#0f0f18] border-b border-[var(--gold)]/30">
         <div className="max-w-[1920px] mx-auto px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between">
@@ -196,33 +219,39 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
               </div>
             </div>
             <div className="h-8 w-px bg-[var(--gold)]/30" />
-            <div className={`live-indicator ${isItemFinished ? 'ended' : ''}`}>
+            <div className={`live-indicator ${isItemFinished ? "ended" : ""}`}>
               <span className="live-dot" />
               <span className="text-sm sm:text-lg font-bold tracking-wider">
-                {isItemFinished ? 'ENDED' : 'LIVE'}
+                {isItemFinished ? "ENDED" : "LIVE"}
               </span>
             </div>
             <div className="h-8 w-px bg-[var(--gold)]/30 hidden sm:block" />
             <div className="hidden sm:block">
-              <div className="text-xs text-[var(--gold)]/60 uppercase">Auction</div>
+              <div className="text-xs text-[var(--gold)]/60 uppercase">
+                Auction
+              </div>
               <div className="text-lg font-bold text-white">{auctionName}</div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <div className="text-xs text-[var(--gold)]/60 uppercase">Progress</div>
-              <div className="text-xl font-bold text-white">{finishedCount}/{totalItems}</div>
+              <div className="text-xs text-[var(--gold)]/60 uppercase">
+                Progress
+              </div>
+              <div className="text-xl font-bold text-white">
+                {finishedCount}/{totalItems}
+              </div>
             </div>
             <div className="monitor-clock">
               <div className="text-xl sm:text-4xl font-mono font-bold tabular-nums text-[var(--gold)]">
-                {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+                {currentTime.toLocaleTimeString("en-US", { hour12: false })}
               </div>
             </div>
           </div>
         </div>
       </header>
-      
+
       {/* Main Content */}
       <div className="max-w-[1920px] mx-auto p-4 sm:p-8">
         {currentItem ? (
@@ -242,44 +271,81 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
               <div className="lg:col-span-5 space-y-6">
                 <div className="aspect-square rounded-2xl overflow-hidden border-2 border-[var(--gold)]/30 bg-[#12121a]">
                   {currentItem.gem_images?.[0]?.image_url ? (
-                    <img 
-                      src={currentItem.gem_images[0].image_url} 
+                    <img
+                      src={currentItem.gem_images[0].image_url}
                       alt={currentItem.name}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-8xl opacity-30">💎</div>
+                    <div className="w-full h-full flex items-center justify-center text-8xl opacity-30">
+                      💎
+                    </div>
                   )}
                 </div>
 
-                {/* Stats Row */}
-                <div className={`grid ${isSealed ? 'grid-cols-1' : 'grid-cols-3'} gap-4`}>
-                  <StatCard label={isSealed ? "Initial Price" : "Starting"} value={formatCurrency(currentItem.starting_price)} />
-                  {!isSealed && <StatCard label="Total Bids" value={currentItem.bidCount.toString()} highlight />}
-                  {!isSealed && <StatCard label="Bidders" value={currentItem.uniqueBidders.toString()} />}
-                </div>
+                {/* Description or Stats Row */}
+                {isSealed ? (
+                  <div className="bg-[#12121a] border border-[var(--gold)]/30 rounded-2xl p-4 sm:p-6 text-white/80 text-sm sm:text-base leading-relaxed">
+                    {currentItem.description || "No description available."}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-4">
+                    <StatCard
+                      label="Starting"
+                      value={formatCurrency(currentItem.starting_price)}
+                    />
+                    <StatCard
+                      label="Total Bids"
+                      value={currentItem.bidCount.toString()}
+                      highlight
+                    />
+                    <StatCard
+                      label="Bidders"
+                      value={currentItem.uniqueBidders.toString()}
+                    />
+                  </div>
+                )}
               </div>
-              
+
               {/* Center: Current Price */}
-              <div className={`flex flex-col items-center justify-center ${isSealed ? 'lg:col-span-7' : 'lg:col-span-4'}`}>
+              <div
+                className={`flex flex-col items-center justify-center ${isSealed ? "lg:col-span-7" : "lg:col-span-4"}`}
+              >
                 <div className="price-display">
                   <div className="text-sm sm:text-lg text-[var(--gold)]/60 uppercase tracking-[0.2em] mb-4">
-                    {isSealed ? 'Initial Price' : 'Current Price'}
+                    {isSealed ? "Initial Price" : "Current Price"}
                   </div>
-                  <div className={`price-value ${flashPrice && !isSealed ? 'flash' : ''}`}>
-                    {formatCurrency(isSealed ? currentItem.starting_price : currentItem.highestBid)}
+                  <div
+                    className={`price-value ${flashPrice && !isSealed ? "flash" : ""}`}
+                  >
+                    {formatCurrency(
+                      isSealed
+                        ? currentItem.starting_price
+                        : currentItem.highestBid,
+                    )}
                   </div>
-                  {!isSealed && currentItem.highestBid > currentItem.starting_price && currentItem.starting_price > 0 && (
-                    <div className="price-increase">
-                      ↑ +{Math.round(((currentItem.highestBid - currentItem.starting_price) / currentItem.starting_price) * 100)}% from starting
-                    </div>
-                  )}
-                  
+                  {!isSealed &&
+                    currentItem.highestBid > currentItem.starting_price &&
+                    currentItem.starting_price > 0 && (
+                      <div className="price-increase">
+                        ↑ +
+                        {Math.round(
+                          ((currentItem.highestBid -
+                            currentItem.starting_price) /
+                            currentItem.starting_price) *
+                            100,
+                        )}
+                        % from starting
+                      </div>
+                    )}
+
                   {/* Countdown */}
                   {timeLeft && (
                     <div className="countdown-box">
                       <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-2">
-                        {currentItem.round_end_time ? 'Round Ends In' : 'Bidding Ends In'}
+                        {currentItem.round_end_time
+                          ? "Round Ends In"
+                          : "Bidding Ends In"}
                       </div>
                       <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
                         {timeLeft}
@@ -291,40 +357,52 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
                 {/* Next Item Preview */}
                 {nextItem && (
                   <div className="mt-6 p-4 bg-[#12121a] border border-[var(--gold)]/20 rounded-xl text-center w-full max-w-md">
-                    <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-1">Up Next</div>
-                    <div className="text-lg font-bold text-white">{nextItem.name}</div>
+                    <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-1">
+                      Up Next
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {nextItem.name}
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Right: Live Bids */}
               {!isSealed && (
-              <div className="lg:col-span-3">
-                <div className="activity-card">
-                  <div className="card-header">
-                    <span className="pulse-dot" />
-                    LIVE BIDS
-                  </div>
-                  <div className="activity-list">
-                    {currentItem.recentBids.length > 0 ? (
-                      currentItem.recentBids.map((bid, idx) => (
-                        <div key={bid.id} className="activity-item" style={{ animationDelay: `${idx * 0.05}s` }}>
-                          <div className="activity-amount">{formatCurrency(bid.bid_amount)}</div>
-                          <div className="activity-time">{formatTime(bid.created_at)}</div>
+                <div className="lg:col-span-3">
+                  <div className="activity-card">
+                    <div className="card-header">
+                      <span className="pulse-dot" />
+                      LIVE BIDS
+                    </div>
+                    <div className="activity-list">
+                      {currentItem.recentBids.length > 0 ? (
+                        currentItem.recentBids.map((bid, idx) => (
+                          <div
+                            key={bid.id}
+                            className="activity-item"
+                            style={{ animationDelay: `${idx * 0.05}s` }}
+                          >
+                            <div className="activity-amount">
+                              {formatCurrency(bid.bid_amount)}
+                            </div>
+                            <div className="activity-time">
+                              {formatTime(bid.created_at)}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="no-bids">
+                          <span className="text-4xl mb-3">⏳</span>
+                          <span>Waiting for bids...</span>
                         </div>
-                      ))
-                    ) : (
-                      <div className="no-bids">
-                        <span className="text-4xl mb-3">⏳</span>
-                        <span>Waiting for bids...</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="privacy-notice">
-                    Bidder identities are hidden until auction ends
+                      )}
+                    </div>
+                    <div className="privacy-notice">
+                      Bidder identities are hidden until auction ends
+                    </div>
                   </div>
                 </div>
-              </div>
               )}
             </div>
           </>
@@ -332,22 +410,30 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
           /* All Items Finished */
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
             <div className="text-8xl mb-6">🏆</div>
-            <h1 className="text-4xl font-black text-[var(--gold)] mb-4">Auction Complete!</h1>
-            <p className="text-xl text-white/60">All {totalItems} items have finished bidding.</p>
+            <h1 className="text-4xl font-black text-[var(--gold)] mb-4">
+              Auction Complete!
+            </h1>
+            <p className="text-xl text-white/60">
+              All {totalItems} items have finished bidding.
+            </p>
           </div>
         ) : (
           /* Waiting for First Item */
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
             <div className="text-8xl mb-6 animate-pulse">⏳</div>
-            <h1 className="text-4xl font-black text-white mb-4">Waiting for Auction to Start</h1>
-            <p className="text-xl text-white/60">The first item will appear here when bidding begins.</p>
+            <h1 className="text-4xl font-black text-white mb-4">
+              Waiting for Auction to Start
+            </h1>
+            <p className="text-xl text-white/60">
+              The first item will appear here when bidding begins.
+            </p>
           </div>
         )}
       </div>
-      
+
       <style jsx>{`
         .monitor-display {
-          font-family: 'JetBrains Mono', 'SF Mono', monospace;
+          font-family: "JetBrains Mono", "SF Mono", monospace;
           position: relative;
         }
 
@@ -401,8 +487,15 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
         }
 
         @keyframes pulse-live {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.9); }
+          0%,
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(0.9);
+          }
         }
 
         .monitor-clock {
@@ -440,8 +533,16 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
         }
 
         @keyframes priceFlash {
-          0%, 100% { color: var(--gold); transform: scale(1); }
-          25%, 75% { color: #10b981; transform: scale(1.05); }
+          0%,
+          100% {
+            color: var(--gold);
+            transform: scale(1);
+          }
+          25%,
+          75% {
+            color: #10b981;
+            transform: scale(1.05);
+          }
         }
 
         .price-increase {
@@ -506,8 +607,14 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
         }
 
         @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .activity-amount {
@@ -543,8 +650,14 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
         }
 
         @keyframes fade-in {
-          from { opacity: 0; transform: scale(0.9); }
-          to { opacity: 1; transform: scale(1); }
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
         }
 
         .animate-fade-in {
@@ -552,14 +665,28 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
         }
       `}</style>
     </div>
-  )
+  );
 }
 
-function StatCard({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+function StatCard({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
     <div className="p-4 bg-[#12121a] border border-[var(--gold)]/20 rounded-xl text-center">
-      <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-1">{label}</div>
-      <div className={`text-xl font-bold ${highlight ? 'text-emerald-400' : 'text-white'}`}>{value}</div>
+      <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-1">
+        {label}
+      </div>
+      <div
+        className={`text-xl font-bold ${highlight ? "text-emerald-400" : "text-white"}`}
+      >
+        {value}
+      </div>
     </div>
-  )
+  );
 }
