@@ -23,7 +23,7 @@ export async function GET(
         end_time,
         round_end_time,
         gem_images (image_url),
-        auction:auctions (name)
+        auction:auctions (name, auction_type)
       `)
       .eq('id', id)
       .single()

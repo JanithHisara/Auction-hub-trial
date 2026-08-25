@@ -1,161 +1,187 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { AuctionHammerIcon } from '@/components/brand/Logo'
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { AuctionHammerIcon } from "@/components/brand/Logo";
 
 interface ItemData {
-  id: string
-  name: string
-  description: string
-  starting_price: number
-  current_price: number
-  min_bid_increment: number
-  status: string
-  end_time: string
-  round_end_time: string | null
-  gem_images: { image_url: string }[]
-  auction?: { name: string } | null
+  id: string;
+  name: string;
+  description: string;
+  starting_price: number;
+  current_price: number;
+  min_bid_increment: number;
+  status: string;
+  end_time: string;
+  round_end_time: string | null;
+  gem_images: { image_url: string }[];
+  auction?: { name: string; auction_type?: string } | null;
 }
 
 interface BidData {
-  id: string
-  bid_amount: number
-  created_at: string
-  user_id: string
+  id: string;
+  bid_amount: number;
+  created_at: string;
+  user_id: string;
 }
 
 interface MonitorData {
-  item: ItemData
-  bidCount: number
-  uniqueBidders: number
-  highestBid: number
-  recentBids: BidData[]
-  isFinished: boolean
-  topBidders: { anonymous_name: string; bid_amount: number }[]
+  item: ItemData;
+  bidCount: number;
+  uniqueBidders: number;
+  highestBid: number;
+  recentBids: BidData[];
+  isFinished: boolean;
+  topBidders: { anonymous_name: string; bid_amount: number }[];
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(amount);
 }
 
 function formatTime(dateStr: string) {
-  return new Date(dateStr).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
+  return new Date(dateStr).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
 export default function MonitorClient({ gemId }: { gemId: string }) {
-  const [data, setData] = useState<MonitorData | null>(null)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [timeLeft, setTimeLeft] = useState<string>('')
-  const [flashPrice, setFlashPrice] = useState(false)
-  const supabase = createClient()
+  const [data, setData] = useState<MonitorData | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [timeLeft, setTimeLeft] = useState<string>("");
+  const [flashPrice, setFlashPrice] = useState(false);
+  const supabase = createClient();
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`/api/gems/${gemId}/monitor-data`)
+      const res = await fetch(`/api/gems/${gemId}/monitor-data`);
       if (res.ok) {
-        const newData = await res.json()
+        const newData = await res.json();
         if (data && newData.highestBid > data.highestBid) {
-          setFlashPrice(true)
-          setTimeout(() => setFlashPrice(false), 1500)
+          setFlashPrice(true);
+          setTimeout(() => setFlashPrice(false), 1500);
         }
-        setData(newData)
+        setData(newData);
       }
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
-  }
+  };
 
   // Initial fetch and clock
   useEffect(() => {
-    fetchData()
-    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(clockTimer)
-  }, [gemId])
-    
-    // Realtime subscriptions
+    fetchData();
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(clockTimer);
+  }, [gemId]);
+
+  // Realtime subscriptions
   useEffect(() => {
     const channel = supabase
       .channel(`item-monitor-${gemId}`)
-      .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'bids', 
-        filter: `gem_id=eq.${gemId}` 
-      }, () => fetchData())
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'gems', 
-        filter: `id=eq.${gemId}` 
-      }, () => fetchData())
-      .subscribe()
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bids",
+          filter: `gem_id=eq.${gemId}`,
+        },
+        () => fetchData(),
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "gems",
+          filter: `id=eq.${gemId}`,
+        },
+        () => fetchData(),
+      )
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [gemId, supabase])
+      supabase.removeChannel(channel);
+    };
+  }, [gemId, supabase]);
 
   // Countdown timer
   useEffect(() => {
     if (!data?.item.round_end_time && !data?.item.end_time) {
-      setTimeLeft('')
-      return
+      setTimeLeft("");
+      return;
     }
 
-    const targetTime = data.item.round_end_time || data.item.end_time
+    const targetTime = data.item.round_end_time || data.item.end_time;
 
     const interval = setInterval(() => {
-      const now = new Date().getTime()
-      const end = new Date(targetTime).getTime()
-      const distance = end - now
+      const now = new Date().getTime();
+      const end = new Date(targetTime).getTime();
+      const distance = end - now;
 
       if (distance < 0) {
-        setTimeLeft('00:00')
-        return
+        setTimeLeft("00:00");
+        return;
       }
 
-      const hours = Math.floor(distance / (1000 * 60 * 60))
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000)
+      const hours = Math.floor(distance / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
       if (hours > 0) {
-        setTimeLeft(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+        setTimeLeft(
+          `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+        );
       } else {
-      setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+        setTimeLeft(
+          `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+        );
       }
-    }, 1000)
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [data?.item.round_end_time, data?.item.end_time])
+    return () => clearInterval(interval);
+  }, [data?.item.round_end_time, data?.item.end_time]);
 
   if (!data) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-[var(--gold)] text-xl animate-pulse">Loading Monitor...</div>
+        <div className="text-[var(--gold)] text-xl animate-pulse">
+          Loading Monitor...
+        </div>
       </div>
-    )
+    );
   }
 
-  const { item, bidCount, uniqueBidders, highestBid, isFinished, topBidders, recentBids } = data
-  const priceIncrease = highestBid > item.starting_price && item.starting_price > 0
-    ? Math.round(((highestBid - item.starting_price) / item.starting_price) * 100) 
-    : 0
+  const {
+    item,
+    bidCount,
+    uniqueBidders,
+    highestBid,
+    isFinished,
+    topBidders,
+    recentBids,
+  } = data;
+  const isSealed = item.auction?.auction_type === "tender_base_fixed_bid";
+  const priceIncrease =
+    highestBid > item.starting_price && item.starting_price > 0
+      ? Math.round(
+          ((highestBid - item.starting_price) / item.starting_price) * 100,
+        )
+      : 0;
 
   return (
     <div className="monitor-display min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
       {/* Scanline effect */}
       <div className="scanline" />
-      
+
       {/* Header */}
       <header className="relative z-10 bg-gradient-to-r from-[#0f0f18] via-[#1a1a2e] to-[#0f0f18] border-b border-[var(--gold)]/30">
         <div className="max-w-[1920px] mx-auto px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between">
@@ -172,22 +198,22 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               </div>
             </div>
             <div className="h-8 w-px bg-[var(--gold)]/30" />
-            <div className={`live-indicator ${isFinished ? 'ended' : ''}`}>
+            <div className={`live-indicator ${isFinished ? "ended" : ""}`}>
               <span className="live-dot" />
               <span className="text-sm sm:text-lg font-bold tracking-wider">
-                {isFinished ? 'ENDED' : 'LIVE'}
+                {isFinished ? "ENDED" : "LIVE"}
               </span>
             </div>
           </div>
-          
+
           <div className="monitor-clock">
             <div className="text-xl sm:text-4xl font-mono font-bold tabular-nums text-[var(--gold)]">
-              {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+              {currentTime.toLocaleTimeString("en-US", { hour12: false })}
             </div>
           </div>
         </div>
       </header>
-      
+
       {/* Main Content */}
       <div className="max-w-[1920px] mx-auto p-4 sm:p-8">
         {/* Item Header */}
@@ -208,54 +234,75 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
             {/* Main Image */}
             <div className="aspect-square rounded-2xl overflow-hidden border-2 border-[var(--gold)]/30 bg-[#12121a]">
               {item.gem_images?.[0]?.image_url ? (
-                <img 
-                  src={item.gem_images[0].image_url} 
+                <img
+                  src={item.gem_images[0].image_url}
                   alt={item.name}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-8xl opacity-30">💎</div>
+                <div className="w-full h-full flex items-center justify-center text-8xl opacity-30">
+                  💎
+                </div>
               )}
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-4">
-              <StatCard label="Starting" value={formatCurrency(item.starting_price)} />
-              <StatCard label="Total Bids" value={bidCount.toString()} highlight />
-              <StatCard label="Bidders" value={uniqueBidders.toString()} />
+            <div
+              className={`grid ${isSealed ? "grid-cols-1" : "grid-cols-3"} gap-4`}
+            >
+              <StatCard
+                label={isSealed ? "Initial Price" : "Starting"}
+                value={formatCurrency(item.starting_price)}
+              />
+              {!isSealed && (
+                <StatCard
+                  label="Total Bids"
+                  value={bidCount.toString()}
+                  highlight
+                />
+              )}
+              {!isSealed && (
+                <StatCard label="Bidders" value={uniqueBidders.toString()} />
+              )}
             </div>
           </div>
-          
+
           {/* Center: Current Price */}
-          <div className="lg:col-span-4 flex flex-col items-center justify-center">
+          <div
+            className={`flex flex-col items-center justify-center ${isSealed ? "lg:col-span-7" : "lg:col-span-4"}`}
+          >
             <div className="price-display">
               <div className="text-sm sm:text-lg text-[var(--gold)]/60 uppercase tracking-[0.2em] mb-4">
-                Current Price
+                {isSealed ? "Initial Price" : "Current Price"}
               </div>
-              <div className={`price-value ${flashPrice ? 'flash' : ''}`}>
-                {formatCurrency(highestBid)}
+              <div
+                className={`price-value ${flashPrice && !isSealed ? "flash" : ""}`}
+              >
+                {formatCurrency(isSealed ? item.starting_price : highestBid)}
               </div>
-              {priceIncrease > 0 && (
+              {!isSealed && priceIncrease > 0 && (
                 <div className="price-increase">
                   ▲ +{priceIncrease}% from starting
                 </div>
               )}
-              
+
               {/* Countdown */}
               {timeLeft && !isFinished && (
                 <div className="countdown-box">
                   <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-2">
-                    {item.round_end_time ? 'Round Ends In' : 'Auction Ends In'}
+                    {item.round_end_time ? "Round Ends In" : "Auction Ends In"}
                   </div>
-              <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
-                {timeLeft}
-              </div>
-            </div>
-          )}
+                  <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
+                    {timeLeft}
+                  </div>
+                </div>
+              )}
 
               {isFinished && (
                 <div className="mt-8 px-6 py-3 bg-amber-500/20 border border-amber-500/40 rounded-xl">
-                  <span className="text-amber-400 font-bold uppercase tracking-wider">Auction Ended</span>
+                  <span className="text-amber-400 font-bold uppercase tracking-wider">
+                    Auction Ended
+                  </span>
                 </div>
               )}
             </div>
@@ -269,19 +316,26 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                 <div className="card-header">
                   <span className="text-xl">🏆</span>
                   TOP BIDDERS
-        </div>
+                </div>
                 <div className="results-list">
                   {topBidders.length > 0 ? (
                     topBidders.map((bidder, idx) => (
-                      <div key={idx} className={`result-item ${idx === 0 ? 'winner' : ''}`}>
+                      <div
+                        key={idx}
+                        className={`result-item ${idx === 0 ? "winner" : ""}`}
+                      >
                         <div className="result-rank">
-                          {idx === 0 ? '👑' : `#${idx + 1}`}
-              </div>
+                          {idx === 0 ? "👑" : `#${idx + 1}`}
+                        </div>
                         <div className="result-info">
-                          <span className="result-name">{bidder.anonymous_name}</span>
-                          <span className="result-amount">{formatCurrency(bidder.bid_amount)}</span>
-              </div>
-           </div>
+                          <span className="result-name">
+                            {bidder.anonymous_name}
+                          </span>
+                          <span className="result-amount">
+                            {formatCurrency(bidder.bid_amount)}
+                          </span>
+                        </div>
+                      </div>
                     ))
                   ) : (
                     <div className="no-bids">No bids placed</div>
@@ -298,9 +352,17 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                 <div className="activity-list">
                   {recentBids.length > 0 ? (
                     recentBids.map((bid, idx) => (
-                      <div key={bid.id} className="activity-item" style={{ animationDelay: `${idx * 0.05}s` }}>
-                        <div className="activity-amount">{formatCurrency(bid.bid_amount)}</div>
-                        <div className="activity-time">{formatTime(bid.created_at)}</div>
+                      <div
+                        key={bid.id}
+                        className="activity-item"
+                        style={{ animationDelay: `${idx * 0.05}s` }}
+                      >
+                        <div className="activity-amount">
+                          {formatCurrency(bid.bid_amount)}
+                        </div>
+                        <div className="activity-time">
+                          {formatTime(bid.created_at)}
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -315,13 +377,13 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                 </div>
               </div>
             )}
-           </div>
+          </div>
         </div>
       </div>
-      
+
       <style jsx>{`
         .monitor-display {
-          font-family: 'JetBrains Mono', 'SF Mono', monospace;
+          font-family: "JetBrains Mono", "SF Mono", monospace;
           position: relative;
         }
 
@@ -375,8 +437,15 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
         }
 
         @keyframes pulse-live {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.9); }
+          0%,
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(0.9);
+          }
         }
 
         .monitor-clock {
@@ -414,8 +483,16 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
         }
 
         @keyframes priceFlash {
-          0%, 100% { color: var(--gold); transform: scale(1); }
-          25%, 75% { color: #10b981; transform: scale(1.05); }
+          0%,
+          100% {
+            color: var(--gold);
+            transform: scale(1);
+          }
+          25%,
+          75% {
+            color: #10b981;
+            transform: scale(1.05);
+          }
         }
 
         .price-increase {
@@ -432,7 +509,8 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           border-radius: 1rem;
         }
 
-        .activity-card, .results-card {
+        .activity-card,
+        .results-card {
           background: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
           border: 1px solid rgba(212, 175, 55, 0.3);
           border-radius: 1rem;
@@ -463,7 +541,8 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           animation: pulse-live 1.5s ease-in-out infinite;
         }
 
-        .activity-list, .results-list {
+        .activity-list,
+        .results-list {
           flex: 1;
           overflow-y: auto;
           max-height: 400px;
@@ -480,8 +559,14 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
         }
 
         @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .activity-amount {
@@ -552,15 +637,29 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           letter-spacing: 0.1em;
         }
       `}</style>
-         </div>
-  )
+    </div>
+  );
 }
 
-function StatCard({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+function StatCard({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
     <div className="p-4 bg-[#12121a] border border-[var(--gold)]/20 rounded-xl text-center">
-      <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-1">{label}</div>
-      <div className={`text-xl font-bold ${highlight ? 'text-emerald-400' : 'text-white'}`}>{value}</div>
+      <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-1">
+        {label}
+      </div>
+      <div
+        className={`text-xl font-bold ${highlight ? "text-emerald-400" : "text-white"}`}
+      >
+        {value}
+      </div>
     </div>
-  )
+  );
 }
