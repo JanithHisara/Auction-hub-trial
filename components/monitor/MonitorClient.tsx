@@ -120,9 +120,13 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
       const distance = end - now
 
       let forceStop = false;
-      // Use auction_type if available on the item.auction object
-      if ((data?.item?.auction as any)?.auction_type === 'progressive_elimination_auction' && data?.highestBid && Number(data.highestBid) === Number(data.item.current_price)) {
-        forceStop = true;
+      const auctionType = Array.isArray(data?.item?.auction) ? data.item.auction[0]?.auction_type : (data?.item?.auction as any)?.auction_type;
+      
+      if (auctionType === 'progressive_elimination_auction') {
+        const hasClaimedBid = (data?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.item?.current_price));
+        if (hasClaimedBid) {
+          forceStop = true;
+        }
       }
 
       if (distance < 0 || forceStop) {
@@ -142,7 +146,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [data?.item.round_end_time, data?.item?.auction, data?.highestBid, data?.item.current_price])
+  }, [data?.item.round_end_time, data?.item?.auction, data?.recentBids, data?.item.current_price])
 
   if (!data) {
     return (
