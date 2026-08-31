@@ -175,6 +175,8 @@ async function validateAccess(token: string): Promise<AccessResult> {
     isHeld,
     adminPhone,
     eliminations,
+    totalRegisteredBidders: totalRegisteredBidders || 0,
+    eliminationCounts: eliminationCounts || {},
   }
 }
 
@@ -245,6 +247,8 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
       initialIsHeld={result.isHeld}
       adminPhone={result.adminPhone}
       initialEliminations={result.eliminations}
+      totalRegisteredBidders={result.totalRegisteredBidders}
+      initialEliminationCounts={result.eliminationCounts}
     />
   )
 }
