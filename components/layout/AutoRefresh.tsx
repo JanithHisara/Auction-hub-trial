@@ -10,76 +10,40 @@ export default function AutoRefresh() {
   const supabase = createClient()
 
   useEffect(() => {
+    const triggerRefresh = () => {
+      router.refresh()
+    }
+
     // Subscribe to Postgres changes on tables that can be changed by admins
     const channel = supabase
       .channel('global-admin-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'gems' },
-        () => {
-          if (document.visibilityState === 'visible') {
-            router.refresh()
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'auctions' },
-        () => {
-          if (document.visibilityState === 'visible') {
-            router.refresh()
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'auction_registrations' },
-        () => {
-          if (document.visibilityState === 'visible') {
-            router.refresh()
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'bids' },
-        () => {
-          if (document.visibilityState === 'visible') {
-            router.refresh()
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'bidder_holds' },
-        () => {
-          if (document.visibilityState === 'visible') {
-            router.refresh()
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'gem_eliminations' },
-        () => {
-          if (document.visibilityState === 'visible') {
-            router.refresh()
-          }
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gems' }, triggerRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'auctions' }, triggerRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'auction_registrations' }, triggerRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bids' }, triggerRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bidder_holds' }, triggerRefresh)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gem_eliminations' }, triggerRefresh)
       .subscribe()
 
-    // Slow fallback polling (every 30 seconds) just in case realtime connection drops/fails
-    const handleFallbackRefresh = () => {
+    // Refresh immediately when the user returns to the tab
+    const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        router.refresh()
+        triggerRefresh()
       }
     }
-    const interval = setInterval(handleFallbackRefresh, 30000)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Slow fallback polling (every 30 seconds) just in case realtime connection drops/fails
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        triggerRefresh()
+      }
+    }, 30000)
 
     return () => {
       supabase.removeChannel(channel)
       clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [router, supabase, pathname])
 

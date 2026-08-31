@@ -68,6 +68,15 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   useEffect(() => {
     setRewards(initialRewards)
   }, [initialRewards])
+
+  useEffect(() => {
+    setIsHeld(initialIsHeld)
+  }, [initialIsHeld])
+
+  useEffect(() => {
+    setEliminatedGemIds(new Set(initialEliminations.map(e => e.gem_id)))
+  }, [initialEliminations])
+
   // -------------------------------------------
 
   const [newBidHighlight, setNewBidHighlight] = useState<string | null>(null)
