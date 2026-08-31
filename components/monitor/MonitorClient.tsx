@@ -211,13 +211,21 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               )}
               
               {/* Countdown */}
-              {timeLeft && !isFinished && (
+              {data?.item?.round_end_time && !isFinished && (
                 <div className="countdown-box">
                   <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-2">
                     {'Round Ends In'}
                   </div>
               <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
-                {timeLeft}
+                    {(() => {
+      let forceStop = false;
+      const auctionType = Array.isArray(data?.item?.auction) ? data?.item?.auction[0]?.auction_type : (data?.item?.auction as any)?.auction_type;
+      if (auctionType === 'progressive_elimination_auction') {
+        const hasClaimedBid = (data?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.item?.current_price));
+        if (hasClaimedBid) { forceStop = true; }
+      }
+      return <AuctionCountdown roundEndTime={data?.item?.round_end_time || null} forceStop={forceStop} />;
+    })()}
               </div>
             </div>
           )}

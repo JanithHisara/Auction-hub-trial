@@ -241,13 +241,20 @@ if (!data) {
                   )}
                   
                   {/* Countdown */}
-                  {timeLeft && (
+                  {data?.currentItem?.round_end_time && (
                     <div className="countdown-box">
                       <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-2">
                         {'Round Ends In'}
                       </div>
                       <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
-                        {timeLeft}
+                            {(() => {
+      let forceStop = false;
+      if (data?.auction?.auction_type === 'progressive_elimination_auction') {
+        const hasClaimedBid = (data?.currentItem?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.currentItem?.current_price));
+        if (hasClaimedBid) { forceStop = true; }
+      }
+      return <AuctionCountdown roundEndTime={data?.currentItem?.round_end_time || null} forceStop={forceStop} onExpire={fetchData} />;
+    })()}
                       </div>
                     </div>
                   )}
