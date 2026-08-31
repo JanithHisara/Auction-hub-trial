@@ -82,7 +82,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
     updateCountdown()
     const interval = setInterval(updateCountdown, 1000)
     return () => clearInterval(interval)
-  }, [roundEndTime, router])
+  }, [roundEndTime, router, isProgressiveElimination, isIncrementalApproval, highestBid, currentPrice, allRegisteredBiddersBid])
 
   const handleAction = async (action: 'start' | 'increment' | 'end' | 'end-round' | 'activate' | 'eliminate-and-increment', options?: { duration?: number; increment?: number }) => {
     setLoading(true)
