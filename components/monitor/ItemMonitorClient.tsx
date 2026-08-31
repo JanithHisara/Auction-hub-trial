@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import AuctionCountdown from '@/components/shared/AuctionCountdown'
 import { AuctionHammerIcon } from '@/components/brand/Logo'
 
 interface ItemData {
@@ -50,8 +51,7 @@ function formatTime(dateStr: string) {
 export default function ItemMonitorClient({ auctionId, auctionName }: { auctionId: string; auctionName: string }) {
   const [data, setData] = useState<MonitorData | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [timeLeft, setTimeLeft] = useState<string>('')
-  const [flashPrice, setFlashPrice] = useState(false)
+    const [flashPrice, setFlashPrice] = useState(false)
   const [showFinished, setShowFinished] = useState(false)
   const supabase = createClient()
 
@@ -117,50 +117,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
     return () => clearInterval(pollInterval)
   }, [auctionId])
 
-  // Countdown timer
-  useEffect(() => {
-    if (!data?.currentItem?.round_end_time) {
-      setTimeLeft('')
-      return
-    }
-
-    const targetTime = data.currentItem.round_end_time
-
-    const interval = setInterval(() => {
-      const now = new Date().getTime()
-      const end = new Date(targetTime).getTime()
-      const distance = end - now
-
-      let forceStop = false;
-      if (data?.auction?.auction_type === 'progressive_elimination_auction') {
-        const hasClaimedBid = (data?.currentItem?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.currentItem?.current_price));
-        if (hasClaimedBid) {
-          forceStop = true;
-        }
-      }
-
-      if (distance < 0 || forceStop) {
-        setTimeLeft('00:00')
-        // Only trigger fetch if it naturally expired, to avoid spamming if stopped early
-        if (distance < 0) fetchData()
-        return
-      }
-
-      const hours = Math.floor(distance / (1000 * 60 * 60))
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000)
-
-      if (hours > 0) {
-        setTimeLeft(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
-      } else {
-        setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
-      }
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [data?.currentItem?.round_end_time, data?.auction?.auction_type, data?.currentItem?.recentBids, data?.currentItem?.current_price])
-
-  if (!data) {
+f (!data) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-[var(--gold)] text-xl animate-pulse">Loading Monitor...</div>

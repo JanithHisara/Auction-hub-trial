@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import AuctionCountdown from '@/components/shared/AuctionCountdown'
 import { AuctionHammerIcon } from '@/components/brand/Logo'
 
 interface ItemData {
@@ -55,8 +56,7 @@ function formatTime(dateStr: string) {
 export default function MonitorClient({ gemId }: { gemId: string }) {
   const [data, setData] = useState<MonitorData | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [timeLeft, setTimeLeft] = useState<string>('')
-  const [flashPrice, setFlashPrice] = useState(false)
+    const [flashPrice, setFlashPrice] = useState(false)
   const supabase = createClient()
 
   const fetchData = async () => {
@@ -105,51 +105,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
     }
   }, [gemId, supabase])
 
-  // Countdown timer
-  useEffect(() => {
-    if (!data?.item.round_end_time) {
-      setTimeLeft('')
-      return
-    }
 
-    const targetTime = data.item.round_end_time
-
-    const interval = setInterval(() => {
-      const now = new Date().getTime()
-      const end = new Date(targetTime).getTime()
-      const distance = end - now
-
-      let forceStop = false;
-      const auctionType = Array.isArray(data?.item?.auction) ? data.item.auction[0]?.auction_type : (data?.item?.auction as any)?.auction_type;
-      
-      if (auctionType === 'progressive_elimination_auction') {
-        const hasClaimedBid = (data?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.item?.current_price));
-        if (hasClaimedBid) {
-          forceStop = true;
-        }
-      }
-      
-      // Debug
-      console.log('Monitor Countdown Debug:', { auctionType, forceStop, currentPrice: data?.item?.current_price, recentBids: data?.recentBids });
-
-      if (distance < 0 || forceStop) {
-        setTimeLeft('00:00')
-        return
-      }
-
-      const hours = Math.floor(distance / (1000 * 60 * 60))
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000)
-
-      if (hours > 0) {
-        setTimeLeft(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
-      } else {
-      setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
-      }
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [data?.item.round_end_time, data?.item?.auction, data?.recentBids, data?.item.current_price])
 
   if (!data) {
     return (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import AuctionCountdown from '@/components/shared/AuctionCountdown'
 import { Auction, Gem, Bid, UserRewards, AuctionRegistration, User } from '@/types/database'
 import { Check, Loader2, Trophy, Pencil, LogOut } from 'lucide-react'
 import AuctionChatWidget from '@/components/chat/AuctionChatWidget'
