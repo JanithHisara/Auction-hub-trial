@@ -128,6 +128,9 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           forceStop = true;
         }
       }
+      
+      // Debug
+      console.log('Monitor Countdown Debug:', { auctionType, forceStop, currentPrice: data?.item?.current_price, recentBids: data?.recentBids });
 
       if (distance < 0 || forceStop) {
         setTimeLeft('00:00')
