@@ -36,7 +36,7 @@ function formatCurrency(amount: number) {
   }).format(amount)
 }
 
-export default function AuctionRoomClient({ auction: initialAuction, items: initialItems, user, rewards: initialRewards, initialIsHeld = false, adminPhone = null, initialEliminations = [] }: Props) {
+export default function AuctionRoomClient({ auction: initialAuction, items: initialItems, user, rewards: initialRewards, initialIsHeld = false, adminPhone = null, initialEliminations = [], totalRegisteredBidders = 0, initialEliminationCounts = {} }: Props) {
   const [auction, setAuction] = useState(initialAuction)
   const [items, setItems] = useState(initialItems)
   const [selectedItem, setSelectedItem] = useState(() => {

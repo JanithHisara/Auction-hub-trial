@@ -59,9 +59,22 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
       (topBid.user as { anonymous_name?: string; email?: string } | null)?.email ||
       'Anonymous'
   } : null
+  const isIncrementalApproval = (gem.auction as { auction_type?: string } | null)?.auction_type === 'incremental_approval_auction'
+  
+  let eligibleBiddersCount = registeredBiddersCount || 0
+  
+  if (isIncrementalApproval) {
+    const { count: eliminatedCount } = await supabase
+      .from('gem_eliminations')
+      .select('*', { count: 'exact', head: true })
+      .eq('gem_id', gem.id)
+      
+    eligibleBiddersCount = Math.max(0, eligibleBiddersCount - (eliminatedCount || 0))
+  }
+
   const currentPrice = gem.current_price || gem.starting_price
   const activeBiddersCount = new Set((bids || []).filter(b => b.bid_amount === currentPrice).map(b => b.user_id)).size
-  const allRegisteredBiddersBid = registeredBiddersCount !== null && registeredBiddersCount > 0 && activeBiddersCount >= registeredBiddersCount
+  const allRegisteredBiddersBid = eligibleBiddersCount > 0 && activeBiddersCount >= eligibleBiddersCount
   const hasNoBidsInCurrentRound = currentPrice > gem.starting_price && activeBiddersCount === 0
 
   const statusColors: Record<string, string> = {

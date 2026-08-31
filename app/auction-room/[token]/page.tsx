@@ -16,6 +16,8 @@ type ValidAccessResult = {
   isHeld: boolean
   adminPhone: string | null
   eliminations: Pick<GemElimination, 'gem_id'>[]
+  totalRegisteredBidders: number
+  eliminationCounts: Record<string, number>
 }
 
 type InvalidAccessResult = {
@@ -97,9 +99,33 @@ async function validateAccess(token: string): Promise<AccessResult> {
       : (item.bids || [])
   }))
 
-  // Get elimination status for this user (for incremental approval auctions)
+  // Get total registered bidders for this auction
+  const { count: totalRegisteredBidders } = await supabase
+    .from('auction_registrations')
+    .select('*', { count: 'exact', head: true })
+    .eq('auction_id', auction.id)
+    .eq('approval_status', 'approved')
+
+  // Get elimination status and counts
   let eliminations: Pick<GemElimination, 'gem_id'>[] = []
+  let eliminationCounts: Record<string, number> = {}
+  
   if (auction.auction_type === 'incremental_approval_auction') {
+    const itemIds = (items || []).map(i => i.id)
+    if (itemIds.length > 0) {
+      // Fetch total eliminations grouped by gem
+      const { data: allElims } = await supabase
+        .from('gem_eliminations')
+        .select('gem_id')
+        .in('gem_id', itemIds)
+        
+      if (allElims) {
+        allElims.forEach(e => {
+          eliminationCounts[e.gem_id] = (eliminationCounts[e.gem_id] || 0) + 1
+        })
+      }
+    }
+  
     const itemIds = (items || []).map(i => i.id)
     if (itemIds.length > 0) {
       const { data: elimData } = await supabase
