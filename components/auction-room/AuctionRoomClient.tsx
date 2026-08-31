@@ -218,7 +218,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         if (eligibleBiddersCount > 0 && activeBiddersCount >= eligibleBiddersCount) {
           forceStop = true;
         }
-      } else if (isProgressiveElimination && selectedItem) {
+      } else if (isFixedIncrement && selectedItem) {
         const hasClaimedBid = (selectedItem.bids || []).some(b => Number(b.bid_amount) === Number(selectedItem.current_price));
         if (hasClaimedBid) {
           forceStop = true;
@@ -246,7 +246,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     updateCountdown()
     const interval = setInterval(updateCountdown, 1000)
     return () => clearInterval(interval)
-  }, [selectedItem?.round_end_time, isIncrementalApproval, isProgressiveElimination, selectedItem, eliminationCounts, totalRegisteredBidders])
+  }, [selectedItem?.round_end_time, isIncrementalApproval, isFixedIncrement, selectedItem, eliminationCounts, totalRegisteredBidders])
 
   // Fetch existing winners on load (with winning amount from bid)
   useEffect(() => {
