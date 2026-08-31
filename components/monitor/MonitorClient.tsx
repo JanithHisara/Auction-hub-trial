@@ -33,6 +33,7 @@ interface MonitorData {
   highestBid: number
   recentBids: BidData[]
   isFinished: boolean
+  allRegisteredBiddersBid?: boolean
   topBidders: { anonymous_name: string; bid_amount: number }[]
 }
 
