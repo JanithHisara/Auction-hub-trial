@@ -124,10 +124,7 @@ async function validateAccess(token: string): Promise<AccessResult> {
           eliminationCounts[e.gem_id] = (eliminationCounts[e.gem_id] || 0) + 1
         })
       }
-    }
   
-    const itemIds = (items || []).map(i => i.id)
-    if (itemIds.length > 0) {
       const { data: elimData } = await supabase
         .from('gem_eliminations')
         .select('gem_id')
