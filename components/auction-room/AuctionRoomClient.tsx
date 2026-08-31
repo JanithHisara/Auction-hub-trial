@@ -213,7 +213,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       let forceStop = false;
       if (isIncrementalApproval && selectedItem) {
         const eligibleBiddersCount = Math.max(0, (totalRegisteredBidders || 0) - (eliminationCounts[selectedItem.id] || 0));
-        const activeBiddersCount = new Set((selectedItem.bids || []).filter(b => b.bid_amount === selectedItem.current_price).map(b => b.user_id)).size;
+        const activeBiddersCount = new Set((selectedItem.bids || []).filter(b => Number(b.bid_amount) === Number(selectedItem.current_price)).map(b => b.user_id)).size;
+        
+        // Debug log to trace early stop logic values
+        console.log('[Early Stop Debug]', { eligibleBiddersCount, activeBiddersCount, totalReg: totalRegisteredBidders, elims: eliminationCounts[selectedItem.id], currentPrice: selectedItem.current_price, bids: selectedItem.bids?.length });
+
         if (eligibleBiddersCount > 0 && activeBiddersCount >= eligibleBiddersCount) {
           forceStop = true;
         }
