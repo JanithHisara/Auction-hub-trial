@@ -117,7 +117,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
     return () => clearInterval(pollInterval)
   }, [auctionId])
 
-f (!data) {
+if (!data) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-[var(--gold)] text-xl animate-pulse">Loading Monitor...</div>
