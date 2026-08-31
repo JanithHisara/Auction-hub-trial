@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AuctionRoomClient from '@/components/auction-room/AuctionRoomClient'
 import { Gem, Bid, Auction, AuctionRegistration, UserRewards, User, GemElimination } from '@/types/database'
@@ -99,8 +100,10 @@ async function validateAccess(token: string): Promise<AccessResult> {
       : (item.bids || [])
   }))
 
-  // Get total registered bidders for this auction
-  const { count: totalRegisteredBidders } = await supabase
+  const adminSupabase = createAdminClient()
+  
+  // Get total registered bidders for this auction (using admin client to bypass RLS)
+  const { count: totalRegisteredBidders } = await adminSupabase
     .from('auction_registrations')
     .select('*', { count: 'exact', head: true })
     .eq('auction_id', auction.id)
@@ -113,8 +116,8 @@ async function validateAccess(token: string): Promise<AccessResult> {
   if (auction.auction_type === 'incremental_approval_auction') {
     const itemIds = (items || []).map(i => i.id)
     if (itemIds.length > 0) {
-      // Fetch total eliminations grouped by gem
-      const { data: allElims } = await supabase
+      // Fetch total eliminations grouped by gem (using admin client to bypass RLS)
+      const { data: allElims } = await adminSupabase
         .from('gem_eliminations')
         .select('gem_id')
         .in('gem_id', itemIds)
@@ -125,6 +128,7 @@ async function validateAccess(token: string): Promise<AccessResult> {
         })
       }
   
+      // Fetch specifically this user's eliminations using regular client
       const { data: elimData } = await supabase
         .from('gem_eliminations')
         .select('gem_id')
