@@ -7,14 +7,6 @@ import { createClient } from '@/lib/supabase/client'
 export default function AutoRefresh() {
   const router = useRouter()
   const pathname = usePathname()
-  
-  // EXTREMELY IMPORTANT: Do not run global refresh on the live auction room!
-  // The AuctionRoomClient already handles real-time updates instantly via local state.
-  // Running router.refresh() at the same time causes severe race conditions where stale server data overwrites fresh client data.
-  if (pathname?.includes('/auction-room/')) {
-    return null
-  }
-
   const supabase = createClient()
 
   useEffect(() => {
@@ -22,18 +14,27 @@ export default function AutoRefresh() {
       router.refresh()
     }
 
-    // Subscribe to Postgres changes on tables that can be changed by admins
-    const channel = supabase
-      .channel('global-admin-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'gems' }, triggerRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'auctions' }, triggerRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'auction_registrations' }, triggerRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bids' }, triggerRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bidder_holds' }, triggerRefresh)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gem_eliminations' }, triggerRefresh)
-      .subscribe()
+    const isAuctionRoom = pathname?.includes('/auction-room/')
 
-    // Refresh immediately when the user returns to the tab
+    let channel = null
+    
+    // Only subscribe to Postgres changes globally if we are NOT in the auction room.
+    // The auction room handles real-time WebSockets instantly via its own local state.
+    // Running router.refresh() on every WebSocket event in the auction room causes race conditions.
+    if (!isAuctionRoom) {
+      channel = supabase
+        .channel('global-admin-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'gems' }, triggerRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'auctions' }, triggerRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'auction_registrations' }, triggerRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bids' }, triggerRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bidder_holds' }, triggerRefresh)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gem_eliminations' }, triggerRefresh)
+        .subscribe()
+    }
+
+    // ALWAYS refresh immediately when the user returns to the tab (even in the auction room).
+    // This fixes the issue where users miss WebSocket events while their computer is asleep or tab is hidden.
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         triggerRefresh()
@@ -41,7 +42,7 @@ export default function AutoRefresh() {
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
-    // Slow fallback polling (every 30 seconds) just in case realtime connection drops/fails
+    // Slow fallback polling (every 30 seconds) just in case realtime connection drops/fails.
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         triggerRefresh()
@@ -49,7 +50,9 @@ export default function AutoRefresh() {
     }, 30000)
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
       clearInterval(interval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
