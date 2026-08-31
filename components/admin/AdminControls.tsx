@@ -191,6 +191,12 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
     handleAction('start', { duration })
   }
 
+  const isForceStopped = 
+    (isProgressiveElimination && highestBid && Number(highestBid.amount) === Number(currentPrice)) ||
+    (isIncrementalApproval && allRegisteredBiddersBid) || false;
+    
+  const isBiddingFinished = !isRoundActive || isForceStopped;
+
   const durationOptions = [
     { value: '60', label: '1 minute' },
     { value: '120', label: '2 minutes' },
@@ -319,7 +325,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 </button>
               )}
 
-              {(status === 'active' || status === 'ended') && roundEndTime && (!isRoundActive || allRegisteredBiddersBid) && (
+              {(status === 'active' || status === 'ended') && roundEndTime && isBiddingFinished && (
                 <>
                   {hasNoBidsInCurrentRound ? (
                     <button
