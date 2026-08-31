@@ -205,7 +205,16 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       const end = new Date(selectedItem.round_end_time!).getTime()
       const distance = end - now
 
-      if (distance <= 0) {
+      let forceStop = false;
+      if (isIncrementalApproval && selectedItem) {
+        const eligibleBiddersCount = Math.max(0, (totalRegisteredBidders || 0) - (eliminationCounts[selectedItem.id] || 0));
+        const activeBiddersCount = new Set((selectedItem.bids || []).filter(b => b.bid_amount === selectedItem.current_price).map(b => b.user_id)).size;
+        if (eligibleBiddersCount > 0 && activeBiddersCount >= eligibleBiddersCount) {
+          forceStop = true;
+        }
+      }
+
+      if (distance <= 0 || forceStop) {
         setBiddingCountdown('00:00')
         setBiddingTimeExpired(true) // Mark as expired to update UI
         return
@@ -226,7 +235,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     updateCountdown()
     const interval = setInterval(updateCountdown, 1000)
     return () => clearInterval(interval)
-  }, [selectedItem?.round_end_time])
+  }, [selectedItem?.round_end_time, isIncrementalApproval, selectedItem, eliminationCounts, totalRegisteredBidders])
 
   // Fetch existing winners on load (with winning amount from bid)
   useEffect(() => {
