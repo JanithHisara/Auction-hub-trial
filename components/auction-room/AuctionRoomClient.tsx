@@ -100,6 +100,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const [eliminatedGemIds, setEliminatedGemIds] = useState<Set<string>>(
     () => new Set(initialEliminations.map(e => e.gem_id))
   )
+  const [eliminationCounts, setEliminationCounts] = useState<Record<string, number>>(initialEliminationCounts || {})
+
+  useEffect(() => {
+    setEliminationCounts(initialEliminationCounts || {})
+  }, [initialEliminationCounts])
   const supabase = createClient()
   const bidsContainerRef = useRef<HTMLDivElement>(null)
   const selectedItemIdRef = useRef<string | null>(selectedItem?.id || null)
@@ -538,6 +543,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           if (record.user_id === user.id) {
             setEliminatedGemIds(prev => new Set([...prev, record.gem_id]))
           }
+          // Also increment global elimination count for early stop calculation
+          setEliminationCounts(prev => ({
+            ...prev,
+            [record.gem_id]: (prev[record.gem_id] || 0) + 1
+          }))
         }
       )
       .subscribe()
