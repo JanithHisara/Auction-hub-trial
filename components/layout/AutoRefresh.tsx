@@ -8,8 +8,6 @@ export default function AutoRefresh() {
   const router = useRouter()
   const pathname = usePathname()
   
-  const pathname = usePathname()
-
   // EXTREMELY IMPORTANT: Do not run global refresh on the live auction room!
   // The AuctionRoomClient already handles real-time updates instantly via local state.
   // Running router.refresh() at the same time causes severe race conditions where stale server data overwrites fresh client data.
