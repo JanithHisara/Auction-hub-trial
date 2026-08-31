@@ -87,11 +87,34 @@ export async function GET(
         .order('created_at', { ascending: false })
         .limit(10)
 
+      // Calculate allRegisteredBiddersBid for Incremental Approval
+      const { count: totalRegisteredBidders } = await supabase
+        .from('auction_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('auction_id', id)
+
+      const { count: eliminationCounts } = await supabase
+        .from('gem_eliminations')
+        .select('*', { count: 'exact', head: true })
+        .eq('gem_id', currentItem.id)
+
+      const activeBiddersCount = (totalRegisteredBidders || 0) - (eliminationCounts || 0)
+      
+      const { data: currentBids } = await supabase
+        .from('bids')
+        .select('user_id')
+        .eq('gem_id', currentItem.id)
+        .eq('bid_amount', currentItem.current_price || currentItem.starting_price)
+
+      const uniqueBiddersForCurrentPrice = new Set(currentBids?.map(b => b.user_id) || []).size
+      const allRegisteredBiddersBid = uniqueBiddersForCurrentPrice > 0 && activeBiddersCount > 0 && uniqueBiddersForCurrentPrice >= activeBiddersCount
+
       bidData = {
         bidCount: bidCount || 0,
         uniqueBidders,
         highestBid: highestBidData?.bid_amount || currentItem.current_price || currentItem.starting_price,
         recentBids: recentBids || [],
+        allRegisteredBiddersBid,
       }
     }
 

@@ -252,6 +252,8 @@ if (!data) {
       if (data?.auction?.auction_type === 'progressive_elimination_auction') {
         const hasClaimedBid = (data?.currentItem?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.currentItem?.current_price));
         if (hasClaimedBid) { forceStop = true; }
+      } else if (data?.auction?.auction_type === 'incremental_approval_auction') {
+        if (data?.currentItem?.allRegisteredBiddersBid) { forceStop = true; }
       }
       return <AuctionCountdown roundEndTime={data?.currentItem?.round_end_time || null} forceStop={forceStop} onExpire={fetchData} />;
     })()}

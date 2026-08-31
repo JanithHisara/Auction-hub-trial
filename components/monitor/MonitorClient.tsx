@@ -223,6 +223,8 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
       if (auctionType === 'progressive_elimination_auction') {
         const hasClaimedBid = (data?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.item?.current_price));
         if (hasClaimedBid) { forceStop = true; }
+      } else if (auctionType === 'incremental_approval_auction') {
+        if (data?.allRegisteredBiddersBid) { forceStop = true; }
       }
       return <AuctionCountdown roundEndTime={data?.item?.round_end_time || null} forceStop={forceStop} />;
     })()}

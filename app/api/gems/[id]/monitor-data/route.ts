@@ -67,6 +67,39 @@ export async function GET(
       .order('created_at', { ascending: false })
       .limit(10)
 
+    // Calculate allRegisteredBiddersBid for Incremental Approval
+    const { data: auctionInfo } = await supabase
+      .from('gems')
+      .select('auction_id')
+      .eq('id', id)
+      .single()
+
+    const auctionId = auctionInfo?.auction_id;
+    let allRegisteredBiddersBid = false;
+
+    if (auctionId) {
+      const { count: totalRegisteredBidders } = await supabase
+        .from('auction_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('auction_id', auctionId)
+
+      const { count: eliminationCounts } = await supabase
+        .from('gem_eliminations')
+        .select('*', { count: 'exact', head: true })
+        .eq('gem_id', id)
+
+      const activeBiddersCount = (totalRegisteredBidders || 0) - (eliminationCounts || 0)
+      
+      const { data: currentBids } = await supabase
+        .from('bids')
+        .select('user_id')
+        .eq('gem_id', id)
+        .eq('bid_amount', item.current_price || item.starting_price)
+
+      const uniqueBiddersForCurrentPrice = new Set(currentBids?.map(b => b.user_id) || []).size
+      allRegisteredBiddersBid = uniqueBiddersForCurrentPrice > 0 && activeBiddersCount > 0 && uniqueBiddersForCurrentPrice >= activeBiddersCount
+    }
+
     let topBidders: { anonymous_name: string; bid_amount: number }[] = []
 
     // Only get bidder details if auction has ended
@@ -106,6 +139,7 @@ export async function GET(
       uniqueBidders,
       highestBid,
       recentBids: recentBids || [],
+      allRegisteredBiddersBid,
       isFinished,
       topBidders,
     })
