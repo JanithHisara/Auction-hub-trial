@@ -117,7 +117,7 @@ export default function EditAuctionPage() {
         checkFuture(formData.registration_start, originalData.registration_start, 'Registration start time')
         checkFuture(formData.registration_end, originalData.registration_end, 'Registration end time')
         checkFuture(formData.auction_start, originalData.auction_start, 'Auction start time')
-        checkFuture(formData.auction_end, originalData.auction_end, 'Auction end time')
+    
       }
 
       if (regEnd <= regStart) {

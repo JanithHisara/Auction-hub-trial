@@ -107,12 +107,12 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
 
   // Countdown timer
   useEffect(() => {
-    if (!data?.item.round_end_time && !data?.item.end_time) {
+    if (!data?.item.round_end_time) {
       setTimeLeft('')
       return
     }
 
-    const targetTime = data.item.round_end_time || data.item.end_time
+    const targetTime = data.item.round_end_time
 
     const interval = setInterval(() => {
       const now = new Date().getTime()
@@ -136,7 +136,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [data?.item.round_end_time, data?.item.end_time])
+  }, [data?.item.round_end_time])
 
   if (!data) {
     return (
@@ -245,7 +245,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               {timeLeft && !isFinished && (
                 <div className="countdown-box">
                   <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-2">
-                    {item.round_end_time ? 'Round Ends In' : 'Auction Ends In'}
+                    {'Round Ends In'}
                   </div>
               <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
                 {timeLeft}

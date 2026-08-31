@@ -71,13 +71,6 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         }
       }
 
-      if (formData.start_time && formData.end_time) {
-        const start = new Date(formData.start_time)
-        const end = new Date(formData.end_time)
-        if (end <= start) {
-          throw new Error('End time must be after start time')
-        }
-      }
 
       if (formData.auction_id) {
         const selectedAuction = auctions.find(a => a.id === formData.auction_id)
@@ -109,7 +102,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         body: JSON.stringify({
           ...formData,
           start_time: toUTCISO(formData.start_time),
-          end_time: toUTCISO(formData.end_time),
+          end_time: new Date('2099-12-31T23:59:59Z').toISOString(),
           auction_id: formData.auction_id || null,
           images: formData.images.filter(url => url.trim() !== ''),
           media_types: formData.media_types.filter((_, i) => formData.images[i]?.trim() !== ''),
@@ -249,18 +242,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
                 placeholder="Select start time"
               />
             </div>
-            <div>
-              <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> End Time *
-              </label>
-              <DateTimePicker
-                value={formData.end_time}
-                onChange={(val) => setFormData({ ...formData, end_time: val })}
-                required
-                placeholder="Select end time"
-              />
             </div>
-          </div>
         </Section>
 
         {/* Specifications */}

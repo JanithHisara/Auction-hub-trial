@@ -144,7 +144,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
               <InfoItem label="Starting Price" value={formatCurrency(gem.starting_price)} highlight />
               <InfoItem label="Min Increment" value={formatCurrency(gem.min_bid_increment)} />
               <InfoItem label="Start Time" value={<LocalTime date={gem.start_time} format="full" />} />
-              <InfoItem label="End Time" value={<LocalTime date={gem.end_time} format="full" />} />
+              
             </div>
             {gem.carat_weight && (
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[var(--border)]">

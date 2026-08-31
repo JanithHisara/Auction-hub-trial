@@ -119,12 +119,12 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
 
   // Countdown timer
   useEffect(() => {
-    if (!data?.currentItem?.round_end_time && !data?.currentItem?.end_time) {
+    if (!data?.currentItem?.round_end_time) {
       setTimeLeft('')
       return
     }
 
-    const targetTime = data.currentItem.round_end_time || data.currentItem.end_time
+    const targetTime = data.currentItem.round_end_time
 
     const interval = setInterval(() => {
       const now = new Date().getTime()
@@ -150,7 +150,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [data?.currentItem?.round_end_time, data?.currentItem?.end_time])
+  }, [data?.currentItem?.round_end_time])
 
   if (!data) {
     return (
@@ -279,7 +279,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
                   {timeLeft && (
                     <div className="countdown-box">
                       <div className="text-xs text-[var(--gold)]/60 uppercase tracking-widest mb-2">
-                        {currentItem.round_end_time ? 'Round Ends In' : 'Bidding Ends In'}
+                        {'Round Ends In'}
                       </div>
                       <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
                         {timeLeft}
