@@ -139,7 +139,7 @@ export default function EditAuctionPage() {
           registration_start: toUTCISO(formData.registration_start),
           registration_end: toUTCISO(formData.registration_end),
           auction_start: toUTCISO(formData.auction_start),
-          auction_end: toUTCISO(formData.auction_end),
+          auction_end: new Date('2099-12-31T23:59:59Z').toISOString(),
         }),
       })
 
@@ -392,7 +392,7 @@ export default function EditAuctionPage() {
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -403,18 +403,6 @@ export default function EditAuctionPage() {
                   onChange={(val) => setFormData(prev => ({ ...prev, auction_start: val }))}
                   required
                   placeholder="Select auction start time"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Auction Ends *
-                </label>
-                <DateTimePicker
-                  value={formData.auction_end}
-                  onChange={(val) => setFormData(prev => ({ ...prev, auction_end: val }))}
-                  required
-                  placeholder="Select auction end time"
                 />
               </div>
             </div>
