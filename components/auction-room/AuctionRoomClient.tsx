@@ -215,10 +215,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         const eligibleBiddersCount = Math.max(0, (totalRegisteredBidders || 0) - (eliminationCounts[selectedItem.id] || 0));
         const activeBiddersCount = new Set((selectedItem.bids || []).filter(b => Number(b.bid_amount) === Number(selectedItem.current_price)).map(b => b.user_id)).size;
         
-        // Debug log to trace early stop logic values
-        console.log('[Early Stop Debug]', { eligibleBiddersCount, activeBiddersCount, totalReg: totalRegisteredBidders, elims: eliminationCounts[selectedItem.id], currentPrice: selectedItem.current_price, bids: selectedItem.bids?.length });
-
         if (eligibleBiddersCount > 0 && activeBiddersCount >= eligibleBiddersCount) {
+          forceStop = true;
+        }
+      } else if (isProgressiveElimination && selectedItem) {
+        const hasClaimedBid = (selectedItem.bids || []).some(b => Number(b.bid_amount) === Number(selectedItem.current_price));
+        if (hasClaimedBid) {
           forceStop = true;
         }
       }
@@ -244,7 +246,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     updateCountdown()
     const interval = setInterval(updateCountdown, 1000)
     return () => clearInterval(interval)
-  }, [selectedItem?.round_end_time, isIncrementalApproval, selectedItem, eliminationCounts, totalRegisteredBidders])
+  }, [selectedItem?.round_end_time, isIncrementalApproval, isProgressiveElimination, selectedItem, eliminationCounts, totalRegisteredBidders])
 
   // Fetch existing winners on load (with winning amount from bid)
   useEffect(() => {

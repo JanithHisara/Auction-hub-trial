@@ -54,7 +54,16 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
       const end = new Date(roundEndTime).getTime()
       const distance = end - now
 
-      if (distance <= 0) {
+      let forceStop = false;
+      if (isProgressiveElimination && highestBid && Number(highestBid.amount) === Number(currentPrice)) {
+        forceStop = true;
+      }
+      
+      if (isIncrementalApproval && allRegisteredBiddersBid) {
+        forceStop = true;
+      }
+
+      if (distance <= 0 || forceStop) {
         setCountdown('00:00')
         return
       }
