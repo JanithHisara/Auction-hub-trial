@@ -237,7 +237,7 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
               {/* Countdown Card */}
               <div className="card-glass rounded-2xl p-6 border-glow">
                 <AuctionCountdown 
-                  targetDate={isLive ? auction.auction_end : auction.auction_start}
+                  targetDate={isLive ? undefined : auction.auction_start}
                   label={isLive ? 'Auction Ends In' : 'Auction Starts In'}
                 />
               </div>
@@ -315,11 +315,7 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                     <p className="text-sm text-[var(--text-muted)]">Auction Starts</p>
                     <p className="font-bold text-white"><LocalTime date={auction.auction_start} format="long" /></p>
                   </div>
-                  <div className="relative pl-6 border-l-2 border-[var(--border)]">
-                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[var(--surface)] border-4 border-[var(--border)]" />
-                    <p className="text-sm text-[var(--text-muted)]">Auction Ends</p>
-                    <p className="font-bold text-white"><LocalTime date={auction.auction_end} format="long" /></p>
-                  </div>
+                  
                 </div>
               </div>
 

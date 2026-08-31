@@ -220,7 +220,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           <ScheduleItem label="Reg Opens" value={<LocalTime date={auction.registration_start} format="full" />} />
           <ScheduleItem label="Reg Closes" value={<LocalTime date={auction.registration_end} format="full" />} />
           <ScheduleItem label="Starts" value={<LocalTime date={auction.auction_start} format="full" />} />
-          <ScheduleItem label="Ends" value={<LocalTime date={auction.auction_end} format="full" />} />
+          
         </div>
       </div>
 
