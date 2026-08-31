@@ -131,10 +131,15 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
       const end = new Date(targetTime).getTime()
       const distance = end - now
 
-      if (distance < 0) {
+      let forceStop = false;
+      if (data?.auction?.auction_type === 'progressive_elimination_auction' && data?.currentItem?.highestBid && Number(data.currentItem.highestBid) === Number(data.currentItem.current_price)) {
+        forceStop = true;
+      }
+
+      if (distance < 0 || forceStop) {
         setTimeLeft('00:00')
-        // Refresh to check for next item
-        fetchData()
+        // Only trigger fetch if it naturally expired, to avoid spamming if stopped early
+        if (distance < 0) fetchData()
         return
       }
 
@@ -150,7 +155,7 @@ export default function ItemMonitorClient({ auctionId, auctionName }: { auctionI
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [data?.currentItem?.round_end_time])
+  }, [data?.currentItem?.round_end_time, data?.auction?.auction_type, data?.currentItem?.highestBid, data?.currentItem?.current_price])
 
   if (!data) {
     return (

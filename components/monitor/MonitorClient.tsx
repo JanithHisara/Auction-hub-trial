@@ -119,7 +119,13 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
       const end = new Date(targetTime).getTime()
       const distance = end - now
 
-      if (distance < 0) {
+      let forceStop = false;
+      // Use auction_type if available on the item.auction object
+      if ((data?.item?.auction as any)?.auction_type === 'progressive_elimination_auction' && data?.highestBid && Number(data.highestBid) === Number(data.item.current_price)) {
+        forceStop = true;
+      }
+
+      if (distance < 0 || forceStop) {
         setTimeLeft('00:00')
         return
       }
@@ -136,7 +142,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [data?.item.round_end_time])
+  }, [data?.item.round_end_time, data?.item?.auction, data?.highestBid, data?.item.current_price])
 
   if (!data) {
     return (
