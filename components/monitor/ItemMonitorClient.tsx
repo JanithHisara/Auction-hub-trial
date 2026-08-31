@@ -19,7 +19,7 @@ interface ItemData {
   bidCount: number
   uniqueBidders: number
   highestBid: number
-  recentBids: { id: string; bid_amount: number; created_at: string }[]
+  recentBids: { id: string; bid_amount: number; created_at: string }[]; allRegisteredBiddersBid?: boolean;
 }
 
 interface MonitorData {
