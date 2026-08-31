@@ -25,6 +25,8 @@ interface Props {
   initialIsHeld?: boolean
   adminPhone?: string | null
   initialEliminations?: { gem_id: string }[]
+  totalRegisteredBidders?: number
+  initialEliminationCounts?: Record<string, number>
 }
 
 function formatCurrency(amount: number) {
