@@ -48,6 +48,28 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
   const [showPointsPopup, setShowPointsPopup] = useState(false)
   const [pointsEarned, setPointsEarned] = useState(0)
   const [rewards, setRewards] = useState(initialRewards)
+
+  // --- Next.js router.refresh() Sync Hooks ---
+  // When router.refresh() fetches new data, React passes new props but DOES NOT re-initialize useState.
+  // We must explicitly sync the new props into the state to see real-time updates without a page reload.
+  useEffect(() => {
+    setAuction(initialAuction)
+  }, [initialAuction])
+
+  useEffect(() => {
+    setItems(initialItems)
+    setSelectedItem(prev => {
+      if (!prev) return initialItems.find(i => i.status === 'active') || initialItems[0] || null
+      // Keep the same item selected if it still exists, otherwise default to active
+      return initialItems.find(i => i.id === prev.id) || initialItems.find(i => i.status === 'active') || initialItems[0] || null
+    })
+  }, [initialItems])
+
+  useEffect(() => {
+    setRewards(initialRewards)
+  }, [initialRewards])
+  // -------------------------------------------
+
   const [newBidHighlight, setNewBidHighlight] = useState<string | null>(null)
   const [hasAcceptedPrice, setHasAcceptedPrice] = useState(false)
   const [hasPlacedBid, setHasPlacedBid] = useState(false)

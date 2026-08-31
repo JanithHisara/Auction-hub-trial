@@ -18,7 +18,7 @@ export default function AutoRefresh() {
         { event: '*', schema: 'public', table: 'gems' },
         () => {
           if (document.visibilityState === 'visible') {
-            window.location.reload()
+            router.refresh()
           }
         }
       )
@@ -27,7 +27,7 @@ export default function AutoRefresh() {
         { event: '*', schema: 'public', table: 'auctions' },
         () => {
           if (document.visibilityState === 'visible') {
-            window.location.reload()
+            router.refresh()
           }
         }
       )
@@ -36,7 +36,7 @@ export default function AutoRefresh() {
         { event: '*', schema: 'public', table: 'auction_registrations' },
         () => {
           if (document.visibilityState === 'visible') {
-            window.location.reload()
+            router.refresh()
           }
         }
       )
@@ -45,7 +45,7 @@ export default function AutoRefresh() {
         { event: '*', schema: 'public', table: 'bids' },
         () => {
           if (document.visibilityState === 'visible') {
-            window.location.reload()
+            router.refresh()
           }
         }
       )
@@ -54,7 +54,7 @@ export default function AutoRefresh() {
         { event: '*', schema: 'public', table: 'bidder_holds' },
         () => {
           if (document.visibilityState === 'visible') {
-            window.location.reload()
+            router.refresh()
           }
         }
       )
@@ -63,7 +63,7 @@ export default function AutoRefresh() {
         { event: 'INSERT', schema: 'public', table: 'gem_eliminations' },
         () => {
           if (document.visibilityState === 'visible') {
-            window.location.reload()
+            router.refresh()
           }
         }
       )
@@ -72,7 +72,7 @@ export default function AutoRefresh() {
     // Slow fallback polling (every 30 seconds) just in case realtime connection drops/fails
     const handleFallbackRefresh = () => {
       if (document.visibilityState === 'visible') {
-        window.location.reload()
+        router.refresh()
       }
     }
     const interval = setInterval(handleFallbackRefresh, 30000)
