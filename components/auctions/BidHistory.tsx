@@ -18,7 +18,7 @@ export default function BidHistory({ bids, isSealed }: BidHistoryProps) {
 
   return (
     <div className="card-glass rounded-2xl p-6">
-      <h2 className="text-xl font-bold text-white mb-4">Bid History ({bids.length})</h2>
+      <h2 className="text-xl font-bold text-white mb-4">Bid History ({bids.length}) [Debug: isSealed={isSealed ? 'true' : 'false'}]</h2>
       <div className="space-y-2">
         {bids.slice(0, 10).map((bid, index) => (
           <div
