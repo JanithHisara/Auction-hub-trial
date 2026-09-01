@@ -235,12 +235,14 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
             {/* Sidebar */}
             <div className="space-y-4 sm:space-y-6">
               {/* Countdown Card */}
-              <div className="card-glass rounded-2xl p-6 border-glow">
-                <AuctionCountdown 
-                  targetDate={isLive ? undefined : auction.auction_start}
-                  label={isLive ? 'Auction Ends In' : 'Auction Starts In'}
-                />
-              </div>
+              {(auction.status === 'upcoming' || auction.status === 'registration_open') && auction.auction_start && (
+                  <div className="card-glass rounded-2xl p-6 border-glow">
+                    <AuctionCountdown 
+                      targetDate={auction.auction_start}
+                      label="Auction Starts In"
+                    />
+                  </div>
+                )}
 
               {/* Registration Card */}
               <div className="card-glass rounded-2xl p-5 sm:p-6">
