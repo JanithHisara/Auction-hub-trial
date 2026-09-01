@@ -14,6 +14,23 @@ async function getUpcomingAuctions() {
     console.error('Failed to process auction schedule on homepage:', err)
   }
 
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  let userRegistrations: Record<string, string> = {}
+  if (user) {
+    const { data: regs } = await supabase
+      .from('auction_registrations')
+      .select('auction_id, approval_status')
+      .eq('user_id', user.id)
+    
+    if (regs) {
+      userRegistrations = regs.reduce((acc, curr) => {
+        acc[curr.auction_id] = curr.approval_status
+        return acc
+      }, {} as Record<string, string>)
+    }
+  }
+
   const { data: auctions } = await supabase
     .from('auctions')
     .select(`
@@ -35,6 +52,7 @@ async function getUpcomingAuctions() {
         ...auction,
         items_count: auction.gems?.[0]?.count || 0,
         registered_count: count || 0,
+        user_registration_status: userRegistrations[auction.id] || null,
       }
     })
   )
@@ -244,7 +262,7 @@ function AuctionCard({
   isLive = false,
   delay = 0 
 }: { 
-  auction: Auction & { items_count: number; registered_count: number }
+  auction: Auction & { items_count: number; registered_count: number; user_registration_status?: string | null }
   isLive?: boolean
   delay?: number 
 }) {
@@ -327,7 +345,19 @@ function AuctionCard({
 
         {/* CTA */}
         <div className="flex items-center justify-between">
-          {registrationOpen ? (
+          {auction.user_registration_status === 'pending' ? (
+            <span className="bg-amber-500/20 text-amber-500 border border-amber-500/30 text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+              <span className="animate-pulse">⏳</span> Pending Approval
+            </span>
+          ) : auction.user_registration_status === 'approved' ? (
+            <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+              ✓ Registered
+            </span>
+          ) : auction.user_registration_status === 'rejected' ? (
+            <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+              ✕ Denied
+            </span>
+          ) : registrationOpen ? (
             <span className="btn-gold text-sm py-2 px-4">
               <span>Register Now →</span>
             </span>
