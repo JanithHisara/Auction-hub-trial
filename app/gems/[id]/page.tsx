@@ -9,7 +9,7 @@ async function getGem(id: string) {
 
   const { data: gem } = await supabase
     .from('gems')
-    .select('*')
+      .select('*, auction:auctions(auction_type)')
     .eq('id', id)
     .eq('status', 'active')
     .gte('end_time', now)
@@ -18,7 +18,7 @@ async function getGem(id: string) {
   if (!gem) {
     const { data: endedGem } = await supabase
       .from('gems')
-      .select('*')
+      .select('*, auction:auctions(auction_type)')
       .eq('id', id)
       .in('status', ['ended', 'completed'])
       .single()
@@ -68,6 +68,7 @@ async function getGem(id: string) {
       isActive: false,
       currentUserId: user?.id || null,
       isRegisteredForAuction: isRegistered,
+        isSealed: (endedGem?.auction as any)?.auction_type === 'tender_base_fixed_bid' || (gem?.auction as any)?.auction_type === 'tender_base_fixed_bid',
     }
   }
 
@@ -107,6 +108,7 @@ async function getGem(id: string) {
     isActive: true,
     currentUserId: user?.id || null,
     isRegisteredForAuction: isRegistered,
+        isSealed: (endedGem?.auction as any)?.auction_type === 'tender_base_fixed_bid' || (gem?.auction as any)?.auction_type === 'tender_base_fixed_bid',
   }
 }
 

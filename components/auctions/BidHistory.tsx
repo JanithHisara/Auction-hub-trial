@@ -2,10 +2,11 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Bid } from '@/types/database'
 
 interface BidHistoryProps {
+  isSealed?: boolean
   bids: Bid[]
 }
 
-export default function BidHistory({ bids }: BidHistoryProps) {
+export default function BidHistory({ bids, isSealed }: BidHistoryProps) {
   if (bids.length === 0) {
     return (
       <div className="card-glass rounded-2xl p-6">
@@ -30,13 +31,13 @@ export default function BidHistory({ bids }: BidHistoryProps) {
           >
             <div className="flex-1 min-w-0 pr-3">
               <p className={`font-bold font-mono ${index === 0 ? 'text-[var(--gold)]' : 'text-white'}`}>
-                {formatCurrency(bid.bid_amount)}
+                {isSealed ? '*** (Sealed)' : formatCurrency(bid.bid_amount)}
               </p>
               <p className="text-xs text-[var(--text-muted)] truncate">
                 {(bid.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'} • {formatDate(bid.created_at)}
               </p>
             </div>
-            {index === 0 && (
+            {index === 0 && !isSealed && (
               <span className="px-3 py-1 bg-[var(--gold)] text-black text-xs font-bold rounded-full flex-shrink-0">
                 LEADING
               </span>

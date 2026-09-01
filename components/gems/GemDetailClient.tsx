@@ -19,6 +19,7 @@ interface GemDetailClientProps {
     bids: Bid[]
     winner?: Record<string, unknown>
     isActive: boolean
+      isSealed?: boolean
     currentUserId?: string | null
     isRegisteredForAuction?: boolean
   }
@@ -309,7 +310,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
         </div>
       </div>
 
-      <BidHistory bids={bids || []} />
+      <BidHistory bids={bids || []} isSealed={initialGem.isSealed && initialGem.isActive} />
     </>
   )
 }
