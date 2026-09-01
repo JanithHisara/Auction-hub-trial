@@ -109,14 +109,7 @@ async function getGem(id: string) {
       currentUserId: user?.id || null,
       isRegisteredForAuction: isRegistered,
       isSealed: (gem?.auction as any)?.auction_type === 'tender_base_fixed_bid',
-    const isSealedValue = (gem?.auction as any)?.auction_type === 'tender_base_fixed_bid';
-    require('fs').writeFileSync('C:\\Users\\Janith\\.gemini\\antigravity-ide\\brain\\a8cb508c-d9c1-496e-94a5-70b4d7b416e3\\scratch\\log.txt', JSON.stringify({
-        isSealed: isSealedValue,
-        auction_type: (gem?.auction as any)?.auction_type,
-        auction: gem?.auction,
-        status: gem?.status,
-        isActive: true
-    }, null, 2));
+    
 
   }
 }

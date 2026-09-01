@@ -61,7 +61,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   } : null
   const isIncrementalApproval = (gem.auction as { auction_type?: string } | null)?.auction_type === 'incremental_approval_auction'
     const isTenderBase = (gem.auction as { auction_type?: string } | null)?.auction_type === 'tender_base_fixed_bid'
-    const isRoundActive = gem.status === 'running'
+    const isRoundActive = ['active', 'running', 'ready'].includes(gem.status)
     const hideBids = isTenderBase && isRoundActive
   
   let eligibleBiddersCount = registeredBiddersCount || 0
@@ -291,7 +291,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
                     )}
                   </div>
                    <div className="text-right flex-shrink-0 ml-4">
-                    {idx === 0 && <span className="text-xs text-[var(--gold)] font-bold">LEADING</span>}
+                    {idx === 0 && !hideBids && <span className="text-xs text-[var(--gold)] font-bold">LEADING</span>}
                     <p className="text-xs text-[var(--text-muted)]"><LocalTime date={bid.created_at} format="full" /></p>
                   </div>
                 </div>
