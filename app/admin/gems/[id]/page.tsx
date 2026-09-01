@@ -60,6 +60,9 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
       'Anonymous'
   } : null
   const isIncrementalApproval = (gem.auction as { auction_type?: string } | null)?.auction_type === 'incremental_approval_auction'
+    const isTenderBase = (gem.auction as { auction_type?: string } | null)?.auction_type === 'tender_base_fixed_bid'
+    const isRoundActive = gem.status === 'running'
+    const hideBids = isTenderBase && isRoundActive
   
   let eligibleBiddersCount = registeredBiddersCount || 0
   
@@ -180,7 +183,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
           <div className="space-y-6">
             <div>
               <label className="text-xs text-[var(--text-muted)] uppercase">Current Highest Bid</label>
-              <p className="text-4xl font-bold text-[var(--gold)] mt-1">{formatCurrency(highestBidInfo?.amount || gem.starting_price)}</p>
+              <p className="text-4xl font-bold text-[var(--gold)] mt-1">{hideBids ? '*** (Sealed)' : formatCurrency(highestBidInfo?.amount || gem.starting_price)}</p>
             </div>
             <div>
               <label className="text-xs text-[var(--text-muted)] uppercase">Total Bids</label>
@@ -274,7 +277,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
                 >
                   <div className="min-w-0 flex-1">
                     <p className={`font-bold font-mono ${idx === 0 ? 'text-[var(--gold)]' : 'text-white'}`}>
-                      {formatCurrency(bid.bid_amount)}
+                      {hideBids ? '***' : formatCurrency(bid.bid_amount)}
                     </p>
                     <p className="text-sm text-white mt-1">
                       {bidUser?.display_name || bidUser?.anonymous_name || 'Anonymous'}
