@@ -117,6 +117,8 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
   }
 
   const { item, bidCount, uniqueBidders, highestBid, isFinished, topBidders, recentBids } = data
+  const auctionType = Array.isArray(item?.auction) ? item?.auction[0]?.auction_type : (item?.auction as any)?.auction_type;
+  const isSealed = auctionType === 'tender_base_fixed_bid';
   const priceIncrease = highestBid > item.starting_price && item.starting_price > 0
     ? Math.round(((highestBid - item.starting_price) / item.starting_price) * 100) 
     : 0
@@ -189,10 +191,10 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-4">
-              <StatCard label="Starting" value={formatCurrency(item.starting_price)} />
-              <StatCard label="Total Bids" value={bidCount.toString()} highlight />
-              <StatCard label="Bidders" value={uniqueBidders.toString()} />
+            <div className={`grid ${isSealed ? 'grid-cols-1' : 'grid-cols-3'} gap-4`}>
+              <StatCard label={isSealed ? "Initial Price" : "Starting"} value={formatCurrency(item.starting_price)} />
+              {!isSealed && <StatCard label="Total Bids" value={bidCount.toString()} highlight />}
+              {!isSealed && <StatCard label="Bidders" value={uniqueBidders.toString()} />}
             </div>
           </div>
           
@@ -220,7 +222,6 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               <div className="text-4xl sm:text-5xl font-mono font-bold text-white tabular-nums">
                     {(() => {
       let forceStop = false;
-      const auctionType = Array.isArray(data?.item?.auction) ? data?.item?.auction[0]?.auction_type : (data?.item?.auction as any)?.auction_type;
       if (auctionType === 'progressive_elimination_auction') {
         const hasClaimedBid = (data?.recentBids || []).some(b => Number(b.bid_amount) === Number(data?.item?.current_price));
         if (hasClaimedBid) { forceStop = true; }
@@ -242,6 +243,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           </div>
 
           {/* Right: Activity / Results */}
+          {!isSealed && (
           <div className="lg:col-span-3">
             {isFinished ? (
               /* Show bidder details after auction ends */
@@ -296,6 +298,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               </div>
             )}
            </div>
+          )}
         </div>
       </div>
       
