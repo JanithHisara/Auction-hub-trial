@@ -35,7 +35,7 @@ function formatCurrency(amount: number) {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   }).format(amount)
 }
 

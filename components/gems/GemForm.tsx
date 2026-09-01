@@ -216,7 +216,8 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
                 step="0.01"
                 value={formData.starting_price}
                 onChange={(e) => setFormData({ ...formData, starting_price: e.target.value.replace(/^0+(?=\d)/, '') })}
-                className="w-full"
+                onWheel={(e) => e.currentTarget.blur()}
+                  className="w-full"
               />
             </div>
             <div>
@@ -228,7 +229,8 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
                 step="0.01"
                 value={formData.min_bid_increment}
                 onChange={(e) => setFormData({ ...formData, min_bid_increment: e.target.value.replace(/^0+(?=\d)/, '') })}
-                className="w-full"
+                onWheel={(e) => e.currentTarget.blur()}
+                  className="w-full"
               />
             </div>
             <div>
@@ -257,7 +259,8 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
                 value={formData.carat_weight}
                 onChange={(e) => setFormData({ ...formData, carat_weight: e.target.value.replace(/^0+(?=\d)/, '') })}
                 placeholder="e.g., 5.2"
-                className="w-full"
+                onWheel={(e) => e.currentTarget.blur()}
+                  className="w-full"
               />
             </div>
             <div>

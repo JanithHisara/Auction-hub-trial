@@ -428,6 +428,7 @@ export default function EditAuctionPage() {
                   onChange={handleChange}
                   min="1"
                   placeholder="Unlimited"
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="w-full"
                 />
                 <p className="text-xs text-[var(--text-muted)] mt-1">Leave empty for unlimited</p>
@@ -444,6 +445,7 @@ export default function EditAuctionPage() {
                   onChange={handleChange}
                   min="0"
                   step="0.01"
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="w-full"
                 />
               </div>
