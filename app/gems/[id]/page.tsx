@@ -66,9 +66,9 @@ async function getGem(id: string) {
       bids: bids || [],
       winner,
       isActive: false,
-      currentUserId: user?.id || null,
-      isRegisteredForAuction: isRegistered,
-        isSealed: (endedGem?.auction as any)?.auction_type === 'tender_base_fixed_bid' || (gem?.auction as any)?.auction_type === 'tender_base_fixed_bid',
+        currentUserId: user?.id || null,
+        isRegisteredForAuction: isRegistered,
+        isSealed: (endedGem?.auction as any)?.auction_type === 'tender_base_fixed_bid',
     }
   }
 
@@ -106,9 +106,9 @@ async function getGem(id: string) {
     certificates: certificates || [],
     bids: bids || [],
     isActive: true,
-    currentUserId: user?.id || null,
-    isRegisteredForAuction: isRegistered,
-        isSealed: (endedGem?.auction as any)?.auction_type === 'tender_base_fixed_bid' || (gem?.auction as any)?.auction_type === 'tender_base_fixed_bid',
+      currentUserId: user?.id || null,
+      isRegisteredForAuction: isRegistered,
+      isSealed: (gem?.auction as any)?.auction_type === 'tender_base_fixed_bid',
   }
 }
 
