@@ -199,15 +199,15 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
           </div>
           
           {/* Center: Current Price */}
-          <div className="lg:col-span-4 flex flex-col items-center justify-center">
+          <div className={`flex flex-col items-center justify-center ${isSealed ? 'lg:col-span-7' : 'lg:col-span-4'}`}>
             <div className="price-display">
               <div className="text-sm sm:text-lg text-[var(--gold)]/60 uppercase tracking-[0.2em] mb-4">
-                Current Price
+                {isSealed ? 'Initial Price' : 'Current Price'}
               </div>
-              <div className={`price-value ${flashPrice ? 'flash' : ''}`}>
-                {formatCurrency(highestBid)}
+              <div className={`price-value ${flashPrice && !isSealed ? 'flash' : ''}`}>
+                {formatCurrency(isSealed ? item.starting_price : highestBid)}
               </div>
-              {priceIncrease > 0 && (
+              {!isSealed && priceIncrease > 0 && (
                 <div className="price-increase">
                   ▲ +{priceIncrease}% from starting
                 </div>
