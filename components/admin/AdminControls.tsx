@@ -329,12 +329,12 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 <>
                   {hasNoBidsInCurrentRound ? (
                     <button
-                      onClick={() => setShowNextRoundModal(true)}
+                      onClick={() => setShowAnnounceWinnerModal(true)}
                       disabled={loading}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
                     >
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SkipForward className="w-4 h-4" />}
-                      Decrease Price Round
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
+                      Announce Winner
                     </button>
                   ) : (
                     <>
