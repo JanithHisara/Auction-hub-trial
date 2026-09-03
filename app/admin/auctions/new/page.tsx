@@ -266,7 +266,7 @@ export default function NewAuctionPage() {
                   <div>
                     <h3 className="font-bold text-white">English Auction</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
-                      Price increases automatically at intervals. Bidders accept or drop out.
+                      Admin raises the price each round and only one bidder wins per round. If no one accepts, the last round winner wins.
                     </p>
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export default function NewAuctionPage() {
                   <div>
                     <h3 className="font-bold text-white">Progressive Elimination Auction</h3>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
-                      Admin raises price each round. Bidders who don&apos;t approve are permanently eliminated. Last bidder wins.
+                      Admin raises the price each round. Bidders who don&apos;t accept are eliminated. If no one accepts, the next round can start with a decreased price. Last remaining bidder wins.
                     </p>
                   </div>
                 </div>
