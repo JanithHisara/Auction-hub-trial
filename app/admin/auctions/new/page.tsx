@@ -26,6 +26,7 @@ export default function NewAuctionPage() {
     name: '',
     description: '',
     banner_image_url: '',
+    password: '',
     auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction',
     registration_start: '',
     registration_end: '',
@@ -100,6 +101,7 @@ export default function NewAuctionPage() {
           name: formData.name,
           description: formData.description || null,
           banner_image_url: formData.banner_image_url || null,
+          password: formData.password || null,
           auction_type: formData.auction_type,
           published_at: null, // Defaults to null, manual publishing flow
           registration_start: toUTCISO(formData.registration_start),
@@ -388,6 +390,23 @@ export default function NewAuctionPage() {
                   className="w-full"
                 />
                 <p className="text-xs text-[var(--text-muted)] mt-1">Leave empty for unlimited</p>
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                  <span className="font-bold">#</span>
+                  Auction Password (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  maxLength={4}
+                  pattern="\d{4}"
+                  placeholder="e.g. 1234"
+                  className="w-full"
+                />
+                <p className="text-xs text-[var(--text-muted)] mt-1">4-digit numeric password</p>
               </div>
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">

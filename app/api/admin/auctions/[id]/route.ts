@@ -46,6 +46,7 @@ export async function PUT(
         name: body.name,
         description: body.description || null,
         banner_image_url: body.banner_image_url || null,
+        password: body.password || null,
         auction_type: body.auction_type,
         published_at: body.published_at || null,
         registration_start: body.registration_start,

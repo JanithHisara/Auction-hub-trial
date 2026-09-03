@@ -34,6 +34,7 @@ export default function EditAuctionPage() {
     name: '',
     description: '',
     banner_image_url: '',
+    password: '',
     auction_type: 'tender_base_fixed_bid' as 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction',
     registration_start: '',
     registration_end: '',
@@ -430,6 +431,23 @@ export default function EditAuctionPage() {
                   className="w-full"
                 />
                 <p className="text-xs text-[var(--text-muted)] mt-1">Leave empty for unlimited</p>
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                  <span className="font-bold">#</span>
+                  Auction Password (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  maxLength={4}
+                  pattern="\d{4}"
+                  placeholder="e.g. 1234"
+                  className="w-full"
+                />
+                <p className="text-xs text-[var(--text-muted)] mt-1">4-digit numeric password</p>
               </div>
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">

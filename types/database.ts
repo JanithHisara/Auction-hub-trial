@@ -22,6 +22,7 @@ export interface Auction {
   name: string
   description: string | null
   banner_image_url: string | null
+    password: string | null
   
   // Timing
   registration_start: string
