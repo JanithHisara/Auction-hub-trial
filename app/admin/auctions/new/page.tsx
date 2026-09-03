@@ -80,6 +80,10 @@ export default function NewAuctionPage() {
         throw new Error('Auction end time must be after auction start time')
       }
 
+      if (!formData.password || formData.password.length !== 4 || !/^\d{4}$/.test(formData.password)) {
+        throw new Error('Auction password must be exactly 4 numeric digits')
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
@@ -394,7 +398,7 @@ export default function NewAuctionPage() {
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                   <span className="font-bold">#</span>
-                  Auction Password (Optional)
+                  Auction Password *
                 </label>
                 <input
                   type="text"
@@ -404,6 +408,7 @@ export default function NewAuctionPage() {
                   maxLength={4}
                   pattern="\d{4}"
                   placeholder="e.g. 1234"
+                  required
                   className="w-full"
                 />
                 <p className="text-xs text-[var(--text-muted)] mt-1">4-digit numeric password</p>

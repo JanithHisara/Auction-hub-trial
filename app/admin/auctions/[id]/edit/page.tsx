@@ -436,7 +436,7 @@ export default function EditAuctionPage() {
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                   <span className="font-bold">#</span>
-                  Auction Password (Optional)
+                  Auction Password *
                 </label>
                 <input
                   type="text"
