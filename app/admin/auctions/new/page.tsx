@@ -80,6 +80,17 @@ export default function NewAuctionPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
+
+      // Check for duplicate auction name (case-insensitive)
+      const { data: existing } = await supabase
+        .from('auctions')
+        .select('id')
+        .ilike('name', formData.name.trim())
+        .limit(1)
+        .maybeSingle()
+      if (existing) {
+        throw new Error('An auction with this name already exists. Please choose a different name.')
+      }
       const { data, error: insertError } = await supabase
         .from('auctions')
         .insert({
