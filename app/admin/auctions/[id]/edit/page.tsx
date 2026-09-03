@@ -61,6 +61,7 @@ export default function EditAuctionPage() {
           name: auction.name || '',
           description: auction.description || '',
           banner_image_url: auction.banner_image_url || '',
+          password: auction.password || '',
           auction_type: auction.auction_type || 'tender_base_fixed_bid',
           registration_start: toLocalDatetime(auction.registration_start),
           registration_end: toLocalDatetime(auction.registration_end),
