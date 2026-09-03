@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import ImageUploader from '@/components/gems/ImageUploader'
 import { ArrowLeft, Loader2, Calendar, Image, Users, DollarSign, Gavel, TrendingUp, Target } from 'lucide-react'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 
@@ -186,15 +187,11 @@ export default function NewAuctionPage() {
             <div>
               <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                 <Image className="w-4 h-4" />
-                Banner Image URL
+                Banner Image/Media
               </label>
-              <input
-                type="url"
-                name="banner_image_url"
-                value={formData.banner_image_url}
-                onChange={handleChange}
-                placeholder="https://..."
-                className="w-full"
+              <ImageUploader 
+                images={formData.banner_image_url ? [formData.banner_image_url] : []}
+                onChange={(images) => setFormData({ ...formData, banner_image_url: images[0] || '' })}
               />
             </div>
           </section>
