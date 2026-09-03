@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -19,6 +19,7 @@ export default function NewAuctionPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const errorRef = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -117,6 +118,7 @@ export default function NewAuctionPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create auction'
       setError(message)
+      setTimeout(() => { errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }, 50)
     } finally {
       setLoading(false)
     }
@@ -137,7 +139,7 @@ export default function NewAuctionPage() {
         <p className="text-[var(--text-secondary)] mb-8">Set up a new auction event</p>
 
         {error && (
-          <div className="error-message mb-6 flex items-center gap-2">
+          <div ref={errorRef} className="error-message mb-6 flex items-center gap-2">
             <span>⚠️</span>
             {error}
           </div>
