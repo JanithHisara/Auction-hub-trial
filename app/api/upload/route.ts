@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Upload error:', error)
-      return NextResponse.json({ message: 'Upload failed' }, { status: 500 })
+      return NextResponse.json({ message: 'Upload failed: ' + error.message }, { status: 500 })
     }
 
     const { data: { publicUrl } } = supabase.storage
@@ -70,6 +70,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ message: 'Internal server error: ' + (error instanceof Error ? error.message : String(error)) }, { status: 500 })
   }
 }

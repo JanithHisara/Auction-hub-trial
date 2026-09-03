@@ -44,8 +44,17 @@ export default function ImageUploader({ images, mediaTypes = [], maxImages, onCh
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.message || 'Upload failed')
+        let errorMsg = 'Upload failed with status ' + res.status;
+        try {
+          const text = await res.text();
+          try {
+            const data = JSON.parse(text);
+            if (data.message) errorMsg = data.message;
+          } catch (e) {
+            errorMsg = errorMsg + ': ' + text.substring(0, 100);
+          }
+        } catch (e) {}
+        throw new Error(errorMsg)
       }
 
       const { url, media_type } = await res.json()
@@ -55,7 +64,7 @@ export default function ImageUploader({ images, mediaTypes = [], maxImages, onCh
       newMediaTypes[index] = media_type || inferMediaType(url)
       onChange(newImages, newMediaTypes)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
+      setError(err instanceof Error ? err.message + ' (caught)' : 'Upload failed (not error)')
     } finally {
       setUploading(null)
     }
