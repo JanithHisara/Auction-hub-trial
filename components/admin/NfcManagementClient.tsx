@@ -383,6 +383,7 @@ function CreateNfcCardModal({
   const [nfcUid, setNfcUid] = useState('')
   const [label, setLabel] = useState('')
   const [userId, setUserId] = useState('')
+  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null)
   const [users, setUsers] = useState<UserOption[]>([])
   const [userSearch, setUserSearch] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -450,12 +451,12 @@ function CreateNfcCardModal({
 
   function handleUserCreated(user: { id: string; email: string; display_name: string | null }) {
     setUserId(user.id)
-    setUsers([user])
+    setSelectedUser(user)
+    setUsers([])
     setUserSearch('')
-    setShowCreateUser(false)
   }
 
-  const selectedUser = users.find(u => u.id === userId)
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -525,7 +526,7 @@ function CreateNfcCardModal({
                   <div className="text-sm text-white">{selectedUser.display_name || selectedUser.email}</div>
                   <div className="text-xs text-[var(--text-secondary)]">{selectedUser.email}</div>
                 </div>
-                <button type="button" onClick={() => { setUserId(''); setUserSearch('') }} className="text-[var(--text-secondary)] hover:text-white">
+                <button type="button" onClick={() => { setUserId(''); setUserSearch(''); setSelectedUser(null) }} className="text-[var(--text-secondary)] hover:text-white">  
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -547,7 +548,7 @@ function CreateNfcCardModal({
                       <button
                         key={u.id}
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); setUserId(u.id); setUserSearch('') }}
+                        onMouseDown={(e) => { e.preventDefault(); setSelectedUser(u); setUserId(u.id); setUserSearch('') }}
                         className="w-full text-left px-4 py-2.5 hover:bg-white/5 transition-colors"
                       >
                         <div className="text-sm text-white">{u.display_name || u.email}</div>
