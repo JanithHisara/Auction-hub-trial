@@ -12,6 +12,7 @@ interface MediaItem {
 interface Props {
   images: string[]
   mediaTypes?: MediaType[]
+  maxImages?: number
   onChange: (images: string[], mediaTypes: MediaType[]) => void
 }
 
@@ -22,7 +23,7 @@ function inferMediaType(url: string): MediaType {
   return 'image'
 }
 
-export default function ImageUploader({ images, mediaTypes = [], onChange }: Props) {
+export default function ImageUploader({ images, mediaTypes = [], maxImages, onChange }: Props) {
   const [uploading, setUploading] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -200,13 +201,15 @@ export default function ImageUploader({ images, mediaTypes = [], onChange }: Pro
         )
       })}
 
-      <button
-        type="button"
-        onClick={addImage}
-        className="flex items-center gap-2 px-4 py-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg hover:border-[var(--gold)]/50 transition-colors w-full justify-center"
-      >
-        <Upload className="w-4 h-4" /> Add Another Image/Video
-      </button>
+      {(!maxImages || images.length < maxImages) && (
+        <button
+          type="button"
+          onClick={addImage}
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg hover:border-[var(--gold)]/50 transition-colors w-full justify-center"
+        >
+          <Upload className="w-4 h-4" /> Add Another Image/Video
+        </button>
+      )}
     </div>
   )
 }

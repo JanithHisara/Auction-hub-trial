@@ -232,7 +232,8 @@ export default function EditAuctionPage() {
                 Banner Image/Media
               </label>
               <ImageUploader 
-                images={formData.banner_image_url ? [formData.banner_image_url] : []}
+                images={[formData.banner_image_url || '']}
+                maxImages={1}
                 onChange={(images) => setFormData({ ...formData, banner_image_url: images[0] || '' })}
               />
             </div>
