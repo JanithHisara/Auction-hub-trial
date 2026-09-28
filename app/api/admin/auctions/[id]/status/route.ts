@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
@@ -25,7 +25,7 @@ export async function POST(
       status = formData.get('status') as string
     }
 
-    const validStatuses = ['draft', 'upcoming', 'registration_open', 'live', 'ended', 'completed']
+    const validStatuses = ['draft', 'upcoming', 'registration_open', 'registration_closed', 'live', 'ended', 'completed']
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
@@ -189,3 +189,4 @@ export async function POST(
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }
+
