@@ -88,9 +88,7 @@ export function mapAuctionToSummary(auction: AuctionRow, itemsCount?: number, re
     status: auction.status,
     status_label: AUCTION_STATUS_LABELS[auction.status] || auction.status,
     start_datetime: auction.auction_start,
-    end_datetime: auction.auction_end,
-    show_on_device: !!auction.show_on_device,
-    items_count: itemsCount ?? null,
+    end_datetime: auction.auction_end,    items_count: itemsCount ?? null,
     registered_count: registeredCount ?? null,
   };
 }
@@ -379,4 +377,5 @@ export function buildAuctionUpdateSchema(
     },
   };
 }
+
 
