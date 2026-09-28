@@ -76,6 +76,7 @@ const statusColors: Record<string, string> = {
   draft: 'bg-gray-500/20 text-gray-400',
   upcoming: 'bg-blue-500/20 text-blue-400',
   registration_open: 'bg-emerald-500/20 text-emerald-400',
+    registration_closed: 'bg-indigo-500/20 text-indigo-400',
   live: 'bg-red-500/20 text-red-400',
   ended: 'bg-amber-500/20 text-amber-400',
   completed: 'bg-purple-500/20 text-purple-400',
@@ -162,7 +163,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
           <AuctionStatusActions 
             auctionId={id} 
-            currentStatus={auction.status as 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'} 
+            currentStatus={auction.status as 'draft' | 'upcoming' | 'registration_open' | 'registration_closed' | 'live' | 'ended' | 'completed'} 
             itemCount={items.length}
             approvedCount={approvedCount}
           />
@@ -193,7 +194,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           {auction.status === 'live' && (
             <AuctionChatButton auctionId={id} />
           )}
-          {(auction.status === 'live' || auction.status === 'registration_open') && (
+          {(auction.status === 'live' || auction.status === 'registration_open' || auction.status === 'registration_closed') && (
             <Link
               href={`/admin/auctions/${id}/entrance`}
               className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-500/30 transition-colors"
@@ -410,7 +411,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         )}
       </div>
       {/* Bidder Hold Management */}
-      {(auction.status === 'live' || auction.status === 'registration_open') && (
+      {(auction.status === 'live' || auction.status === 'registration_open' || auction.status === 'registration_closed') && (
         <BidderHoldManager
           auctionId={id}
           registrations={registrations.map(r => ({
@@ -448,6 +449,7 @@ function ScheduleItem({ label, value }: { label: string; value: React.ReactNode 
     </div>
   )
 }
+
 
 
 

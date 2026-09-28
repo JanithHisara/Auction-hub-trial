@@ -1,6 +1,6 @@
-export type UserRole = 'user' | 'moderator' | 'admin' | 'super_admin'
+﻿export type UserRole = 'user' | 'moderator' | 'admin' | 'super_admin'
 export type GemStatus = 'draft' | 'pending' | 'active' | 'ended' | 'completed'
-export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
+export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'registration_closed' | 'live' | 'ended' | 'completed'
 export type AuctionType = 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction'
 export type PaymentStatus = 'pending' | 'completed' | 'failed'
 export type RegistrationApprovalStatus = 'pending' | 'approved' | 'rejected'
@@ -250,3 +250,4 @@ export interface RolePermission {
   created_at: string
   permission?: Permission
 }
+

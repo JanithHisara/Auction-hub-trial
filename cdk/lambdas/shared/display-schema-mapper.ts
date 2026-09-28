@@ -19,6 +19,7 @@ const AUCTION_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
   upcoming: 'Upcoming',
   registration_open: 'Registration Open',
+  registration_closed: 'Registration Closed',
   live: 'Live',
   ended: 'Ended',
   completed: 'Completed',
@@ -377,5 +378,6 @@ export function buildAuctionUpdateSchema(
     },
   };
 }
+
 
 

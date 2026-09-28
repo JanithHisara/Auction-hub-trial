@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
-import { Loader2, Play, Users, Radio, StopCircle, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Loader2, Play, Users, Radio, StopCircle, CheckCircle, AlertTriangle, Lock } from 'lucide-react'
 
-type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'live' | 'ended' | 'completed'
+type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'registration_closed' | 'live' | 'ended' | 'completed'
 
 interface Props {
   auctionId: string
@@ -29,7 +29,14 @@ const statusFlow: Record<AuctionStatus, { next: AuctionStatus | null; label: str
     color: 'bg-emerald-500 hover:bg-emerald-600',
     description: 'Allow users to register for this auction. Make sure all items are added.'
   },
-  registration_open: { 
+    registration_open: { 
+    next: 'registration_closed', 
+    label: 'Close Registration', 
+    icon: <Lock className="w-4 h-4" />,
+    color: 'bg-indigo-500 hover:bg-indigo-600',
+    description: 'Stop accepting new registrations. Devices will now show the auction screen.'
+  },
+  registration_closed: { 
     next: 'live', 
     label: 'Go Live', 
     icon: <Radio className="w-4 h-4" />,
@@ -147,7 +154,7 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-500/20 text-gray-400">
                 {currentStatus.replace('_', ' ').toUpperCase()}
               </span>
-              <span className="text-[var(--text-muted)]">→</span>
+              <span className="text-[var(--text-muted)]">â†’</span>
               <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                 nextStatus === 'live' ? 'bg-red-500/20 text-red-400' :
                 nextStatus === 'registration_open' ? 'bg-emerald-500/20 text-emerald-400' :
@@ -168,7 +175,7 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
                     <p className="text-amber-400 font-medium text-sm mb-1">Warning</p>
                     <ul className="text-xs text-amber-400/80 space-y-1">
                       {warnings.map((w, i) => (
-                        <li key={i}>• {w}</li>
+                        <li key={i}>â€¢ {w}</li>
                       ))}
                     </ul>
                   </div>
@@ -222,3 +229,4 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
     </>
   )
 }
+

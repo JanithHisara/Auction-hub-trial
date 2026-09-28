@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '../shared/supabase-client';
+﻿import { getSupabaseClient } from '../shared/supabase-client';
 import { publishToDevice } from '../shared/mqtt-publisher';
 import {
   buildNfcSuccessSchema,
@@ -51,7 +51,7 @@ export async function handler(event: NfcScanPayload): Promise<void> {
     return;
   }
 
-  // 3. Look up NFC card → user mapping (card is now user-only, no auction context)
+  // 3. Look up NFC card â†’ user mapping (card is now user-only, no auction context)
   const { data: nfcCard, error: nfcError } = await supabase
     .from('nfc_cards')
     .select('*')
@@ -100,7 +100,7 @@ export async function handler(event: NfcScanPayload): Promise<void> {
 
   const auctionRow = auction as AuctionRow;
 
-  if (auctionRow.status !== 'live') {
+  if (auctionRow.status !== 'live' && auctionRow.status !== 'registration_closed') {
     await publishToDevice(device_id, 'state', buildNfcErrorSchema(
       deviceRow, nfc_uid, 7, 'Auction Not Live',
       `Auction "${auctionRow.name}" is currently ${auctionRow.status}`,
@@ -189,3 +189,4 @@ export async function handler(event: NfcScanPayload): Promise<void> {
   await publishToDevice(device_id, 'state', displayState);
   console.log(`NFC scan success: user=${userRow.email}, auction=${auctionRow.name}`);
 }
+
