@@ -93,7 +93,6 @@ import AuctionStatusActions from '@/components/admin/AuctionStatusActions'
 import AuctionDetailClient from '@/components/admin/AuctionDetailClient'
 import BidderHoldManager from '@/components/admin/BidderHoldManager'
 import AuctionChatButton from '@/components/admin/AuctionChatButton'
-import ShowOnDeviceButton from '@/components/admin/ShowOnDeviceButton'
 import AddUserToAuctionButton from '@/components/admin/AddUserToAuctionButton'
 
 
@@ -193,9 +192,6 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           )}
           {auction.status === 'live' && (
             <AuctionChatButton auctionId={id} />
-          )}
-          {auction.status !== 'live' && (
-            <ShowOnDeviceButton auctionId={id} />
           )}
           {(auction.status === 'live' || auction.status === 'registration_open') && (
             <Link
@@ -452,6 +448,8 @@ function ScheduleItem({ label, value }: { label: string; value: React.ReactNode 
     </div>
   )
 }
+
+
 
 
 
