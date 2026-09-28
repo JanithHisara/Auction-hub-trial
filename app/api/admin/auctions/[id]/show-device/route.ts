@@ -1,5 +1,9 @@
 ﻿import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { IoTDataPlaneClient, PublishCommand } from '@aws-sdk/client-iot-data-plane'
+
+// Need to duplicate this to avoid cyclic deps or weird aws-sdk imports failing Vercel unless installed
+const iotClient = new IoTDataPlaneClient({ region: process.env.AWS_REGION || 'us-east-1' })
 
 export async function POST(
   request: Request,
@@ -24,24 +28,41 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to update auction' }, { status: 500 })
     }
 
-    // Trigger an update to all devices for this auction
-    const { data: devices } = await supabase
-      .from('devices')
-      .select('device_id')
-      .eq('auction_id', id)
+    // Now, fetch ALL auctions that should be visible to devices to construct the GET_AUCTION payload
+    const { data: auctions } = await supabase
+      .from('auctions')
+      .select('*')
+      .in('status', ['upcoming', 'registration_open', 'live'])
+      .order('auction_start', { ascending: true })
 
-    if (devices && devices.length > 0) {
-      // Just publishing to one of the devices or all of them.
-      // Actually we don't need to push immediately if we don't want to overcomplicate, 
-      // but let's push a dummy update or state update to force devices to fetch again, 
-      // or they will get it on the next heartbeat / get_auctions.
-      // Wait, we can't easily push the auction list from here without duplicating the mapper logic.
-      // We'll let the device fetch it on next refresh or reboot.
+    if (auctions) {
+      const payload = {
+        Action: 'GET_AUCTION',
+        Status: 'SUCCESS',
+        Auctions: auctions.map(a => ({
+          Auction_ID: a.id,
+          Name: a.name,
+          Auction_Mode: a.auction_type,
+          Auction_Status: a.status,
+          Start_DateTime: a.auction_start,
+          End_DateTime: a.auction_end,
+          Items_Count: 0,
+          Registered_Count: 0,
+          Show_On_Device: !!a.show_on_device
+        }))
+      }
+
+      // Publish broadcast to force all devices to update their auction list immediately
+      await iotClient.send(new PublishCommand({
+        topic: 'auction/broadcast',
+        payload: Buffer.from(JSON.stringify(payload)),
+        qos: 1
+      }))
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error("Show on device error:", error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
-
