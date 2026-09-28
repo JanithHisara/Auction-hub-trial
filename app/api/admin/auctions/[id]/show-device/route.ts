@@ -1,6 +1,5 @@
 ﻿import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { publishToDevice } from '@/cdk/lambdas/shared/mqtt-publisher'
 
 export async function POST(
   request: Request,
@@ -45,3 +44,4 @@ export async function POST(
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
+
