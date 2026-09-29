@@ -310,7 +310,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
         </div>
       </div>
 
-      <BidHistory bids={bids || []} isSealed={initialGem.isSealed && initialGem.isActive} />
+      <BidHistory bids={bids || []} isSealed={initialGem.isSealed && initialGem.isActive} revealNames={gem.status === 'completed'} />
     </>
   )
 }
@@ -323,5 +323,7 @@ function SpecRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
+
 
 

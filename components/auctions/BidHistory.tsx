@@ -3,10 +3,11 @@ import type { Bid } from '@/types/database'
 
 interface BidHistoryProps {
   isSealed?: boolean
+  revealNames?: boolean
   bids: Bid[]
 }
 
-export default function BidHistory({ bids, isSealed }: BidHistoryProps) {
+export default function BidHistory({ bids, isSealed, revealNames }: BidHistoryProps) {
   if (bids.length === 0) {
     return (
       <div className="card-glass rounded-2xl p-6">
@@ -34,7 +35,7 @@ export default function BidHistory({ bids, isSealed }: BidHistoryProps) {
                 {isSealed ? '*** (Sealed)' : formatCurrency(bid.bid_amount)}
               </p>
               <p className="text-xs text-[var(--text-muted)] truncate">
-                {(bid.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'}  {formatDate(bid.created_at)}
+                {(revealNames ? ((bid.user as { anonymous_name?: string, display_name?: string })?.display_name || (bid.user as { anonymous_name?: string })?.anonymous_name) : (bid.user as { anonymous_name?: string })?.anonymous_name) || 'Anonymous'}  {formatDate(bid.created_at)}
               </p>
             </div>
             {index === 0 && !isSealed && (
@@ -48,4 +49,5 @@ export default function BidHistory({ bids, isSealed }: BidHistoryProps) {
     </div>
   )
 }
+
 
