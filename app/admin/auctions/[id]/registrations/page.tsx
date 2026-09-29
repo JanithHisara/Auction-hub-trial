@@ -148,7 +148,7 @@ export default async function AuctionRegistrationsPage({
                     {registrations.map((reg: RegistrationWithUser) => (
                     <tr key={reg.id} className="hover:bg-[var(--surface-elevated)]">
                       <td className="py-3 px-4">
-                        <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
+                        <p className="text-white font-medium">{reg.user?.display_name || 'No name'} {reg.user?.anonymous_name ? '(' + reg.user?.anonymous_name + ')' : ''}</p>
                       </td>
                       <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.display_name || ''}</td>
                       <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.phone || ''}</td>
@@ -189,7 +189,7 @@ export default async function AuctionRegistrationsPage({
                 <div key={reg.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
+                      <p className="text-white font-medium">{reg.user?.display_name || 'No name'} {reg.user?.anonymous_name ? '(' + reg.user?.anonymous_name + ')' : ''}</p>
                       <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
                       {reg.user?.phone && (
                         <p className="text-xs text-[var(--text-muted)] mt-1">{reg.user.phone}</p>
@@ -253,4 +253,6 @@ function FilterTab({
     </Link>
   )
 }
+
+
 

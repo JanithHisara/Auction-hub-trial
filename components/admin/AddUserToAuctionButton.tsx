@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { UserPlus, X, Loader2, Search, CheckCircle2 } from 'lucide-react'
@@ -7,6 +7,7 @@ interface UserOption {
   id: string
   email: string
   display_name: string | null
+  anonymous_name?: string | null
 }
 
 export default function AddUserToAuctionButton({ auctionId }: { auctionId: string }) {
@@ -48,6 +49,7 @@ function AddUserModal({ auctionId, onClose }: { auctionId: string; onClose: () =
             id: u.id,
             email: u.email,
             display_name: u.display_name,
+            anonymous_name: u.anonymous_name,
           })))
         }
       } catch { /* ignore */ } finally {
@@ -142,7 +144,7 @@ function AddUserModal({ auctionId, onClose }: { auctionId: string; onClose: () =
               >
                 <div>
                   <div className="text-sm font-medium text-white">
-                    {user.display_name || 'No name'}
+                    {user.display_name || 'No name'} {user.anonymous_name ? '(' + user.anonymous_name + ')' : ''}
                   </div>
                   <div className="text-xs text-[var(--text-secondary)]">{user.email}</div>
                 </div>
@@ -180,3 +182,5 @@ function AddUserModal({ auctionId, onClose }: { auctionId: string; onClose: () =
     </div>
   )
 }
+
+
