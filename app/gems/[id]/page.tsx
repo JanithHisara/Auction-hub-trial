@@ -5,6 +5,7 @@ import GemDetailClient from '@/components/gems/GemDetailClient'
 
 async function getGem(id: string) {
   const supabase = await createClient()
+  const adminClient = createAdminClient()
   const now = new Date().toISOString()
   const { data: { user } } = await supabase.auth.getUser()
 
