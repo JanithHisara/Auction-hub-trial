@@ -10,7 +10,7 @@ export interface User {
   email: string
   role: UserRole
   created_at: string
-  anonymous_name?: string
+  anonymous_name?: string; display_name?: string | null;
   phone?: string | null
   display_name?: string | null
 }
@@ -124,7 +124,7 @@ export interface Bid {
   created_at: string
   user?: {
     email: string
-    anonymous_name?: string
+    anonymous_name?: string; display_name?: string | null;
   }
 }
 
@@ -250,4 +250,7 @@ export interface RolePermission {
   created_at: string
   permission?: Permission
 }
+
+
+
 
