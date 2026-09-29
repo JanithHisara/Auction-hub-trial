@@ -232,7 +232,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
                   <p className="text-sm font-semibold text-emerald-400 uppercase mb-2">Auction Ended</p>
                   <p className="text-xs text-[var(--text-muted)] mb-1">Winner</p>
                   <p className="text-lg font-bold text-white mb-4">
-                    {(gem.winner.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'}
+                    {((gem.winner.user as { anonymous_name?: string, display_name?: string })?.display_name || (gem.winner.user as { anonymous_name?: string })?.anonymous_name) || 'Anonymous'}
                     {gem.currentUserId && gem.winner.user_id === gem.currentUserId && ' (You)'}
                   </p>
                   <WinnerPaymentLink gemId={gem.id} />
@@ -323,4 +323,5 @@ function SpecRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
 

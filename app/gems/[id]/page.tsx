@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import GemDetailClient from '@/components/gems/GemDetailClient'
 
@@ -38,13 +38,13 @@ async function getGem(id: string) {
 
     const { data: bids } = await supabase
       .from('bids')
-      .select('*, user:users(email, anonymous_name)')
+      .select('*, user:users(email, anonymous_name, display_name)')
       .eq('gem_id', id)
       .order('bid_amount', { ascending: false })
 
     const { data: winner } = await supabase
       .from('auction_winners')
-      .select('*, user:users(email, anonymous_name)')
+      .select('*, user:users(email, anonymous_name, display_name)')
       .eq('gem_id', id)
       .single()
 
@@ -85,7 +85,7 @@ async function getGem(id: string) {
 
   const { data: bids } = await supabase
     .from('bids')
-    .select('*, user:users(email, anonymous_name)')
+    .select('*, user:users(email, anonymous_name, display_name)')
     .eq('gem_id', id)
     .order('bid_amount', { ascending: false })
 
@@ -131,3 +131,4 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
     </div>
   )
 }
+

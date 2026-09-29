@@ -1,4 +1,4 @@
-import AuctionMonitorClient from '@/components/monitor/AuctionMonitorClient'
+﻿import AuctionMonitorClient from '@/components/monitor/AuctionMonitorClient'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
@@ -33,7 +33,7 @@ export default async function AuctionMonitorPage({ params }: { params: Promise<{
     (auction.gems || []).map(async (item: { id: string; name: string; starting_price: number; current_price: number; status: string; gem_images: { image_url: string }[] }) => {
       const { data: bids } = await supabase
         .from('bids')
-        .select('bid_amount, created_at, user:users(anonymous_name)')
+        .select('bid_amount, created_at, user:users(anonymous_name, display_name)')
         .eq('gem_id', item.id)
         .order('bid_amount', { ascending: false })
         .limit(5)
@@ -72,4 +72,5 @@ export default async function AuctionMonitorPage({ params }: { params: Promise<{
     />
   )
 }
+
 

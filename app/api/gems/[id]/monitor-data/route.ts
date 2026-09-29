@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function GET(
@@ -106,16 +106,16 @@ export async function GET(
     if (isFinished) {
       const { data: topBidsWithUsers } = await supabase
         .from('bids')
-        .select('bid_amount, user:users(anonymous_name)')
+        .select('bid_amount, user:users(anonymous_name, display_name)')
         .eq('gem_id', id)
         .order('bid_amount', { ascending: false })
         .limit(10)
 
       topBidders = (topBidsWithUsers || []).map(b => {
         // Supabase returns related data that needs proper type handling
-        const userObj = b.user as unknown as { anonymous_name: string } | null
+        const userObj = b.user as unknown as { anonymous_name?: string; display_name?: string } | null
         return {
-          anonymous_name: userObj?.anonymous_name || 'Anonymous',
+          anonymous_name: (auction?.status === 'announce_winner' ? (userObj?.display_name || userObj?.anonymous_name) : userObj?.anonymous_name) || 'Anonymous',
           bid_amount: b.bid_amount,
         }
       })
@@ -148,3 +148,5 @@ export async function GET(
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+
+

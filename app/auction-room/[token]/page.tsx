@@ -85,7 +85,7 @@ async function validateAccess(token: string): Promise<AccessResult> {
         user_id,
         created_at,
         points_earned,
-        user:users(anonymous_name)
+        user:users(anonymous_name, display_name)
       )
     `)
     .eq('auction_id', auction.id)
@@ -256,4 +256,5 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
     />
   )
 }
+
 
