@@ -12,7 +12,7 @@ export interface User {
   created_at: string
   anonymous_name?: string; display_name?: string | null;
   phone?: string | null
-  display_name?: string | null
+
 }
 
 // New: Auction (parent container)
