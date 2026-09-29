@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -143,7 +143,7 @@ export default function BidderHoldManager({ auctionId, registrations }: Props) {
               <div key={hold.id} className="flex items-center justify-between gap-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                 <div className="min-w-0">
                   <p className="text-white font-medium truncate">
-                    {hold.user?.display_name || hold.user?.anonymous_name || 'Unknown'}
+                    {hold.user?.display_name || hold.user?.anonymous_name || hold.user?.email || 'Unknown'}
                   </p>
                   <p className="text-xs text-[var(--text-muted)]">{hold.user?.email}</p>
                   {hold.reason && (
@@ -195,7 +195,7 @@ export default function BidderHoldManager({ auctionId, registrations }: Props) {
                 <div key={reg.id} className="flex items-center justify-between gap-4 p-3 bg-[var(--surface)] rounded-lg border border-[var(--border)]">
                   <div className="min-w-0">
                     <p className="text-white font-medium truncate text-sm">
-                      {reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}
+                      {reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || 'Unknown'}
                     </p>
                     <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
                   </div>
@@ -291,3 +291,4 @@ export default function BidderHoldManager({ auctionId, registrations }: Props) {
     </div>
   )
 }
+

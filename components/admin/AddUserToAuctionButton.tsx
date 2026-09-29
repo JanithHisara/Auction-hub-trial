@@ -144,7 +144,7 @@ function AddUserModal({ auctionId, onClose }: { auctionId: string; onClose: () =
               >
                 <div>
                   <div className="text-sm font-medium text-white">
-                    {user.display_name || 'No name'} {user.anonymous_name ? '(' + user.anonymous_name + ')' : ''}
+                    {user.display_name || user.anonymous_name || user.email}
                   </div>
                   <div className="text-xs text-[var(--text-secondary)]">{user.email}</div>
                 </div>
@@ -182,5 +182,6 @@ function AddUserModal({ auctionId, onClose }: { auctionId: string; onClose: () =
     </div>
   )
 }
+
 
 

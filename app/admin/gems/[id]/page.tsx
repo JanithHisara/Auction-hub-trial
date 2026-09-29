@@ -55,9 +55,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   const topBid = bids?.[0]
   const highestBidInfo = topBid ? {
     amount: topBid.bid_amount,
-    bidderName: (topBid.user as { anonymous_name?: string; email?: string } | null)?.anonymous_name ||
-      (topBid.user as { anonymous_name?: string; email?: string } | null)?.email ||
-      'Anonymous'
+    bidderName: (topBid.user as { display_name?: string; anonymous_name?: string; email?: string } | null)?.display_name || (topBid.user as { anonymous_name?: string; email?: string } | null)?.anonymous_name || (topBid.user as { anonymous_name?: string; email?: string } | null)?.email || 'Unknown'
   } : null
   const isIncrementalApproval = (gem.auction as { auction_type?: string } | null)?.auction_type === 'incremental_approval_auction'
     const isTenderBase = (gem.auction as { auction_type?: string } | null)?.auction_type === 'tender_base_fixed_bid'
@@ -193,8 +191,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
               <div className="p-4 bg-emerald-500/20 border border-emerald-500/40 rounded-xl">
                 <label className="text-xs text-emerald-400 uppercase">Winner</label>
                 <p className="text-emerald-300 font-bold mt-1">
-                  {(winner.user as { anonymous_name?: string; email: string })?.anonymous_name ||
-                    (winner.user as { email: string })?.email || 'Unknown'}
+                  {(winner.user as { display_name?: string; anonymous_name?: string; email: string })?.display_name || (winner.user as { anonymous_name?: string; email: string })?.anonymous_name || (winner.user as { email: string })?.email || 'Unknown'}
                 </p>
               </div>
             )}
@@ -280,7 +277,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
                       {hideBids ? '***' : formatCurrency(bid.bid_amount)}
                     </p>
                     <p className="text-sm text-white mt-1">
-                      {bidUser?.display_name || bidUser?.anonymous_name || 'Anonymous'}
+                      {bidUser?.display_name || bidUser?.anonymous_name || bidUser?.email || 'Unknown'}
                     </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                       <p className="text-xs text-[var(--text-muted)]">{bidUser?.email}</p>
@@ -315,4 +312,5 @@ function InfoItem({ label, value, highlight = false }: { label: string; value: R
     </div>
   )
 }
+
 
