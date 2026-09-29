@@ -342,10 +342,10 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
-                  {registrations.map((reg: AuctionRegistration & { user: { email: string; anonymous_name?: string } }) => (
+                  {registrations.map((reg: AuctionRegistration & { user: { email: string; anonymous_name?: string; display_name?: string | null; phone?: string | null } }) => (
                     <tr key={reg.id} className="hover:bg-[var(--surface-elevated)]">
                       <td className="py-3 px-4">
-                        <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || 'Unknown'}</p>
+                        <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || 'User-' + (reg.user_id || '').slice(-6)}</p>
                         <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
                         {reg.user?.phone && <p className="text-xs text-[var(--text-muted)]">{reg.user.phone}</p>}
                       </td>
@@ -379,11 +379,11 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
 
             {/* Mobile Cards */}
             <div className="md:hidden space-y-3">
-              {registrations.map((reg: AuctionRegistration & { user: { email: string; anonymous_name?: string } }) => (
+              {registrations.map((reg: AuctionRegistration & { user: { email: string; anonymous_name?: string; display_name?: string | null; phone?: string | null } }) => (
                 <div key={reg.id} className="p-3 bg-[var(--surface)] rounded-lg border border-[var(--border)]">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <p className="text-white font-medium text-sm">{reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || 'Unknown'}</p>
+                      <p className="text-white font-medium text-sm">{reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || 'User-' + (reg.user_id || '').slice(-6)}</p>
                       <p className="text-xs text-[var(--text-muted)] truncate max-w-[200px]">{reg.user?.email}</p>
                       {reg.user?.phone && <p className="text-xs text-[var(--text-muted)]">{reg.user.phone}</p>}
                     </div>

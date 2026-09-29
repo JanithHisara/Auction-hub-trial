@@ -156,7 +156,7 @@ export default function ApprovalsClient({
                       >
                         <td className="py-3 px-4">
                           <p className="text-white font-medium">
-                            {reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || 'Unknown'}
+                            {reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || "User " + (reg?.user_id || '').slice(-6)}
                           </p>
                           <p className="text-xs text-[var(--text-muted)]">
                             {reg.user?.email}
@@ -202,7 +202,7 @@ export default function ApprovalsClient({
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-white font-medium">
-                          {reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || 'Unknown'}
+                          {reg.user?.display_name || reg.user?.anonymous_name || reg.user?.email || "User " + (reg?.user_id || '').slice(-6)}
                         </p>
                         <p className="text-xs text-[var(--text-muted)]">
                           {reg.user?.email}
