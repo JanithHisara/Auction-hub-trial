@@ -1,4 +1,5 @@
 ﻿import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency } from '@/lib/utils'
@@ -13,6 +14,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   const { id } = await params
   const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
   const supabase = await createClient()
+  const adminClient = createAdminClient()
 
   const { data: gem } = await supabase
     .from('gems')
@@ -34,13 +36,13 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
     .select('*')
     .eq('gem_id', id)
 
-  const { data: bids } = await supabase
+  const { data: bids } = await adminClient
     .from('bids')
     .select('*, user:users(id, email, anonymous_name, display_name, phone)')
     .eq('gem_id', id)
     .order('bid_amount', { ascending: false })
 
-  const { data: winner } = await supabase
+  const { data: winner } = await adminClient
     .from('auction_winners')
     .select('*, user:users(email, anonymous_name)')
     .eq('gem_id', id)
