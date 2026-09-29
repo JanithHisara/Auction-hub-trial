@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -119,7 +119,7 @@ export default function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full pl-12 pr-4 py-3.5"
-                  placeholder="••••••••"
+                  placeholder=""
                 />
               </div>
             </div>
@@ -161,11 +161,11 @@ export default function LoginForm() {
             Secure
           </span>
           <span className="flex items-center gap-1">
-            <span>🔐</span>
+            <span></span>
             Encrypted
           </span>
           <span className="flex items-center gap-1">
-            <span>✓</span>
+            <span></span>
             Verified
           </span>
         </div>
@@ -173,3 +173,4 @@ export default function LoginForm() {
     </div>
   )
 }
+

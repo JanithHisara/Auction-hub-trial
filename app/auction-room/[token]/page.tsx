@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AuctionRoomClient from '@/components/auction-room/AuctionRoomClient'
@@ -199,7 +199,7 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
         <div className="card-glass rounded-2xl p-8 max-w-md w-full text-center">
           {result.reason === 'invalid_token' && (
             <>
-              <div className="text-6xl mb-6">🔒</div>
+              <div className="text-6xl mb-6"></div>
               <h1 className="text-2xl font-bold text-white mb-4">Invalid Access Link</h1>
               <p className="text-[var(--text-secondary)] mb-6">
                 This auction link is invalid or has expired. Please use the link sent to your registered email.
@@ -209,7 +209,7 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
           
           {result.reason === 'user_mismatch' && (
             <>
-              <div className="text-6xl mb-6">⚠️</div>
+              <div className="text-6xl mb-6"></div>
               <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
               <p className="text-[var(--text-secondary)] mb-6">
                 This auction link belongs to a different account. Please log in with the correct account.
@@ -219,7 +219,7 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
           
           {result.reason === 'auction_not_live' && (
             <>
-              <div className="text-6xl mb-6">⏰</div>
+              <div className="text-6xl mb-6"></div>
               <h1 className="text-2xl font-bold text-white mb-4">Auction Not Live</h1>
               <p className="text-[var(--text-secondary)] mb-6">
                 This auction is not currently live. Please wait for the scheduled start time.
@@ -256,3 +256,4 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
     />
   )
 }
+

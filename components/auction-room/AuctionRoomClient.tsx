@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -701,12 +701,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
 
   // Status badge config
   const statusConfig: Record<string, { color: string; text: string; icon: string }> = {
-    draft: { color: 'bg-gray-500/20 text-gray-400', text: 'DRAFT', icon: '📝' },
-    upcoming: { color: 'bg-blue-500/20 text-blue-400', text: 'UPCOMING', icon: '📅' },
-    registration_open: { color: 'bg-amber-500/20 text-amber-400', text: 'REGISTRATION', icon: '📋' },
+    draft: { color: 'bg-gray-500/20 text-gray-400', text: 'DRAFT', icon: '' },
+    upcoming: { color: 'bg-blue-500/20 text-blue-400', text: 'UPCOMING', icon: '' },
+    registration_open: { color: 'bg-amber-500/20 text-amber-400', text: 'REGISTRATION', icon: '' },
     live: { color: 'bg-red-500/20 text-red-400', text: 'LIVE', icon: '' },
-    ended: { color: 'bg-amber-500/20 text-amber-400', text: 'ENDED', icon: '🔔' },
-    completed: { color: 'bg-purple-500/20 text-purple-400', text: 'COMPLETED', icon: '✅' },
+    ended: { color: 'bg-amber-500/20 text-amber-400', text: 'ENDED', icon: '' },
+    completed: { color: 'bg-purple-500/20 text-purple-400', text: 'COMPLETED', icon: '' },
   }
 
   const currentStatus = statusConfig[auction.status] || statusConfig.live
@@ -714,7 +714,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
 
   return (
     <div className="auction-room min-h-screen">
-      {/* Hold Overlay — shown when user is held by admin */}
+      {/* Hold Overlay  shown when user is held by admin */}
       {isHeld && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/95 backdrop-blur-sm">
           <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f0f18] border-2 border-red-500/40 rounded-2xl p-8 max-w-md mx-4 text-center">
@@ -745,11 +745,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         </div>
       )}
 
-      {/* Elimination Overlay — shown when user is eliminated from the selected item (Incremental Approval) */}
+      {/* Elimination Overlay  shown when user is eliminated from the selected item (Incremental Approval) */}
       {isEliminated && !isHeld && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[65] w-full max-w-sm px-4">
           <div className="bg-gradient-to-br from-[#2a0a0a] to-[#1a0505] border-2 border-red-500/60 rounded-2xl p-5 text-center shadow-2xl animate-bounce-in">
-            <div className="text-4xl mb-2">💀</div>
+            <div className="text-4xl mb-2"></div>
             <h3 className="text-lg font-black text-red-400 mb-1">You&apos;ve Been Eliminated!</h3>
             <p className="text-sm text-[var(--text-secondary)]">
               You did not approve the price in time. You can watch, but can no longer bid on this item.
@@ -764,7 +764,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f0f18] border-2 border-[var(--border)] rounded-2xl p-8 max-w-md mx-4 text-center">
             {auction.status === 'ended' || auction.status === 'completed' ? (
               <>
-                <div className="text-6xl mb-4">🏁</div>
+                <div className="text-6xl mb-4"></div>
                 <h2 className="text-3xl font-black text-[var(--gold)] mb-2">Auction Ended</h2>
                 <p className="text-[var(--text-secondary)] mb-6">
                   This auction has finished. Thank you for participating!
@@ -775,7 +775,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               </>
             ) : auction.status === 'registration_open' ? (
               <>
-                <div className="text-6xl mb-4">⏳</div>
+                <div className="text-6xl mb-4"></div>
                 <h2 className="text-3xl font-black text-white mb-2">Waiting to Start</h2>
                 <p className="text-[var(--text-secondary)] mb-4">
                   The auction will begin shortly. Stay on this page for automatic updates.
@@ -793,7 +793,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               </>
             ) : (
               <>
-                <div className="text-6xl mb-4">📅</div>
+                <div className="text-6xl mb-4"></div>
                 <h2 className="text-3xl font-black text-white mb-2">Auction Not Available</h2>
                 <p className="text-[var(--text-secondary)] mb-6">
                   This auction is currently {auction.status.replace('_', ' ')}.
@@ -811,7 +811,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       {showNextRoundBanner && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] animate-bounce-in">
           <div className="px-6 py-3 bg-blue-500 text-white rounded-full font-bold text-sm shadow-2xl flex items-center gap-2">
-            <span>🔔</span>
+            <span></span>
             New round started! Price updated to {formatCurrency(fixedPrice)}
           </div>
         </div>
@@ -820,7 +820,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       {/* Points Popup */}
       {showPointsPopup && (
         <div className="points-popup text-4xl z-50" style={{ top: '30%', left: '50%', transform: 'translateX(-50%)' }}>
-          +{pointsEarned} Points! 🎉
+          +{pointsEarned} Points! 
         </div>
       )}
 
@@ -828,7 +828,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       {showWinnerPopup && wonItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f0f18] border-2 border-[var(--gold)] rounded-2xl p-8 max-w-md mx-4 text-center animate-bounce-in">
-            <div className="text-6xl mb-4">🏆</div>
+            <div className="text-6xl mb-4"></div>
             <h2 className="text-3xl font-black text-[var(--gold)] mb-2">You Won!</h2>
             <p className="text-xl text-white mb-4">{wonItem.name}</p>
             <div className="p-4 bg-[var(--surface)] rounded-xl mb-6">
@@ -848,7 +848,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
         </div>
       )}
 
-      {/* Countdown Overlay — always visible when bidding is active */}
+      {/* Countdown Overlay  always visible when bidding is active */}
       {biddingCountdown && biddingCountdown !== '00:00' && selectedItem?.round_end_time && !biddingTimeExpired && (
         <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
           <div className="bg-black/90 backdrop-blur-xl border border-[var(--gold)]/40 rounded-2xl px-5 py-4 shadow-2xl min-w-[200px]" style={{ boxShadow: '0 0 30px rgba(212, 175, 55, 0.15)' }}>
@@ -912,7 +912,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                   : 'bg-emerald-500/20 text-emerald-400'
             }`}>
               {isIncrementalApproval
-                ? '🎯 Progressive Elimination Auction'
+                ? ' Progressive Elimination Auction'
                 : isFixedIncrement
                   ? 'English Auction'
                   : 'Closed Bid Auction'}
@@ -921,7 +921,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
           <div className="flex items-center gap-3">
             {rewards && (
               <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[var(--surface)] rounded-full">
-                <span className="text-base sm:text-xl">🔥</span>
+                <span className="text-base sm:text-xl"></span>
                 <span className="font-bold text-[var(--gold)] text-sm sm:text-base">{rewards.total_points}</span>
                 <span className="text-xs sm:text-sm text-[var(--text-muted)] hidden sm:inline">pts</span>
               </div>
@@ -999,7 +999,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xl lg:text-2xl opacity-30">💎</div>
+                            <div className="w-full h-full flex items-center justify-center text-xl lg:text-2xl opacity-30"></div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0 text-center lg:text-left">
@@ -1012,11 +1012,11 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               ? 'Finished' 
                               : isFreeForm 
                                 ? (!biddingStarted 
-                                    ? '⏳ Not started' 
+                                    ? ' Not started' 
                                     : userBidOnItem 
                                       ? 'Bid placed' 
                                       : biddingActive 
-                                        ? '🔴 Open' 
+                                        ? ' Open' 
                                         : 'Closed')
                                 : `${new Set(item.bids?.filter(b => b.bid_amount >= (item.current_price || item.starting_price)).map(b => b.user_id)).size || 0} accepted`
                             }
@@ -1044,7 +1044,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[var(--surface)] to-[var(--background)] flex items-center justify-center">
-                      <span className="text-6xl sm:text-8xl opacity-20">💎</span>
+                      <span className="text-6xl sm:text-8xl opacity-20"></span>
                     </div>
                   )}
 
@@ -1102,7 +1102,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                         ) : (
                           /* Item ended and user didn't win (apology card) */
                           <div className="p-6 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl text-center">
-                            <div className="text-4xl mb-3">😔</div>
+                            <div className="text-4xl mb-3"></div>
                             <h3 className="text-xl font-bold text-amber-400 mb-2">Bidding Finished</h3>
                             <p className="text-[var(--text-secondary)] text-sm mb-4">
                               We are sorry, you did not win this gem. Better luck in the next auction!
@@ -1116,7 +1116,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ) : (
                         /* Winner is not announced/selected yet */
                         <div className="p-6 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">🔔</div>
+                          <div className="text-4xl mb-3"></div>
                           <h3 className="text-xl font-bold text-amber-400 mb-2">Bidding Finished</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             This item&apos;s auction has ended.
@@ -1139,7 +1139,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       {isEliminated ? (
                         /* User has been eliminated from this item */
                         <div className="p-6 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-center">
-                          <div className="text-5xl mb-3">💀</div>
+                          <div className="text-5xl mb-3"></div>
                           <h3 className="text-xl font-bold text-red-400 mb-2">You Were Eliminated</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             You did not approve the price increase in time and were eliminated from this item.
@@ -1152,7 +1152,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ) : !selectedItem.round_end_time ? (
                         /* Waiting for admin to start the first round */
                         <div className="p-6 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">⏳</div>
+                          <div className="text-4xl mb-3"></div>
                           <h3 className="text-xl font-bold text-blue-400 mb-2">Waiting for Round</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             The auction host will start the first round shortly. Be ready to approve the price!
@@ -1169,12 +1169,12 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ) : biddingTimeExpired ? (
                         /* Round time expired */
                         <div className="p-6 bg-purple-500/10 border-2 border-purple-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">⏰</div>
+                          <div className="text-4xl mb-3"></div>
                           <h3 className="text-xl font-bold text-purple-400 mb-2">Round Ended</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             {hasAcceptedPrice
-                              ? '✅ You approved! Waiting for the next round...'
-                              : '⚠️ Time ran out. The host will now eliminate non-approvers.'}
+                              ? ' You approved! Waiting for the next round...'
+                              : ' Time ran out. The host will now eliminate non-approvers.'}
                           </p>
                           <div className="p-4 bg-[var(--surface)] rounded-lg">
                             <p className="text-xs text-[var(--text-muted)] uppercase mb-1">Round Price</p>
@@ -1196,7 +1196,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               <span className="text-2xl font-bold text-[var(--gold)]">{formatCurrency(fixedPrice)}</span>
                             </div>
                             <p className="text-xs text-red-400 font-medium">
-                              ⚠️ You must approve this price or you will be permanently eliminated!
+                               You must approve this price or you will be permanently eliminated!
                             </p>
                           </div>
 
@@ -1217,7 +1217,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                                   <span>Approving...</span>
                                 </>
                               ) : (
-                                <span>✅ Approve {formatCurrency(fixedPrice)}</span>
+                                <span> Approve {formatCurrency(fixedPrice)}</span>
                               )}
                             </button>
                           )}
@@ -1235,7 +1235,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       {!selectedItem.round_end_time ? (
                         /* Waiting for round to start */
                         <div className="p-6 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">⏳</div>
+                          <div className="text-4xl mb-3"></div>
                           <h3 className="text-xl font-bold text-blue-400 mb-2">Waiting for Round</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             The auction host will start the bidding round shortly.
@@ -1248,7 +1248,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ) : biddingTimeExpired ? (
                         /* Round time expired */
                         <div className="p-6 bg-purple-500/10 border-2 border-purple-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">⏰</div>
+                          <div className="text-4xl mb-3"></div>
                           <h3 className="text-xl font-bold text-purple-400 mb-2">Round Ended</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             {selectedItem?.bids?.some(b => b.bid_amount >= fixedPrice)
@@ -1308,7 +1308,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           )}
 
                           <p className="text-center text-xs text-[var(--text-muted)]">
-                            🎁 Earn 10 points for each round you win!
+                             Earn 10 points for each round you win!
                           </p>
                         </>
                       )}
@@ -1320,7 +1320,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       {!selectedItem.round_end_time ? (
                         /* Waiting for bidding to start */
                         <div className="p-6 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">⏳</div>
+                          <div className="text-4xl mb-3"></div>
                           <h3 className="text-xl font-bold text-blue-400 mb-2">Bidding Not Started</h3>
                           <p className="text-[var(--text-secondary)] text-sm mb-4">
                             The auction host will start the bidding shortly.
@@ -1337,7 +1337,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ) : biddingTimeExpired ? (
                         /* Bidding time expired - waiting for winner */
                         <div className="p-6 bg-purple-500/10 border-2 border-purple-500/30 rounded-xl text-center">
-                          <div className="text-4xl mb-3">🏆</div>
+                          <div className="text-4xl mb-3"></div>
                           <h3 className="text-xl font-bold text-purple-400 mb-2">Bidding Ended</h3>
                           {hasPlacedBid ? (
                             <>
@@ -1360,7 +1360,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           </div>
                         </div>
                       ) : hasPlacedBid ? (
-                        /* User already placed their bid — can edit before countdown ends */
+                        /* User already placed their bid  can edit before countdown ends */
                         <div className="space-y-4">
                           {biddingCountdown && biddingCountdown !== '00:00' && (
                             <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
@@ -1502,7 +1502,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                           </button>
 
                           <p className="text-center text-xs text-[var(--text-muted)]">
-                            🔒 Closed bid - others cannot see your bid
+                             Closed bid - others cannot see your bid
                           </p>
                           </fieldset>
                         </form>
@@ -1513,7 +1513,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               </div>
             ) : (
               <div className="card-glass rounded-2xl p-12 text-center">
-                <span className="text-6xl mb-4 block">👈</span>
+                <span className="text-6xl mb-4 block"></span>
                 <p className="text-[var(--text-secondary)]">Select an item to start bidding</p>
               </div>
             )}
@@ -1525,7 +1525,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
               /* Incremental Approval: Show approvals and elimination status */
               <>
                 <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">
-                  🎯 Round Status
+                   Round Status
                 </h2>
 
                 {/* User status */}
@@ -1540,7 +1540,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                   <p className={`font-bold text-lg ${
                     isEliminated ? 'text-red-400' : hasAcceptedPrice ? 'text-emerald-400' : 'text-white'
                   }`}>
-                    {isEliminated ? '💀 Eliminated' : hasAcceptedPrice ? '✅ Approved' : '⏳ Pending'}
+                    {isEliminated ? ' Eliminated' : hasAcceptedPrice ? ' Approved' : ' Pending'}
                   </p>
                 </div>
 
@@ -1588,7 +1588,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ))
                   ) : (
                     <div className="p-8 text-center text-[var(--text-muted)]">
-                      <span className="text-4xl block mb-2">⏳</span>
+                      <span className="text-4xl block mb-2"></span>
                       No approvals yet this round
                     </div>
                   )}
@@ -1631,7 +1631,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                       ))
                   ) : (
                     <div className="p-8 text-center text-[var(--text-muted)]">
-                      <span className="text-4xl block mb-2">⏳</span>
+                      <span className="text-4xl block mb-2"></span>
                       No bids yet
                     </div>
                   )}
@@ -1645,7 +1645,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                 </h2>
                 <div className="space-y-4">
                   <div className="p-6 bg-[var(--surface)] rounded-xl border border-[var(--border)] text-center">
-                    <span className="text-5xl block mb-3">🔒</span>
+                    <span className="text-5xl block mb-3"></span>
                     <h3 className="text-lg font-bold text-white mb-2">Closed Bids</h3>
                     <p className="text-sm text-[var(--text-muted)]">
                       All bids are private. You cannot see other participants&apos; bids.
@@ -1654,20 +1654,20 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
 
                   <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="text-2xl">📋</span>
+                      <span className="text-2xl"></span>
                       <span className="font-bold text-white">Rules</span>
                     </div>
                     <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
                       <li className="flex items-center gap-2">
-                        <span className="text-emerald-400">✓</span>
+                        <span className="text-emerald-400"></span>
                         One bid per item
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className="text-emerald-400">✓</span>
+                        <span className="text-emerald-400"></span>
                         Bids are hidden from others
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className="text-emerald-400">✓</span>
+                        <span className="text-emerald-400"></span>
                         Highest bid wins
                       </li>
                     </ul>
@@ -1696,3 +1696,4 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     </div>
   )
 }
+

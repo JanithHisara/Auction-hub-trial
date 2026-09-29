@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -43,7 +43,7 @@ export default function ChangePasswordForm() {
   return (
     <div className="card-glass rounded-2xl p-6">
       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <span>🔒</span> Change Password
+        <span></span> Change Password
       </h3>
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-500/20 border border-red-500/40 rounded-lg text-red-400 text-sm">
@@ -92,3 +92,4 @@ export default function ChangePasswordForm() {
     </div>
   )
 }
+

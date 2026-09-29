@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -107,7 +107,7 @@ export default function MyBidsClient({ bids }: Props) {
                               controls={false}
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">💎</div>
+                            <div className="w-full h-full flex items-center justify-center text-3xl opacity-30"></div>
                           )}
                         </div>
 
@@ -262,3 +262,4 @@ export default function MyBidsClient({ bids }: Props) {
     </div>
   )
 }
+

@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth'
+﻿import { requireAuth } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import { redirect } from 'next/navigation'
@@ -39,14 +39,14 @@ export default async function PaymentPage({ params }: { params: Promise<{ gemId:
       <div className="relative z-10 py-8 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Link href="/" className="text-[var(--text-muted)] hover:text-white mb-4 sm:mb-6 inline-flex items-center gap-1 text-sm">
-            ← Back
+             Back
           </Link>
 
           <div className="card-glass rounded-2xl p-5 sm:p-8">
             {/* Header */}
             <div className="text-center mb-6 sm:mb-8">
               <div className="w-14 sm:w-16 h-14 sm:h-16 mx-auto bg-[var(--gold)]/20 rounded-2xl flex items-center justify-center mb-3 sm:mb-4">
-                <span className="text-2xl sm:text-3xl">🏆</span>
+                <span className="text-2xl sm:text-3xl"></span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Congratulations!</h1>
               <p className="text-sm sm:text-base text-[var(--text-secondary)]">Complete your payment to claim your item</p>
@@ -80,3 +80,4 @@ export default async function PaymentPage({ params }: { params: Promise<{ gemId:
     </div>
   )
 }
+

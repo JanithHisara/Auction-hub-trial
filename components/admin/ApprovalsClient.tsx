@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo } from 'react'
 import { AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
@@ -165,7 +165,7 @@ export default function ApprovalsClient({
                           </p>
                         </td>
                         <td className="py-3 px-4 text-[var(--text-secondary)]">
-                          {reg.user?.phone || '—'}
+                          {reg.user?.phone || ''}
                         </td>
                         <td className="py-3 px-4 text-[var(--text-secondary)] text-sm">
                           <LocalTime date={reg.registered_at} />
@@ -239,7 +239,7 @@ export default function ApprovalsClient({
         </div>
       ) : (
         <div className="card-glass rounded-xl py-16 text-center text-[var(--text-muted)]">
-          <p className="text-4xl mb-4">✅</p>
+          <p className="text-4xl mb-4"></p>
           <p>
             {search || auctionFilter
               ? 'No matching registrations'
@@ -252,3 +252,4 @@ export default function ApprovalsClient({
     </div>
   )
 }
+

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -141,7 +141,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
           ) : !videoOnly.length ? (
             <div className="card-glass rounded-2xl p-12">
               <div className="flex items-center justify-center aspect-square bg-[var(--surface)] rounded-xl">
-                <span className="text-6xl opacity-30">💎</span>
+                <span className="text-6xl opacity-30"></span>
               </div>
             </div>
           ) : null}
@@ -150,7 +150,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
           {videoOnly.length > 0 && (
             <div className="card-glass rounded-2xl p-4 sm:p-6">
               <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <span>🎬</span> Videos
+                <span></span> Videos
               </h2>
               <div className="space-y-4">
                 {videoOnly.map((vid) => (
@@ -214,7 +214,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
               gem.isRegisteredForAuction && gem.winner.user_id !== gem.currentUserId ? (
                 <div className="p-5 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-4">
                   <div className="flex items-center gap-2 text-amber-500 font-semibold">
-                    <span>😔</span>
+                    <span></span>
                     <span>Auction Ended</span>
                   </div>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
@@ -271,7 +271,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
           {gem.provenance && (
             <div className="card-glass rounded-2xl p-6">
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <span>🏛️</span> Provenance
+                <span></span> Provenance
               </h2>
               <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
                 {gem.provenance}
@@ -282,7 +282,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
           {gem.certificates && gem.certificates.length > 0 && (
             <div className="card-glass rounded-2xl p-6">
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <span>📜</span> Certificates
+                <span></span> Certificates
               </h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 {gem.certificates.map((cert) => (
@@ -294,7 +294,7 @@ export default function GemDetailClient({ initialGem }: GemDetailClientProps) {
                     className="flex items-center gap-3 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl hover:border-[var(--gold)]/50 transition-colors group"
                   >
                     <div className="w-10 h-10 bg-[var(--gold)]/20 rounded-lg flex items-center justify-center">
-                      📄
+                      
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-white group-hover:text-[var(--gold)] transition-colors">
@@ -323,3 +323,4 @@ function SpecRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency } from '@/lib/utils'
@@ -96,11 +96,11 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
         <div>
           {gem.auction_id ? (
             <Link href={`/admin/auctions/${gem.auction_id}`} className="text-sm text-[var(--text-muted)] hover:text-white mb-2 inline-block">
-              ← Back to Auction
+               Back to Auction
             </Link>
           ) : (
             <Link href="/admin/gems" className="text-sm text-[var(--text-muted)] hover:text-white mb-2 inline-block">
-              ← Back to Items
+               Back to Items
             </Link>
           )}
           <h1 className="text-3xl font-bold text-white mb-2">{gem.name}</h1>
@@ -110,7 +110,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
             </span>
             {gem.auction && (
               <Link href={`/admin/auctions/${gem.auction_id}`} className="text-sm text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors">
-                📅 {(gem.auction as { name: string }).name}
+                 {(gem.auction as { name: string }).name}
               </Link>
             )}
           </div>
@@ -121,10 +121,10 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
             target="_blank"
             className="btn-outline flex items-center gap-2"
           >
-            📺 Monitor
+             Monitor
           </Link>
           <Link href={`/admin/gems/${gem.id}/edit`} className="btn-outline">
-            ✏️ Edit
+             Edit
           </Link>
           {gem.status === 'draft' && (
             <PublishButton gemId={gem.id} />
@@ -223,7 +223,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
       {images && images.filter(img => img.media_type === 'video').length > 0 && (
         <div className="card-glass rounded-xl p-6">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <span>🎬</span> Videos
+            <span></span> Videos
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {images.filter(img => img.media_type === 'video').map((vid) => (
@@ -254,7 +254,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl hover:border-[var(--gold)]/50 transition-colors"
               >
-                <span className="text-2xl">📜</span>
+                <span className="text-2xl"></span>
                 <span className="text-white">{cert.certificate_type || 'Certificate'}</span>
               </a>
             ))}
@@ -315,3 +315,4 @@ function InfoItem({ label, value, highlight = false }: { label: string; value: R
     </div>
   )
 }
+

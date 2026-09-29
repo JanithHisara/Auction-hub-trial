@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
@@ -348,7 +348,7 @@ export default function AuctionChatDrawer({ auctionId, isOpen, onClose, onUnread
               {activeConv && (
                 <p className="text-xs text-[var(--text-muted)]">
                   {activeConv.user?.email}
-                  {activeConv.user?.phone && ` · ${activeConv.user.phone}`}
+                  {activeConv.user?.phone && `  ${activeConv.user.phone}`}
                 </p>
               )}
             </div>
@@ -578,3 +578,4 @@ export default function AuctionChatDrawer({ auctionId, isOpen, onClose, onUnread
     document.body
   )
 }
+

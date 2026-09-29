@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency } from '@/lib/utils'
@@ -71,7 +71,7 @@ export default async function GemsPage() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-6xl opacity-20">💎</span>
+                    <span className="text-6xl opacity-20"></span>
                   </div>
                 )}
               </div>
@@ -89,7 +89,7 @@ export default async function GemsPage() {
 
                 {gem.auction && (
                   <p className="text-xs text-[var(--text-muted)] mb-3 truncate">
-                    📅 {(gem.auction as { name: string }).name}
+                     {(gem.auction as { name: string }).name}
                   </p>
                 )}
 
@@ -119,7 +119,7 @@ export default async function GemsPage() {
       ) : (
         <div className="text-center py-20">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--surface)] border border-[var(--border)] mb-6">
-            <span className="text-4xl">💎</span>
+            <span className="text-4xl"></span>
           </div>
           <h3 className="text-2xl font-bold text-white mb-3">No Items Yet</h3>
           <p className="text-[var(--text-secondary)] mb-6">Create your first auction item</p>
@@ -131,3 +131,4 @@ export default async function GemsPage() {
     </div>
   )
 }
+

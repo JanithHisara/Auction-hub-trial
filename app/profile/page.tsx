@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth'
+﻿import { requireAuth } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
@@ -59,7 +59,7 @@ export default async function ProfilePage() {
           <div className="card-glass rounded-2xl p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)] flex items-center justify-center text-3xl flex-shrink-0">
-                👤
+                
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 truncate">
@@ -85,17 +85,17 @@ export default async function ProfilePage() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            <StatCard icon="🎯" label="Total Bids" value={bidCount || 0} />
-            <StatCard icon="🎫" label="Auctions" value={registrationCount || 0} />
-            <StatCard icon="⭐" label="Points" value={rewards?.total_points || 0} accent />
-            <StatCard icon="🏆" label="Wins" value={wins?.length || 0} />
+            <StatCard icon="" label="Total Bids" value={bidCount || 0} />
+            <StatCard icon="" label="Auctions" value={registrationCount || 0} />
+            <StatCard icon="" label="Points" value={rewards?.total_points || 0} accent />
+            <StatCard icon="" label="Wins" value={wins?.length || 0} />
           </div>
 
           {/* My Wins */}
           {wins && wins.length > 0 && (
             <div className="card-glass rounded-2xl p-6">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <span>🏆</span> My Wins
+                <span></span> My Wins
               </h3>
               <div className="space-y-3">
                 {wins.map((win) => {
@@ -123,7 +123,7 @@ export default async function ProfilePage() {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">💎</div>
+                          <div className="w-full h-full flex items-center justify-center text-2xl opacity-30"></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -154,21 +154,21 @@ export default async function ProfilePage() {
           {rewards && (
             <div className="card-glass rounded-2xl p-6">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <span>🏅</span> Rewards & Achievements
+                <span></span> Rewards & Achievements
               </h3>
               <div className="grid sm:grid-cols-3 gap-4">
                 <div className="p-4 bg-[var(--surface)] rounded-xl text-center">
-                  <div className="text-3xl mb-2">🔥</div>
+                  <div className="text-3xl mb-2"></div>
                   <p className="text-2xl font-bold text-[var(--gold)]">{rewards.current_streak}</p>
                   <p className="text-xs text-[var(--text-muted)]">Current Streak</p>
                 </div>
                 <div className="p-4 bg-[var(--surface)] rounded-xl text-center">
-                  <div className="text-3xl mb-2">📈</div>
+                  <div className="text-3xl mb-2"></div>
                   <p className="text-2xl font-bold text-white">{rewards.longest_streak}</p>
                   <p className="text-xs text-[var(--text-muted)]">Longest Streak</p>
                 </div>
                 <div className="p-4 bg-[var(--surface)] rounded-xl text-center">
-                  <div className="text-3xl mb-2">🎪</div>
+                  <div className="text-3xl mb-2"></div>
                   <p className="text-2xl font-bold text-white">{rewards.auctions_participated}</p>
                   <p className="text-xs text-[var(--text-muted)]">Auctions</p>
                 </div>
@@ -209,3 +209,4 @@ function StatCard({ icon, label, value, accent = false }: { icon: string; label:
     </div>
   )
 }
+

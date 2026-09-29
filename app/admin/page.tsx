@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency } from '@/lib/utils'
@@ -62,37 +62,37 @@ export default async function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard 
-          icon="📅" 
+          icon="" 
           label="Total Auctions" 
           value={stats.totalAuctions} 
           accent="gold"
         />
         <StatCard 
-          icon="🔴" 
+          icon="" 
           label="Live Now" 
           value={stats.liveAuctions} 
           accent="red"
         />
         <StatCard 
-          icon="💎" 
+          icon="" 
           label="Total Items" 
           value={stats.totalGems} 
           accent="blue"
         />
         <StatCard 
-          icon="👥" 
+          icon="" 
           label="Registrations" 
           value={stats.totalRegistrations} 
           accent="emerald"
         />
         <StatCard 
-          icon="🎯" 
+          icon="" 
           label="Total Bids" 
           value={stats.totalBids} 
           accent="purple"
         />
         <StatCard 
-          icon="💰" 
+          icon="" 
           label="Total Value" 
           value={formatCurrency(stats.totalValue)} 
           accent="gold"
@@ -105,26 +105,26 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <QuickAction 
             href="/admin/auctions/new" 
-            icon="📅" 
+            icon="" 
             title="New Auction"
             desc="Create event"
             primary
           />
           <QuickAction 
             href="/admin/gems/new" 
-            icon="💎" 
+            icon="" 
             title="New Item"
             desc="Add to auction"
           />
           <QuickAction 
             href="/admin/auctions" 
-            icon="📊" 
+            icon="" 
             title="Auctions"
             desc="Manage events"
           />
           <QuickAction 
             href="/admin/gems" 
-            icon="📦" 
+            icon="" 
             title="All Items"
             desc="View inventory"
           />
@@ -136,17 +136,17 @@ export default async function AdminDashboard() {
         <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Platform Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <div className="text-center p-6 bg-[var(--surface)] rounded-xl">
-            <div className="text-4xl mb-2">🏆</div>
+            <div className="text-4xl mb-2"></div>
             <p className="text-2xl font-bold text-[var(--gold)]">{stats.liveAuctions}</p>
             <p className="text-sm text-[var(--text-muted)]">Active Auctions</p>
           </div>
           <div className="text-center p-6 bg-[var(--surface)] rounded-xl">
-            <div className="text-4xl mb-2">📈</div>
+            <div className="text-4xl mb-2"></div>
             <p className="text-2xl font-bold text-emerald-400">{stats.totalBids}</p>
             <p className="text-sm text-[var(--text-muted)]">Bids Placed</p>
           </div>
           <div className="text-center p-6 bg-[var(--surface)] rounded-xl">
-            <div className="text-4xl mb-2">💵</div>
+            <div className="text-4xl mb-2"></div>
             <p className="text-2xl font-bold text-[var(--gold)]">{formatCurrency(stats.totalValue)}</p>
             <p className="text-sm text-[var(--text-muted)]">Current Value</p>
           </div>
@@ -216,3 +216,4 @@ function QuickAction({
     </Link>
   )
 }
+

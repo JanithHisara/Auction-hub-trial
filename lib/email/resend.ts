@@ -1,4 +1,4 @@
-import { Resend } from 'resend'
+﻿import { Resend } from 'resend'
 
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY 
@@ -25,9 +25,9 @@ export async function sendAuctionAccessEmail({
 
   // If Resend is not configured, log and return
   if (!resend) {
-    console.log('📧 Email would be sent to:', to)
-    console.log('📧 Auction URL:', auctionUrl)
-    console.log('⚠️  Resend API key not configured - email not sent')
+    console.log(' Email would be sent to:', to)
+    console.log(' Auction URL:', auctionUrl)
+    console.log('  Resend API key not configured - email not sent')
     return { id: 'mock-email-id' }
   }
 
@@ -87,7 +87,7 @@ function generateAuctionEmailHtml({
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-              <div style="font-size: 48px; margin-bottom: 16px;">💎</div>
+              <div style="font-size: 48px; margin-bottom: 16px;"></div>
               <h1 style="margin: 0; color: #f5f5f7; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
                 You're In!
               </h1>
@@ -122,7 +122,7 @@ function generateAuctionEmailHtml({
                       ${auctionName}
                     </h2>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                      <span style="color: #f5f5f7; font-size: 14px;">📅 ${auctionDate}</span>
+                      <span style="color: #f5f5f7; font-size: 14px;"> ${auctionDate}</span>
                     </div>
                   </td>
                 </tr>
@@ -137,7 +137,7 @@ function generateAuctionEmailHtml({
                 <tr>
                   <td align="center">
                     <a href="${auctionUrl}" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #c9a961 0%, #a0823d 100%); color: #0a0a0f; text-decoration: none; font-size: 16px; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);">
-                      Enter Auction Room →
+                      Enter Auction Room 
                     </a>
                   </td>
                 </tr>
@@ -152,7 +152,7 @@ function generateAuctionEmailHtml({
           <tr>
             <td style="padding: 24px 40px; background: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255, 255, 255, 0.08);">
               <h3 style="margin: 0 0 12px; color: #f5f5f7; font-size: 14px; font-weight: 600;">
-                ⚠️ Important
+                 Important
               </h3>
               <ul style="margin: 0; padding: 0 0 0 20px; color: #a1a1aa; font-size: 14px; line-height: 1.8;">
                 <li>You must be logged into your account to enter</li>
@@ -229,9 +229,9 @@ export async function sendWinnerEmail({
 
   // If Resend is not configured, log and return
   if (!resend) {
-    console.log('📧 Winner email would be sent to:', to)
-    console.log('🏆 Winner of:', gemName, 'for', formattedAmount)
-    console.log('⚠️  Resend API key not configured - email not sent')
+    console.log(' Winner email would be sent to:', to)
+    console.log(' Winner of:', gemName, 'for', formattedAmount)
+    console.log('  Resend API key not configured - email not sent')
     return { id: 'mock-email-id' }
   }
 
@@ -300,7 +300,7 @@ function generateWinnerEmailHtml({
           <!-- Trophy Banner -->
           <tr>
             <td style="padding: 48px 40px 24px; text-align: center; background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(160, 130, 61, 0.08) 100%);">
-              <div style="font-size: 72px; margin-bottom: 16px;">🏆</div>
+              <div style="font-size: 72px; margin-bottom: 16px;"></div>
               <h1 style="margin: 0; color: #d4af37; font-size: 36px; font-weight: 800; letter-spacing: -0.5px;">
                 Congratulations!
               </h1>
@@ -336,7 +336,7 @@ function generateWinnerEmailHtml({
                 <tr>
                   <td style="padding: 24px;">
                     <p style="margin: 0 0 8px; color: #10b981; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">
-                      🎉 You Won
+                       You Won
                     </p>
                     <h2 style="margin: 0 0 20px; color: #f5f5f7; font-size: 26px; font-weight: 700;">
                       ${gemName}
@@ -363,7 +363,7 @@ function generateWinnerEmailHtml({
           <tr>
             <td style="padding: 0 40px 24px;">
               <h3 style="margin: 0 0 16px; color: #f5f5f7; font-size: 18px; font-weight: 600;">
-                📋 Next Steps
+                 Next Steps
               </h3>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
@@ -422,7 +422,7 @@ function generateWinnerEmailHtml({
                 <tr>
                   <td align="center">
                     <a href="${paymentUrl}" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);">
-                      Complete Payment →
+                      Complete Payment 
                     </a>
                   </td>
                 </tr>
@@ -442,7 +442,7 @@ function generateWinnerEmailHtml({
                 Thank you for participating in our auction!
               </p>
               <p style="margin: 12px 0 0; color: #52525b; font-size: 12px;">
-                Auctionhub • Premium gem auctions
+                Auctionhub  Premium gem auctions
               </p>
             </td>
           </tr>
@@ -680,7 +680,7 @@ function generateAuctionSummaryEmailHtml({
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 24px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(160, 130, 61, 0.05) 100%);">
-              <div style="font-size: 48px; margin-bottom: 16px;">🏁</div>
+              <div style="font-size: 48px; margin-bottom: 16px;"></div>
               <h1 style="margin: 0; color: #f5f5f7; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
                 Auction Summary
               </h1>
@@ -726,7 +726,7 @@ function generateAuctionSummaryEmailHtml({
                 Thank you for participating!
               </p>
               <p style="margin: 8px 0 0; color: #52525b; font-size: 12px;">
-                Auctionhub • Premium gem auctions
+                Auctionhub  Premium gem auctions
               </p>
             </td>
           </tr>
@@ -741,3 +741,4 @@ function generateAuctionSummaryEmailHtml({
 }
 
 export { resend }
+

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import GemForm from '@/components/gems/GemForm'
@@ -32,7 +32,7 @@ export default async function NewGemPage({
         href="/admin/gems"
         className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-white mb-6 transition-colors"
       >
-        ← Back to Items
+         Back to Items
       </Link>
 
       <div className="card-glass rounded-2xl p-8">
@@ -44,3 +44,4 @@ export default async function NewGemPage({
     </div>
   )
 }
+

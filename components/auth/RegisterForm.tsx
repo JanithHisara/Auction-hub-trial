@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -188,11 +188,11 @@ export default function RegisterForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className="w-full pl-12 pr-4 py-3.5"
-                    placeholder="••••••••"
+                    placeholder=""
                   />
                 </div>
                 <p className="text-xs text-[var(--text-muted)] mt-2">
-                  Min 8 chars • Uppercase • Lowercase • Number
+                  Min 8 chars  Uppercase  Lowercase  Number
                 </p>
               </div>
 
@@ -211,7 +211,7 @@ export default function RegisterForm() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     className="w-full pl-12 pr-4 py-3.5"
-                    placeholder="••••••••"
+                    placeholder=""
                   />
                 </div>
               </div>
@@ -253,11 +253,11 @@ export default function RegisterForm() {
             Secure
           </span>
           <span className="flex items-center gap-1">
-            <span>🔐</span>
+            <span></span>
             Encrypted
           </span>
           <span className="flex items-center gap-1">
-            <span>✓</span>
+            <span></span>
             Verified
           </span>
         </div>
@@ -265,3 +265,4 @@ export default function RegisterForm() {
     </div>
   )
 }
+

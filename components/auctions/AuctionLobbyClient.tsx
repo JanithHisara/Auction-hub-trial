@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -138,9 +138,9 @@ export default function AuctionLobbyClient({ auctionId, userId, children }: Prop
                   : 'bg-blue-500 text-white'
           }`}>
             <span>{
-              notification.type === 'approved' ? '✅' :
-              notification.type === 'live' ? '🔴' :
-              notification.type === 'round_ended' ? '⏰' : '🔔'
+              notification.type === 'approved' ? '' :
+              notification.type === 'live' ? '' :
+              notification.type === 'round_ended' ? '' : ''
             }</span>
             {notification.message}
           </div>
@@ -150,3 +150,4 @@ export default function AuctionLobbyClient({ auctionId, userId, children }: Prop
     </>
   )
 }
+

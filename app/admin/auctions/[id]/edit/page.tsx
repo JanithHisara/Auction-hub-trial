@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
@@ -185,7 +185,7 @@ export default function EditAuctionPage() {
 
         {error && (
           <div className="error-message mb-6 flex items-center gap-2">
-            <span>⚠️</span>
+            <span></span>
             {error}
           </div>
         )}
@@ -279,7 +279,7 @@ export default function EditAuctionPage() {
                 </div>
                 {formData.auction_type === 'tender_base_fixed_bid' && (
                   <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
-                    <span className="text-black text-xs">✓</span>
+                    <span className="text-black text-xs"></span>
                   </div>
                 )}
               </label>
@@ -314,7 +314,7 @@ export default function EditAuctionPage() {
                 </div>
                 {formData.auction_type === 'progressive_elimination_auction' && (
                   <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
-                    <span className="text-black text-xs">✓</span>
+                    <span className="text-black text-xs"></span>
                   </div>
                 )}
               </label>
@@ -349,7 +349,7 @@ export default function EditAuctionPage() {
                 </div>
                 {formData.auction_type === 'incremental_approval_auction' && (
                   <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
-                    <span className="text-black text-xs">✓</span>
+                    <span className="text-black text-xs"></span>
                   </div>
                 )}
               </label>
@@ -494,3 +494,4 @@ export default function EditAuctionPage() {
     </div>
   )
 }
+

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -233,7 +233,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
             <div className="p-4 bg-[var(--surface)] rounded-xl">
               <div className="text-xs text-[var(--text-muted)] uppercase mb-1">Time Left</div>
               <div className={`text-2xl font-bold font-mono ${isRoundActive ? 'text-emerald-400' : 'text-amber-400'}`}>
-                {countdown || '—'}
+                {countdown || ''}
               </div>
             </div>
           )}
@@ -249,10 +249,10 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 : 'bg-emerald-500/20 text-emerald-400'
           }`}>
             {isProgressiveElimination
-              ? '⏱ English Auction'
+              ? ' English Auction'
               : isIncrementalApproval
-                ? '🎯 Progressive Elimination Auction'
-                : '📈 Closed Bid Auction'}
+                ? ' Progressive Elimination Auction'
+                : ' Closed Bid Auction'}
           </span>
         </div>
 
@@ -834,3 +834,4 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
     </>
   )
 }
+

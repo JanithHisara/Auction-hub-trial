@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -144,13 +144,13 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
       <fieldset disabled={loading} className="border-0 p-0 m-0 min-w-0 space-y-8">
         {error && (
           <div className="error-message flex items-center gap-2">
-            <span>⚠️</span> {error}
+            <span></span> {error}
           </div>
         )}
 
         {/* Auction Selection */}
         {auctions.length > 0 && (
-          <Section title="Auction" icon="📅" number="1">
+          <Section title="Auction" icon="" number="1">
             <div>
               <label className="block text-sm text-[var(--text-secondary)] mb-2">
                 Assign to Auction
@@ -175,7 +175,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         )}
 
         {/* Basic Info */}
-        <Section title="Basic Information" icon="💎" number={auctions.length > 0 ? "2" : "1"}>
+        <Section title="Basic Information" icon="" number={auctions.length > 0 ? "2" : "1"}>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-[var(--text-secondary)] mb-2">Name *</label>
@@ -203,7 +203,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         </Section>
 
         {/* Pricing */}
-        <Section title="Pricing & Timing" icon="💰" number={auctions.length > 0 ? "3" : "2"}>
+        <Section title="Pricing & Timing" icon="" number={auctions.length > 0 ? "3" : "2"}>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
@@ -248,7 +248,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         </Section>
 
         {/* Specifications */}
-        <Section title="Specifications" icon="✨" number={auctions.length > 0 ? "4" : "3"}>
+        <Section title="Specifications" icon="" number={auctions.length > 0 ? "4" : "3"}>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-[var(--text-secondary)] mb-2">Carat Weight</label>
@@ -287,7 +287,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         </Section>
 
       {/* Images */}
-      <Section title="Images & Videos" icon="🖼️" number={auctions.length > 0 ? "5" : "4"}>
+      <Section title="Images & Videos" icon="" number={auctions.length > 0 ? "5" : "4"}>
         <ImageUploader
           images={formData.images}
           mediaTypes={formData.media_types}
@@ -296,7 +296,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
       </Section>
 
       {/* Certificates */}
-      <Section title="Certificates" icon="📜" number={auctions.length > 0 ? "6" : "5"}>
+      <Section title="Certificates" icon="" number={auctions.length > 0 ? "6" : "5"}>
         <div className="space-y-3">
           {formData.certificates.map((cert, index) => (
             <div key={index} className="flex gap-2">
@@ -391,3 +391,4 @@ function Section({
     </div>
   )
 }
+

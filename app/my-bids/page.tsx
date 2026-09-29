@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth'
+﻿import { requireAuth } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import MyBidsClient from './MyBidsClient'
@@ -47,7 +47,7 @@ export default async function MyBidsPage() {
         <div className="relative z-10 max-w-4xl mx-auto px-4 py-12">
           <h1 className="text-4xl font-black text-white mb-8">My Bids</h1>
           <div className="card-glass rounded-2xl p-12 text-center">
-            <div className="text-6xl mb-4">🎯</div>
+            <div className="text-6xl mb-4"></div>
             <h2 className="text-2xl font-bold text-white mb-3">No Bids Yet</h2>
             <p className="text-[var(--text-secondary)] mb-6">Start bidding on exclusive items</p>
             <Link href="/" className="btn-gold inline-block">
@@ -110,3 +110,4 @@ export default async function MyBidsPage() {
 
   return <MyBidsClient bids={bidsWithDetails} />
 }
+

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction } from '@/types/database'
@@ -78,10 +78,10 @@ export default async function AdminAuctionsPage() {
       {/* Stats */}
       <div className="grid sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Auctions', value: auctions.length, icon: '📊' },
-          { label: 'Live', value: auctions.filter(a => a.status === 'live').length, icon: '🔴' },
-          { label: 'Upcoming', value: auctions.filter(a => ['upcoming', 'registration_open'].includes(a.status)).length, icon: '📅' },
-          { label: 'Total Items', value: auctions.reduce((sum, a) => sum + a.items_count, 0), icon: '💎' },
+          { label: 'Total Auctions', value: auctions.length, icon: '' },
+          { label: 'Live', value: auctions.filter(a => a.status === 'live').length, icon: '' },
+          { label: 'Upcoming', value: auctions.filter(a => ['upcoming', 'registration_open'].includes(a.status)).length, icon: '' },
+          { label: 'Total Items', value: auctions.reduce((sum, a) => sum + a.items_count, 0), icon: '' },
         ].map((stat) => (
           <div key={stat.label} className="card-glass rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -124,7 +124,7 @@ export default async function AdminAuctionsPage() {
                           {auction.banner_image_url ? (
                             <img src={auction.banner_image_url} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-xl opacity-50">💎</span>
+                            <span className="text-xl opacity-50"></span>
                           )}
                         </div>
                         <div>
@@ -187,7 +187,7 @@ export default async function AdminAuctionsPage() {
                     {auction.banner_image_url ? (
                       <img src={auction.banner_image_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl opacity-50">💎</div>
+                      <div className="w-full h-full flex items-center justify-center text-2xl opacity-50"></div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -247,4 +247,5 @@ export default async function AdminAuctionsPage() {
     </div>
   )
 }
+
 

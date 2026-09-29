@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -62,7 +62,7 @@ export default function PaymentForm({ gemId, amount }: PaymentFormProps) {
 
       <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
         <p className="text-amber-400 text-sm flex items-center gap-2">
-          <span>⚠️</span>
+          <span></span>
           Demo mode - any card details will be accepted
         </p>
       </div>
@@ -161,3 +161,4 @@ export default function PaymentForm({ gemId, amount }: PaymentFormProps) {
     </form>
   )
 }
+

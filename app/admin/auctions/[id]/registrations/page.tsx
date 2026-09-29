@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -102,7 +102,7 @@ export default async function AuctionRegistrationsPage({
             href={`/admin/auctions/${id}`}
             className="text-sm text-[var(--text-muted)] hover:text-white mb-2 inline-block"
           >
-            ← Back to Auction
+             Back to Auction
           </Link>
           <h1 className="text-2xl font-bold text-white">Registrations</h1>
           <p className="text-[var(--text-secondary)]">{auction.name}</p>
@@ -150,8 +150,8 @@ export default async function AuctionRegistrationsPage({
                       <td className="py-3 px-4">
                         <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
                       </td>
-                      <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.display_name || '—'}</td>
-                      <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.phone || '—'}</td>
+                      <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.display_name || ''}</td>
+                      <td className="py-3 px-4 text-[var(--text-secondary)]">{reg.user?.phone || ''}</td>
                       <td className="py-3 px-4 text-[var(--text-muted)] text-sm">{reg.user?.email}</td>
                       <td className="py-3 px-4 text-[var(--text-secondary)] text-sm">
                         <LocalTime date={reg.registered_at} />
@@ -163,11 +163,11 @@ export default async function AuctionRegistrationsPage({
                       </td>
                       <td className="py-3 px-4">
                         {reg.email_sent_at ? (
-                          <span className="text-emerald-400 text-sm">✓ Sent</span>
+                          <span className="text-emerald-400 text-sm"> Sent</span>
                         ) : reg.approval_status === 'approved' ? (
                           <span className="text-amber-400 text-sm">Pending</span>
                         ) : (
-                          <span className="text-[var(--text-muted)] text-sm">—</span>
+                          <span className="text-[var(--text-muted)] text-sm"></span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -200,8 +200,8 @@ export default async function AuctionRegistrationsPage({
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-                    <span>📅 <LocalTime date={reg.registered_at} format="short" /></span>
-                    {reg.email_sent_at && <span>✉️ Sent</span>}
+                    <span> <LocalTime date={reg.registered_at} format="short" /></span>
+                    {reg.email_sent_at && <span> Sent</span>}
                   </div>
                   <RegistrationStatusActions 
                     auctionId={id} 
@@ -214,7 +214,7 @@ export default async function AuctionRegistrationsPage({
           </>
         ) : (
           <div className="text-center py-16 text-[var(--text-muted)]">
-            <p className="text-4xl mb-4">📋</p>
+            <p className="text-4xl mb-4"></p>
             <p>No {status || ''} registrations</p>
           </div>
         )}
@@ -253,3 +253,4 @@ function FilterTab({
     </Link>
   )
 }
+

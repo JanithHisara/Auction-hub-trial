@@ -132,7 +132,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
             href="/admin/auctions"
             className="text-sm text-[var(--text-muted)] hover:text-white mb-2 inline-block"
           >
-            ← Back to Auctions
+             Back to Auctions
           </Link>
           <h1 className="text-3xl font-bold text-white">{auction.name}</h1>
           <p className="text-[var(--text-secondary)]">{auction.description || 'No description'}</p>
@@ -146,10 +146,10 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                 : 'bg-emerald-500/20 text-emerald-400'
           }`}>
             {auction.auction_type === 'progressive_elimination_auction' 
-              ? '⏱ English Auction' 
+              ? ' English Auction' 
               : auction.auction_type === 'incremental_approval_auction'
-                ? '🎯 Progressive Elimination'
-                : '📈 Closed Bid'}
+                ? ' Progressive Elimination'
+                : ' Closed Bid'}
           </span>
           <span className={`px-4 py-2 rounded-full text-sm font-bold ${statusColors[auction.status]}`}>
             {auction.status.replace('_', ' ').toUpperCase()}
@@ -171,7 +171,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
             href={`/admin/auctions/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2.5 bg-[var(--gold)]/20 border border-[var(--gold)]/30 rounded-lg text-[var(--gold)] hover:bg-[var(--gold)]/30 transition-colors"
           >
-            ✏️ Edit Auction
+             Edit Auction
           </Link>
           {auction.status === 'live' && (
             <Link 
@@ -179,7 +179,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
               className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-white hover:border-[var(--gold)] transition-colors"
               target="_blank"
             >
-              📺 Open Monitor
+               Open Monitor
             </Link>
           )}
           {auction.status === 'live' && (
@@ -188,7 +188,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
               className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-white hover:border-[var(--gold)] transition-colors"
               target="_blank"
             >
-              🎯 Item Monitor
+               Item Monitor
             </Link>
           )}
           {auction.status === 'live' && (
@@ -199,7 +199,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
               href={`/admin/auctions/${id}/entrance`}
               className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-500/30 transition-colors"
             >
-              🚪 Entrance Scanner
+               Entrance Scanner
             </Link>
           )}
         </div>
@@ -207,11 +207,11 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-        <StatCard icon="👥" label="Registered" value={registrations.length} />
-        <StatCard icon="💎" label="Items" value={items.length} />
-        <StatCard icon="🎯" label="Bids" value={totalBids} />
-        <StatCard icon="💰" label="Value" value={formatCurrency(totalValue)} accent />
-        <StatCard icon="🎫" label="Max" value={auction.max_participants || '∞'} />
+        <StatCard icon="" label="Registered" value={registrations.length} />
+        <StatCard icon="" label="Items" value={items.length} />
+        <StatCard icon="" label="Bids" value={totalBids} />
+        <StatCard icon="" label="Value" value={formatCurrency(totalValue)} accent />
+        <StatCard icon="" label="Max" value={auction.max_participants || ''} />
       </div>
 
       {/* Schedule */}
@@ -230,7 +230,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-white">Auction Items</h2>
-            <p className="text-xs sm:text-sm text-[var(--text-muted)]">{items.length} items • {totalBids} bids</p>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)]">{items.length} items  {totalBids} bids</p>
           </div>
           <Link href={`/admin/gems/new?auction_id=${id}`} className="btn-gold w-full sm:w-auto text-center">
             <span>+ Add Item</span>
@@ -254,7 +254,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">💎</div>
+                    <div className="w-full h-full flex items-center justify-center text-3xl opacity-30"></div>
                   )}
                 </div>
 
@@ -292,7 +292,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                 {/* Arrow */}
                 <div className="hidden sm:flex items-center">
                   <span className="text-[var(--text-muted)] group-hover:text-[var(--gold)] group-hover:translate-x-1 transition-all">
-                    →
+                    
                   </span>
                 </div>
               </Link>
@@ -301,7 +301,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
         ) : (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto bg-[var(--surface)] rounded-2xl flex items-center justify-center mb-4">
-              <span className="text-3xl">💎</span>
+              <span className="text-3xl"></span>
             </div>
             <h3 className="text-lg font-bold text-white mb-2">No Items Yet</h3>
             <p className="text-[var(--text-muted)] mb-4">Add items to this auction</p>
@@ -322,7 +322,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
               href={`/admin/auctions/${id}/registrations`}
               className="text-sm text-[var(--gold)] hover:underline"
             >
-              Manage →
+              Manage 
             </Link>
           </div>
         </div>
@@ -363,11 +363,11 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                       </td>
                       <td className="py-3 px-4">
                         {reg.email_sent_at ? (
-                          <span className="text-emerald-400 text-sm">✓ Sent</span>
+                          <span className="text-emerald-400 text-sm"> Sent</span>
                         ) : reg.approval_status === 'approved' ? (
                           <span className="text-amber-400 text-sm">Pending</span>
                         ) : (
-                          <span className="text-[var(--text-muted)] text-sm">—</span>
+                          <span className="text-[var(--text-muted)] text-sm"></span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-white">{reg.access_count}x</td>
@@ -396,9 +396,9 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-3 text-xs text-[var(--text-muted)]">
-                    <span>📅 <LocalTime date={reg.registered_at} format="short" /></span>
-                    <span>{reg.email_sent_at ? '✉️ Sent' : '⏳ Pending'}</span>
-                    <span>👁 {reg.access_count}x</span>
+                    <span> <LocalTime date={reg.registered_at} format="short" /></span>
+                    <span>{reg.email_sent_at ? ' Sent' : ' Pending'}</span>
+                    <span> {reg.access_count}x</span>
                   </div>
                 </div>
               ))}
@@ -449,6 +449,7 @@ function ScheduleItem({ label, value }: { label: string; value: React.ReactNode 
     </div>
   )
 }
+
 
 
 

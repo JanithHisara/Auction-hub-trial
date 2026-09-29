@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -194,13 +194,13 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
       {/* Stats Ticker */}
       <div className="stats-bar bg-[#12121a] border-b border-[var(--gold)]/20 py-2 sm:py-4">
         <div className="max-w-[1920px] mx-auto px-4 sm:px-8 flex items-center justify-between gap-2 overflow-x-auto">
-          <StatBox icon="👥" label="REG" value={auction.registeredCount} />
+          <StatBox icon="" label="REG" value={auction.registeredCount} />
           <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
-          <StatBox icon="💎" label="ITEMS" value={`${activeItems}/${auction.items.length}`} />
+          <StatBox icon="" label="ITEMS" value={`${activeItems}/${auction.items.length}`} />
           <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
-          <StatBox icon="🎯" label="BIDS" value={totalBids} highlight />
+          <StatBox icon="" label="BIDS" value={totalBids} highlight />
           <div className="h-6 sm:h-8 w-px bg-[var(--gold)]/20 flex-shrink-0" />
-          <StatBox icon="💰" label="VALUE" value={formatCurrency(totalValue)} gold />
+          <StatBox icon="" label="VALUE" value={formatCurrency(totalValue)} gold />
         </div>
       </div>
 
@@ -229,7 +229,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
                       {item.gem_images?.[0]?.image_url ? (
                         <img src={item.gem_images[0].image_url} alt="" />
                       ) : (
-                        <span>💎</span>
+                        <span></span>
                       )}
                     </div>
                     <span className="item-name">{item.name}</span>
@@ -296,7 +296,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
                 ))
               ) : (
                 <div className="feed-empty">
-                  <span className="text-4xl mb-2">⏳</span>
+                  <span className="text-4xl mb-2"></span>
                   <span>Waiting for bids...</span>
                 </div>
               )}
@@ -313,9 +313,9 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
               <span className="ticker-name">{item.name}</span>
               <span className="ticker-price">{formatCurrency(item.highestBid)}</span>
               {item.highestBid > item.starting_price && item.starting_price > 0 && (
-                <span className="ticker-up">▲ +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
+                <span className="ticker-up"> +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
               )}
-              {idx < auction.items.length - 1 && <span className="ticker-sep">•</span>}
+              {idx < auction.items.length - 1 && <span className="ticker-sep"></span>}
             </span>
           ))}
           {/* Duplicate for seamless loop */}
@@ -324,9 +324,9 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
               <span className="ticker-name">{item.name}</span>
               <span className="ticker-price">{formatCurrency(item.highestBid)}</span>
               {item.highestBid > item.starting_price && item.starting_price > 0 && (
-                <span className="ticker-up">▲ +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
+                <span className="ticker-up"> +{Math.round(((item.highestBid - item.starting_price) / item.starting_price) * 100)}%</span>
               )}
-              {idx < auction.items.length - 1 && <span className="ticker-sep">•</span>}
+              {idx < auction.items.length - 1 && <span className="ticker-sep"></span>}
             </span>
           ))}
         </div>
@@ -798,4 +798,5 @@ function StatBox({ icon, label, value, highlight = false, gold = false }: {
     </div>
   )
 }
+
 

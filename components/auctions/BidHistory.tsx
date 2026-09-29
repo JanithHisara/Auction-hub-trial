@@ -1,4 +1,4 @@
-import { formatCurrency, formatDate } from '@/lib/utils'
+﻿import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Bid } from '@/types/database'
 
 interface BidHistoryProps {
@@ -34,7 +34,7 @@ export default function BidHistory({ bids, isSealed }: BidHistoryProps) {
                 {isSealed ? '*** (Sealed)' : formatCurrency(bid.bid_amount)}
               </p>
               <p className="text-xs text-[var(--text-muted)] truncate">
-                {(bid.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'} • {formatDate(bid.created_at)}
+                {(bid.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'}  {formatDate(bid.created_at)}
               </p>
             </div>
             {index === 0 && !isSealed && (
@@ -48,3 +48,4 @@ export default function BidHistory({ bids, isSealed }: BidHistoryProps) {
     </div>
   )
 }
+

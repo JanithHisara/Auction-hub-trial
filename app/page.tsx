@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Auction } from '@/types/database'
 import Logo from '@/components/brand/Logo'
@@ -68,26 +68,26 @@ function getStatusConfig(status: string, auction: Auction) {
   
   switch (status) {
     case 'live':
-      return { label: 'LIVE NOW', color: 'bg-red-500', pulse: true, icon: '🔴' }
+      return { label: 'LIVE NOW', color: 'bg-red-500', pulse: true, icon: '' }
     case 'registration_open':
       if (now < regStart) {
-        return { label: 'Registration Not Started', color: 'bg-blue-500', pulse: false, icon: '🗓️' }
+        return { label: 'Registration Not Started', color: 'bg-blue-500', pulse: false, icon: '' }
       }
       if (now > regEnd) {
-        return { label: 'Registration Closed', color: 'bg-zinc-600', pulse: false, icon: '🔒' }
+        return { label: 'Registration Closed', color: 'bg-zinc-600', pulse: false, icon: '' }
       }
-      return { label: 'Registration Open', color: 'bg-emerald-500', pulse: false, icon: '✨' }
+      return { label: 'Registration Open', color: 'bg-emerald-500', pulse: false, icon: '' }
     case 'upcoming':
       if (now < regStart) {
-        return { label: 'Coming Soon', color: 'bg-blue-500', pulse: false, icon: '🗓️' }
+        return { label: 'Coming Soon', color: 'bg-blue-500', pulse: false, icon: '' }
       }
-      return { label: 'Upcoming', color: 'bg-amber-500', pulse: false, icon: '⏳' }
+      return { label: 'Upcoming', color: 'bg-amber-500', pulse: false, icon: '' }
     case 'ended':
-      return { label: 'Ended', color: 'bg-zinc-600', pulse: false, icon: '🏁' }
+      return { label: 'Ended', color: 'bg-zinc-600', pulse: false, icon: '' }
     case 'completed':
-      return { label: 'Completed', color: 'bg-purple-600', pulse: false, icon: '✅' }
+      return { label: 'Completed', color: 'bg-purple-600', pulse: false, icon: '' }
     default:
-      return { label: status, color: 'bg-gray-500', pulse: false, icon: '📦' }
+      return { label: status, color: 'bg-gray-500', pulse: false, icon: '' }
   }
 }
 
@@ -218,7 +218,7 @@ export default async function HomePage() {
             ) : (
               <div className="text-center py-20">
                 <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[var(--surface)] border border-[var(--border)] mb-6">
-                  <span className="text-4xl">💎</span>
+                  <span className="text-4xl"></span>
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">No Upcoming Auctions</h3>
                 <p className="text-[var(--text-secondary)]">Check back soon for new exclusive events</p>
@@ -236,9 +236,9 @@ export default async function HomePage() {
             
             <div className="grid sm:grid-cols-3 gap-8">
               {[
-                { step: '01', title: 'Register', desc: 'Sign up for auctions before registration closes. Secure your spot.', icon: '📝' },
-                { step: '02', title: 'Get Access', desc: 'Receive your unique auction link via email. This is your entry pass.', icon: '🔗' },
-                { step: '03', title: 'Bid & Win', desc: 'Join live auctions and place your bids. Earn rewards with every bid.', icon: '🏆' },
+                { step: '01', title: 'Register', desc: 'Sign up for auctions before registration closes. Secure your spot.', icon: '' },
+                { step: '02', title: 'Get Access', desc: 'Receive your unique auction link via email. This is your entry pass.', icon: '' },
+                { step: '03', title: 'Bid & Win', desc: 'Join live auctions and place your bids. Earn rewards with every bid.', icon: '' },
               ].map((item, idx) => (
                 <div key={item.step} className="text-center animate-reveal" style={{ animationDelay: `${idx * 150}ms` }}>
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)] text-4xl mb-6 glow-gold">
@@ -291,7 +291,7 @@ function AuctionCard({
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[var(--surface-elevated)] to-[var(--background)] flex items-center justify-center">
-            <span className="text-6xl opacity-30">💎</span>
+            <span className="text-6xl opacity-30"></span>
           </div>
         )}
         
@@ -330,15 +330,15 @@ function AuctionCard({
         {/* Meta info */}
         <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--text-muted)] mb-6">
           <div className="flex items-center gap-1.5">
-            <span>📅</span>
+            <span></span>
             <span><LocalTime date={auction.auction_start} format="weekday-short" /></span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span>💎</span>
+            <span></span>
             <span>{auction.items_count} items</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span>👥</span>
+            <span></span>
             <span>{auction.registered_count} registered</span>
           </div>
         </div>
@@ -347,19 +347,19 @@ function AuctionCard({
         <div className="flex items-center justify-between">
           {auction.user_registration_status === 'pending' ? (
             <span className="bg-amber-500/20 text-amber-500 border border-amber-500/30 text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-              <span className="animate-pulse">⏳</span> Pending Approval
+              <span className="animate-pulse"></span> Pending Approval
             </span>
           ) : auction.user_registration_status === 'approved' ? (
             <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-              ✓ Registered
+               Registered
             </span>
           ) : auction.user_registration_status === 'rejected' ? (
             <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-              ✕ Denied
+               Denied
             </span>
           ) : registrationOpen ? (
             <span className="btn-gold text-sm py-2 px-4">
-              <span>Register Now →</span>
+              <span>Register Now </span>
             </span>
           ) : auction.status === 'live' ? (
             <span className="btn-live text-sm py-2 px-4 flex items-center gap-2">
@@ -390,3 +390,4 @@ function AuctionCard({
     </Link>
   )
 }
+

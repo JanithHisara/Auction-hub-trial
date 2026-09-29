@@ -51,7 +51,7 @@ export async function handler(event: NfcScanPayload): Promise<void> {
     return;
   }
 
-  // 3. Look up NFC card â†’ user mapping (card is now user-only, no auction context)
+  // 3. Look up NFC card  user mapping (card is now user-only, no auction context)
   const { data: nfcCard, error: nfcError } = await supabase
     .from('nfc_cards')
     .select('*')
@@ -189,4 +189,5 @@ export async function handler(event: NfcScanPayload): Promise<void> {
   await publishToDevice(device_id, 'state', displayState);
   console.log(`NFC scan success: user=${userRow.email}, auction=${auctionRow.name}`);
 }
+
 

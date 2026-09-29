@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -138,7 +138,7 @@ if (!data) {
       {showFinished && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
           <div className="text-center animate-fade-in">
-            <div className="text-6xl mb-4">🔔</div>
+            <div className="text-6xl mb-4"></div>
             <div className="text-3xl font-bold text-[var(--gold)] mb-2">Item Finished!</div>
             <div className="text-xl text-white/60">Loading next item...</div>
           </div>
@@ -213,7 +213,7 @@ if (!data) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-8xl opacity-30">💎</div>
+                    <div className="w-full h-full flex items-center justify-center text-8xl opacity-30"></div>
                   )}
                 </div>
 
@@ -236,7 +236,7 @@ if (!data) {
                   </div>
                   {!isSealed && currentItem.highestBid > currentItem.starting_price && currentItem.starting_price > 0 && (
                     <div className="price-increase">
-                      ↑ +{Math.round(((currentItem.highestBid - currentItem.starting_price) / currentItem.starting_price) * 100)}% from starting
+                       +{Math.round(((currentItem.highestBid - currentItem.starting_price) / currentItem.starting_price) * 100)}% from starting
                     </div>
                   )}
                   
@@ -289,7 +289,7 @@ if (!data) {
                       ))
                     ) : (
                       <div className="no-bids">
-                        <span className="text-4xl mb-3">⏳</span>
+                        <span className="text-4xl mb-3"></span>
                         <span>Waiting for bids...</span>
                       </div>
                     )}
@@ -305,14 +305,14 @@ if (!data) {
         ) : isItemFinished ? (
           /* All Items Finished */
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <div className="text-8xl mb-6">🏆</div>
+            <div className="text-8xl mb-6"></div>
             <h1 className="text-4xl font-black text-[var(--gold)] mb-4">Auction Complete!</h1>
             <p className="text-xl text-white/60">All {totalItems} items have finished bidding.</p>
           </div>
         ) : (
           /* Waiting for First Item */
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <div className="text-8xl mb-6 animate-pulse">⏳</div>
+            <div className="text-8xl mb-6 animate-pulse"></div>
             <h1 className="text-4xl font-black text-white mb-4">Waiting for Auction to Start</h1>
             <p className="text-xl text-white/60">The first item will appear here when bidding begins.</p>
           </div>
@@ -537,3 +537,4 @@ function StatCard({ label, value, highlight = false }: { label: string; value: s
     </div>
   )
 }
+

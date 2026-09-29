@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 
@@ -100,7 +100,7 @@ export default function AuctionCountdown({ targetDate, label }: Props) {
       {timeLeft.days === 0 && timeLeft.hours < 1 && (
         <div className="mt-4 px-4 py-2 bg-red-500/20 border border-red-500/40 rounded-lg">
           <p className="text-sm font-bold text-red-400 flex items-center justify-center gap-2">
-            <span className="animate-pulse">⚡</span>
+            <span className="animate-pulse"></span>
             Starting soon!
           </p>
         </div>
@@ -108,4 +108,5 @@ export default function AuctionCountdown({ targetDate, label }: Props) {
     </div>
   )
 }
+
 

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -12,21 +12,21 @@ interface Props {
 
 const statusConfig = {
   pending: {
-    icon: '⏳',
+    icon: '',
     title: 'Registration Pending',
     description: 'Your registration is awaiting admin approval',
     bgClass: 'bg-amber-500/20 border-amber-500/40',
     textClass: 'text-amber-400',
   },
   approved: {
-    icon: '✅',
+    icon: '',
     title: 'Registration Approved!',
     description: 'Check your email for auction access link',
     bgClass: 'bg-emerald-500/20 border-emerald-500/40',
     textClass: 'text-emerald-400',
   },
   rejected: {
-    icon: '❌',
+    icon: '',
     title: 'Registration Rejected',
     description: 'Your registration was not approved',
     bgClass: 'bg-red-500/20 border-red-500/40',
@@ -127,3 +127,4 @@ export default function RegisterButton({ auctionId, userId, existingStatus }: Pr
     </div>
   )
 }
+

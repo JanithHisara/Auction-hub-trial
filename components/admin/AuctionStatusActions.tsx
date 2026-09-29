@@ -154,7 +154,7 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-500/20 text-gray-400">
                 {currentStatus.replace('_', ' ').toUpperCase()}
               </span>
-              <span className="text-[var(--text-muted)]">â†’</span>
+              <span className="text-[var(--text-muted)]"></span>
               <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                 nextStatus === 'live' ? 'bg-red-500/20 text-red-400' :
                 nextStatus === 'registration_open' ? 'bg-emerald-500/20 text-emerald-400' :
@@ -175,7 +175,7 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
                     <p className="text-amber-400 font-medium text-sm mb-1">Warning</p>
                     <ul className="text-xs text-amber-400/80 space-y-1">
                       {warnings.map((w, i) => (
-                        <li key={i}>â€¢ {w}</li>
+                        <li key={i}> {w}</li>
                       ))}
                     </ul>
                   </div>
@@ -229,4 +229,5 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
     </>
   )
 }
+
 

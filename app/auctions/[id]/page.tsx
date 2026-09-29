@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction, Gem } from '@/types/database'
@@ -107,7 +107,7 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[var(--surface)] via-[var(--background-secondary)] to-[var(--background)] flex items-center justify-center">
-              <span className="text-[200px] opacity-10">💎</span>
+              <span className="text-[200px] opacity-10"></span>
             </div>
           )}
           
@@ -195,7 +195,7 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                             />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-[var(--surface-elevated)] to-[var(--background)] flex items-center justify-center">
-                              <span className="text-4xl opacity-30">💎</span>
+                              <span className="text-4xl opacity-30"></span>
                             </div>
                           )}
                         </div>
@@ -340,4 +340,5 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
     </AuctionLobbyClient>
   )
 }
+
 

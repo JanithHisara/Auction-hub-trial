@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -186,7 +186,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-8xl opacity-30">💎</div>
+                <div className="w-full h-full flex items-center justify-center text-8xl opacity-30"></div>
               )}
             </div>
 
@@ -209,7 +209,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               </div>
               {!isSealed && priceIncrease > 0 && (
                 <div className="price-increase">
-                  ▲ +{priceIncrease}% from starting
+                   +{priceIncrease}% from starting
                 </div>
               )}
               
@@ -249,7 +249,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
               /* Show bidder details after auction ends */
               <div className="results-card">
                 <div className="card-header">
-                  <span className="text-xl">🏆</span>
+                  <span className="text-xl"></span>
                   TOP BIDDERS
         </div>
                 <div className="results-list">
@@ -257,7 +257,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                     topBidders.map((bidder, idx) => (
                       <div key={idx} className={`result-item ${idx === 0 ? 'winner' : ''}`}>
                         <div className="result-rank">
-                          {idx === 0 ? '👑' : `#${idx + 1}`}
+                          {idx === 0 ? '' : `#${idx + 1}`}
               </div>
                         <div className="result-info">
                           <span className="result-name">{bidder.anonymous_name}</span>
@@ -287,7 +287,7 @@ export default function MonitorClient({ gemId }: { gemId: string }) {
                     ))
                   ) : (
                     <div className="no-bids">
-                      <span className="text-4xl mb-3">⏳</span>
+                      <span className="text-4xl mb-3"></span>
                       <span>Waiting for bids...</span>
                     </div>
                   )}
@@ -547,3 +547,4 @@ function StatCard({ label, value, highlight = false }: { label: string; value: s
     </div>
   )
 }
+

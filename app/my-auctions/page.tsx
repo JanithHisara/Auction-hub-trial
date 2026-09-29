@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AuctionRegistration, Auction } from '@/types/database'
@@ -112,7 +112,7 @@ export default async function MyAuctionsPage() {
         {registrations.length === 0 ? (
           <div className="text-center py-20">
             <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[var(--surface)] border border-[var(--border)] mb-6">
-              <span className="text-4xl">📋</span>
+              <span className="text-4xl"></span>
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">No Registrations Yet</h2>
             <p className="text-[var(--text-secondary)] mb-8">
@@ -155,7 +155,7 @@ export default async function MyAuctionsPage() {
               </section>
             )}
 
-            {/* Past — collapsed by default */}
+            {/* Past  collapsed by default */}
             {pastAuctions.length > 0 && (
               <section>
                 <details className="group">
@@ -165,7 +165,7 @@ export default async function MyAuctionsPage() {
                       {pastAuctions.length} ended
                     </span>
                     <span className="ml-auto text-[var(--text-muted)] text-sm group-open:rotate-180 transition-transform">
-                      ▼
+                      
                     </span>
                   </summary>
                   <div className="grid gap-4">
@@ -199,7 +199,7 @@ function AuctionCard({ registration }: { registration: AuctionRegistration & { a
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-4xl opacity-30">💎</span>
+            <span className="text-4xl opacity-30"></span>
           </div>
         )}
       </div>
@@ -214,10 +214,10 @@ function AuctionCard({ registration }: { registration: AuctionRegistration & { a
         </div>
         
         <div className="flex flex-wrap gap-4 text-sm text-[var(--text-muted)]">
-          <span>📅 <LocalTime date={auction.auction_start} format="short" /></span>
-          <span>🎫 Registered <LocalTime date={registration.registered_at} format="short" /></span>
+          <span> <LocalTime date={auction.auction_start} format="short" /></span>
+          <span> Registered <LocalTime date={registration.registered_at} format="short" /></span>
           {registration.access_count > 0 && (
-            <span>👁️ {registration.access_count} visits</span>
+            <span> {registration.access_count} visits</span>
           )}
         </div>
       </div>
@@ -269,4 +269,5 @@ function getTimeUntil(dateStr: string) {
   
   return `${minutes}m`
 }
+
 
