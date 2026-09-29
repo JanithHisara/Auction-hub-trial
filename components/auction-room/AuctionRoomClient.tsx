@@ -1254,7 +1254,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                             {selectedItem?.bids?.some(b => b.bid_amount >= fixedPrice)
                               ? selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user_id === user.id
                                 ? 'You won this round! Waiting for the next round...'
-                                : `Round claimed by ${(auction?.status === 'announce_winner' ? (selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.display_name || selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) : selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) || 'Another User'}. Waiting for next round...`
+                                : `Round claimed by ${((auction?.status === 'completed' || selectedItem?.status === 'completed') ? (selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.display_name || selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) : selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) || 'Another User'}. Waiting for next round...`
                               : 'This round is over. Waiting for the host to proceed.'}
                           </p>
                           <div className="p-4 bg-[var(--surface)] rounded-lg">
@@ -1287,7 +1287,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                               <span className="font-bold text-emerald-400">
                                 {selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user_id === user.id
                                   ? 'You claimed this round!'
-                                  : `Claimed by ${(auction?.status === 'announce_winner' ? (selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.display_name || selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) : selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) || 'Another User'}`}
+                                  : `Claimed by ${((auction?.status === 'completed' || selectedItem?.status === 'completed') ? (selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.display_name || selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) : selectedItem.bids.find(b => b.bid_amount >= fixedPrice)?.user?.anonymous_name) || 'Another User'}`}
                               </span>
                             </div>
                           ) : (
@@ -1577,7 +1577,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                             <div className="flex items-center gap-2">
                               <Check className="w-4 h-4 text-emerald-400" />
                               <span className="text-white font-medium">
-                                {(auction?.status === 'announce_winner' ? (bid.user?.display_name || bid.user?.anonymous_name) : bid.user?.anonymous_name) || 'Anonymous'}
+                                {((auction?.status === 'completed' || selectedItem?.status === 'completed') ? (bid.user?.display_name || bid.user?.anonymous_name) : bid.user?.anonymous_name) || 'Anonymous'}
                               </span>
                             </div>
                           </div>
@@ -1617,7 +1617,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
                             <div className="flex items-center gap-2">
                               <Check className="w-4 h-4 text-emerald-400" />
                               <span className="text-white font-medium">
-                                {(auction?.status === 'announce_winner' ? (bid.user?.display_name || bid.user?.anonymous_name) : bid.user?.anonymous_name) || 'Anonymous'}
+                                {((auction?.status === 'completed' || selectedItem?.status === 'completed') ? (bid.user?.display_name || bid.user?.anonymous_name) : bid.user?.anonymous_name) || 'Anonymous'}
                               </span>
                             </div>
                             <div className="text-[var(--gold)] font-bold text-sm">
@@ -1696,5 +1696,6 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     </div>
   )
 }
+
 
 
