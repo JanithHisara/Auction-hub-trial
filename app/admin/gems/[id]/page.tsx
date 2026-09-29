@@ -279,7 +279,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
                       {hideBids ? '***' : formatCurrency(bid.bid_amount)}
                     </p>
                     <p className="text-sm text-white mt-1">
-                      {bidUser?.display_name || bidUser?.anonymous_name || bidUser?.email || 'Unknown'}
+                      {(gem.status === 'completed' || gem.status === 'ended' || !!winner) ? (bidUser?.display_name || bidUser?.anonymous_name || bidUser?.email || 'Unknown') : (bidUser?.anonymous_name || 'Anonymous')}
                     </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                       <p className="text-xs text-[var(--text-muted)]">{bidUser?.email}</p>
