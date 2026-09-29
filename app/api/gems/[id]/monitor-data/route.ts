@@ -23,7 +23,7 @@ export async function GET(
         end_time,
         round_end_time,
         gem_images (image_url),
-        auction:auctions (name, auction_type)
+        auction:auctions (name, auction_type, status)
       `)
       .eq('id', id)
       .single()
@@ -115,7 +115,7 @@ export async function GET(
         // Supabase returns related data that needs proper type handling
         const userObj = b.user as unknown as { anonymous_name?: string; display_name?: string } | null
         return {
-          anonymous_name: (auction?.status === 'announce_winner' ? (userObj?.display_name || userObj?.anonymous_name) : userObj?.anonymous_name) || 'Anonymous',
+          anonymous_name: ((item.auction as any)?.status === 'announce_winner' ? (userObj?.display_name || userObj?.anonymous_name) : userObj?.anonymous_name) || 'Anonymous',
           bid_amount: b.bid_amount,
         }
       })
@@ -148,5 +148,6 @@ export async function GET(
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+
 
 
