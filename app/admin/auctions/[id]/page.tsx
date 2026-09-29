@@ -1,4 +1,5 @@
 ﻿import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction, Gem, AuctionRegistration, RegistrationApprovalStatus } from '@/types/database'
@@ -58,8 +59,9 @@ async function getAuction(id: string) {
     })
   )
 
-  // Get registrations (use explicit FK name due to multiple FKs to users)
-  const { data: registrations } = await supabase
+  // Get registrations using admin client to bypass RLS on users join
+  const adminClient = createAdminClient()
+  const { data: registrations } = await adminClient
     .from('auction_registrations')
     .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name, phone, display_name)')
     .eq('auction_id', id)
