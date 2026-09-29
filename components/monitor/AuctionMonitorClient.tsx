@@ -92,7 +92,7 @@ export default function AuctionMonitorClient({ auction: initialAuction }: Props)
           // Get bidder name
           const { data: user } = await supabase
             .from('users')
-            .select('anonymous_name')
+            .select('anonymous_name, display_name')
             .eq('id', newBid.user_id)
             .single()
 
@@ -798,5 +798,6 @@ function StatBox({ icon, label, value, highlight = false, gold = false }: {
     </div>
   )
 }
+
 
 

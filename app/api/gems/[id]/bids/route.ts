@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
@@ -14,7 +14,7 @@ export async function GET(
     
     const { data: bids, error } = await supabase
       .from('bids')
-      .select('*, user:users(anonymous_name)')
+      .select('*, user:users(anonymous_name, display_name)')
       .eq('gem_id', id)
       .order('bid_amount', { ascending: false })
 
@@ -317,3 +317,4 @@ export async function PATCH(
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+

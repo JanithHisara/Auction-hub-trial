@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -19,7 +19,7 @@ export default function RealtimeBidUpdates({ gemId, onBidUpdate }: RealtimeBidUp
     const fetchBids = async () => {
       const { data } = await supabase
         .from('bids')
-        .select('*, user:users(email)')
+        .select('*, user:users(email, anonymous_name, display_name)')
         .eq('gem_id', gemId)
         .order('bid_amount', { ascending: false })
 
@@ -46,7 +46,7 @@ export default function RealtimeBidUpdates({ gemId, onBidUpdate }: RealtimeBidUp
           // Refetch bids when changes occur
           const { data } = await supabase
             .from('bids')
-            .select('*, user:users(email)')
+            .select('*, user:users(email, anonymous_name, display_name)')
             .eq('gem_id', gemId)
             .order('bid_amount', { ascending: false })
 
@@ -65,4 +65,5 @@ export default function RealtimeBidUpdates({ gemId, onBidUpdate }: RealtimeBidUp
 
   return null
 }
+
 

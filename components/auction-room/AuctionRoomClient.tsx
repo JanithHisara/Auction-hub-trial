@@ -304,7 +304,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
 
           const { data: bidUser } = await supabase
             .from('users')
-            .select('anonymous_name, email')
+            .select('anonymous_name, email, display_name')
             .eq('id', newBid.user_id)
             .single()
 
@@ -1696,6 +1696,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     </div>
   )
 }
+
 
 
 
