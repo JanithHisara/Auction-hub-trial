@@ -345,7 +345,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                   {registrations.map((reg: AuctionRegistration & { user: { email: string; anonymous_name?: string } }) => (
                     <tr key={reg.id} className="hover:bg-[var(--surface-elevated)]">
                       <td className="py-3 px-4">
-                        <p className="text-white font-medium">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
+                        <p className="text-white font-medium">{reg.user?.display_name || 'No name'} {reg.user?.anonymous_name ? '(' + reg.user?.anonymous_name + ')' : ''}</p>
                         <p className="text-xs text-[var(--text-muted)]">{reg.user?.email}</p>
                         {reg.user?.phone && <p className="text-xs text-[var(--text-muted)]">{reg.user.phone}</p>}
                       </td>
@@ -383,7 +383,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                 <div key={reg.id} className="p-3 bg-[var(--surface)] rounded-lg border border-[var(--border)]">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <p className="text-white font-medium text-sm">{reg.user?.display_name || reg.user?.anonymous_name || 'Anonymous'}</p>
+                      <p className="text-white font-medium text-sm">{reg.user?.display_name || 'No name'} {reg.user?.anonymous_name ? '(' + reg.user?.anonymous_name + ')' : ''}</p>
                       <p className="text-xs text-[var(--text-muted)] truncate max-w-[200px]">{reg.user?.email}</p>
                       {reg.user?.phone && <p className="text-xs text-[var(--text-muted)]">{reg.user.phone}</p>}
                     </div>
@@ -449,6 +449,7 @@ function ScheduleItem({ label, value }: { label: string; value: React.ReactNode 
     </div>
   )
 }
+
 
 
 

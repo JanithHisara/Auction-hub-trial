@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -58,7 +58,7 @@ export default function SelectWinnerButton({ gemId, bids }: { gemId: string; bid
           <p className="text-xs text-emerald-400 uppercase mb-1">Highest Bid (Auto-Winner)</p>
           <p className="text-2xl font-bold text-emerald-400">{formatCurrency(highestBid.bid_amount)}</p>
           <p className="text-sm text-[var(--text-muted)] mt-1">
-            {(highestBid.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'}
+            {(highestBid.user as { anonymous_name?: string; display_name?: string })?.display_name || (highestBid.user as { anonymous_name?: string })?.anonymous_name || 'Anonymous'}
           </p>
         </div>
       )}
@@ -86,4 +86,5 @@ export default function SelectWinnerButton({ gemId, bids }: { gemId: string; bid
     </div>
   )
 }
+
 

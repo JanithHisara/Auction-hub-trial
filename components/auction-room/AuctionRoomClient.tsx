@@ -310,7 +310,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
 
           const bidWithUser: Bid = {
             ...newBid,
-            user: bidUser ? { email: bidUser.email || '', anonymous_name: bidUser.anonymous_name } : undefined
+            user: bidUser ? { email: bidUser.email || '', anonymous_name: bidUser.anonymous_name, display_name: bidUser.display_name } : undefined
           }
 
           // For fixed increment and incremental approval, update bids list as normal
@@ -1696,6 +1696,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     </div>
   )
 }
+
 
 
 
