@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
@@ -42,10 +43,13 @@ const actionConfig: Record<
 }
 
 export default function RegistrationStatusActions({
+
   auctionId,
   registrationId,
   currentStatus,
 }: Props) {
+  const confirm = useConfirm();
+
   const router = useRouter()
   const [loading, setLoading] = useState<ActionType | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)

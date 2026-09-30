@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AuctionCountdown from '@/components/shared/AuctionCountdown'
@@ -39,7 +40,9 @@ function formatCurrency(amount: number) {
   }).format(amount)
 }
 
-export default function AuctionRoomClient({ auction: initialAuction, items: initialItems, user, rewards: initialRewards, initialIsHeld = false, adminPhone = null, initialEliminations = [], totalRegisteredBidders = 0, initialEliminationCounts = {} }: Props) {
+export default function AuctionRoomClient({
+  auction: initialAuction, items: initialItems, user, rewards: initialRewards, initialIsHeld = false, adminPhone = null, initialEliminations = [], totalRegisteredBidders = 0, initialEliminationCounts = {} }: Props) {
+  const confirm = useConfirm();
   const [auction, setAuction] = useState(initialAuction)
   const [items, setItems] = useState(initialItems)
   const [selectedItem, setSelectedItem] = useState(() => {

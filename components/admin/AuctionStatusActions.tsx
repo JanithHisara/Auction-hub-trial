@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
@@ -66,7 +67,9 @@ const statusFlow: Record<AuctionStatus, { next: AuctionStatus | null; label: str
   },
 }
 
-export default function AuctionStatusActions({ auctionId, currentStatus, itemCount, approvedCount }: Props) {
+export default function AuctionStatusActions({
+  auctionId, currentStatus, itemCount, approvedCount }: Props) {
+  const confirm = useConfirm();
   const [isLoading, setIsLoading] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [mounted, setMounted] = useState(false)

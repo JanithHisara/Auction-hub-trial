@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Shield, ShieldOff, Phone } from 'lucide-react'
@@ -34,7 +35,9 @@ interface Props {
   registrations: Registration[]
 }
 
-export default function BidderHoldManager({ auctionId, registrations }: Props) {
+export default function BidderHoldManager({
+  auctionId, registrations }: Props) {
+  const confirm = useConfirm();
   const [holds, setHolds] = useState<HeldBidder[]>([])
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
