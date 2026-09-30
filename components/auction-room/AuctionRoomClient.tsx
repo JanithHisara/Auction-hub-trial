@@ -594,7 +594,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     const decimalAmount = new Decimal(bidAmount || '0').toDecimalPlaces(2)
     const amount = decimalAmount.toNumber()
     if (isNaN(amount) || amount < minBid) {
-      alert(`Minimum bid is ${formatCurrency(minBid)}`)
+      confirm(`Minimum bid is ${formatCurrency(minBid)}`, { isAlert: true, confirmText: 'OK', title: 'Notice' })
       return
     }
 
@@ -618,7 +618,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       setBidAmount('')
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to place bid'
-      alert(message)
+      confirm(message, { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setIsSubmitting(false)
     }
@@ -632,7 +632,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
     const decimalEditAmount = new Decimal(bidAmount || '0').toDecimalPlaces(2)
     const amount = decimalEditAmount.toNumber()
     if (isNaN(amount) || amount < minBid) {
-      alert(`Minimum bid is ${formatCurrency(minBid)}`)
+      confirm(`Minimum bid is ${formatCurrency(minBid)}`, { isAlert: true, confirmText: 'OK', title: 'Notice' })
       return
     }
 
@@ -655,7 +655,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       setIsEditingBid(false)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to update bid'
-      alert(message)
+      confirm(message, { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setIsSubmitting(false)
     }
@@ -682,7 +682,7 @@ export default function AuctionRoomClient({ auction: initialAuction, items: init
       setHasAcceptedPrice(true)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to accept price'
-      alert(message)
+      confirm(message, { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setIsSubmitting(false)
     }

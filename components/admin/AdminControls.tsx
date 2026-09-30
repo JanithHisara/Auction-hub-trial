@@ -23,6 +23,7 @@ interface AdminControlsProps {
 export default function AdminControls({ gemId, currentPrice, minIncrement, status, roundEndTime, auctionType, highestBid, allRegisteredBiddersBid, hasNoBidsInCurrentRound, startingPrice }: AdminControlsProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const confirm = useConfirm()
   const [showNextRoundModal, setShowNextRoundModal] = useState(false)
   const [showStartBiddingModal, setShowStartBiddingModal] = useState(false)
   const [showAnnounceWinnerModal, setShowAnnounceWinnerModal] = useState(false)
@@ -109,7 +110,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
         const elimRes = await fetch(`/api/admin/auctions/${gemId}/eliminate-non-approvers`, { method: 'POST' })
         if (!elimRes.ok) {
           const err = await elimRes.json()
-          alert(err.error || 'Failed to eliminate non-approvers')
+          confirm(err.error || 'Failed to eliminate non-approvers', { isAlert: true, confirmText: 'OK', title: 'Notice' })
           setLoading(false)
           return
         }
@@ -144,7 +145,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
 
       if (!res.ok) {
         const error = await res.json()
-        alert(error.error || 'Action failed')
+        confirm(error.error || 'Action failed', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       } else {
         setShowNextRoundModal(false)
         setShowStartBiddingModal(false)
@@ -152,7 +153,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
       }
     } catch (e) {
       console.error(e)
-      alert('Action failed')
+      confirm('Action failed', { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setLoading(false)
     }
@@ -163,16 +164,16 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
     try {
       increment = useCustomIncrement ? new Decimal(customIncrement || '0').toNumber() : minIncrement
     } catch {
-      alert('Please enter a valid increment amount')
+      confirm('Please enter a valid increment amount', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       return
     }
     if (isNaN(increment) || increment <= 0) {
-      alert('Please enter a valid increment amount')
+      confirm('Please enter a valid increment amount', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       return
     }
     const duration = parseInt(biddingDuration)
     if (isNaN(duration) || duration <= 0) {
-      alert('Please enter a valid duration')
+      confirm('Please enter a valid duration', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       return
     }
     // For Incremental Approval: eliminate non-approvers first, then increment
@@ -185,7 +186,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
   const handleStartBidding = () => {
     const duration = parseInt(biddingDuration)
     if (isNaN(duration) || duration <= 0) {
-      alert('Please enter a valid duration')
+      confirm('Please enter a valid duration', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       return
     }
     handleAction('start', { duration })
@@ -260,8 +261,8 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           {/* ACTIVATE BUTTON - For pending items */}
           {status === 'pending' && (
             <button
-              onClick={() => {
-                if (confirm('Activate this item? It will become the current active item for bidding.')) {
+              onClick={async () => {
+                  if (await confirm('Activate this item? It will become the current active item for bidding.')) {
                   handleAction('activate')
                 }
               }}
@@ -344,7 +345,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                       const durLabel = duration >= 60
                         ? `${Math.floor(duration / 60)}m ${duration % 60 ? duration % 60 + 's' : ''}`
                         : `${duration}s`
-                      if (confirm(`Start default round with +${formatCurrency(minIncrement)} increment and ${durLabel} duration?`)) {
+                      if (await confirm(`Start default round with +${formatCurrency(minIncrement)} increment and ${durLabel} duration?`)) {
                         handleAction('increment', { increment: minIncrement, duration: duration || undefined })
                       }
                     }}
@@ -413,7 +414,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                       const durLabel = duration >= 60
                         ? `${Math.floor(duration / 60)}m ${duration % 60 ? duration % 60 + 's' : ''}`
                         : `${duration}s`
-                      if (confirm(`Eliminate non-approvers and start default round with +${formatCurrency(minIncrement)} increment and ${durLabel} duration?`)) {
+                      if (await confirm(`Eliminate non-approvers and start default round with +${formatCurrency(minIncrement)} increment and ${durLabel} duration?`)) {
                         handleAction('eliminate-and-increment', { increment: minIncrement, duration: duration || undefined })
                       }
                     }}
@@ -669,7 +670,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 onClick={() => {
                   const duration = parseInt(biddingDuration)
                   if (isNaN(duration) || duration <= 0) {
-                    alert('Please enter a valid duration')
+                    confirm('Please enter a valid duration', { isAlert: true, confirmText: 'OK', title: 'Notice' })
                     return
                   }
                   setShowProgressiveStartModal(false)
@@ -834,4 +835,5 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
     </>
   )
 }
+
 

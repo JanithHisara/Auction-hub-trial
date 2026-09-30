@@ -98,7 +98,7 @@ export default function AuctionStatusActions({ auctionId, currentStatus, itemCou
       setShowConfirm(false)
       router.refresh()
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to update status')
+      confirm(error instanceof Error ? error.message : 'Failed to update status', { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setIsLoading(false)
     }

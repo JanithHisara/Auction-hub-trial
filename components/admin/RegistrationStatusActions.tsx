@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -71,7 +71,7 @@ export default function RegistrationStatusActions({
 
       if (!res.ok) {
         const data = await res.json()
-        alert(data.message || 'Failed to update')
+        confirm(data.message || 'Failed to update', { isAlert: true, confirmText: 'OK', title: 'Notice' })
         return
       }
 
@@ -79,7 +79,7 @@ export default function RegistrationStatusActions({
       setPendingAction(null)
       router.refresh()
     } catch {
-      alert('Failed to update status')
+      confirm('Failed to update status', { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setLoading(null)
     }

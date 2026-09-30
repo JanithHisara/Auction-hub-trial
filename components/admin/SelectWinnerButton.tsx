@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState } from 'react'
+import { useConfirm } from '@/components/ui/ConfirmProvider'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
 import type { Bid } from '@/types/database'
@@ -9,6 +10,7 @@ import { Trophy, Loader2 } from 'lucide-react'
 export default function SelectWinnerButton({ gemId, bids }: { gemId: string; bids: Bid[] }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const confirm = useConfirm()
 
   // Find highest bid to show preview
   const highestBid = bids.length > 0 
@@ -17,7 +19,7 @@ export default function SelectWinnerButton({ gemId, bids }: { gemId: string; bid
 
   const handleSelectWinner = async () => {
     if (loading) return
-    if (!confirm('Select the highest bidder as winner? This action cannot be undone.')) {
+    if (!await confirm('Select the highest bidder as winner? This action cannot be undone.')) {
       return
     }
 
@@ -36,7 +38,7 @@ export default function SelectWinnerButton({ gemId, bids }: { gemId: string; bid
 
       router.refresh()
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to select winner')
+      confirm(error instanceof Error ? error.message : 'Failed to select winner', { title: 'Error', confirmText: 'OK', cancelText: 'Close' })
     } finally {
       setLoading(false)
     }

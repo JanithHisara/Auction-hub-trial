@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Premium auctions for collectors",
 };
 
+import { ConfirmProvider } from "@/components/ui/ConfirmProvider"
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -35,11 +37,14 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-[var(--foreground)]`}
       >
-        <AutoRefresh />
+        <ConfirmProvider>
+          <AutoRefresh />
         <Navbar user={user} role={role} />
         {children}
+        </ConfirmProvider>
       </body>
     </html>
   );
 }
+
 

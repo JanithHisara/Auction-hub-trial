@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useCallback } from 'react'
 import {
@@ -127,6 +127,7 @@ function NfcCardsTab() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [loading, setLoading] = useState(true)
+  const confirm = useConfirm()
   const [error, setError] = useState<string | null>(null)
     const [editingDevice, setEditingDevice] = useState<any | null>(null)
     const [deletingDevice, setDeletingDevice] = useState<any | null>(null)
@@ -176,7 +177,7 @@ function NfcCardsTab() {
   }
 
   async function handleDelete(card: NfcCard) {
-    if (!confirm(`Delete NFC card mapping for ${card.nfc_uid}?`)) return
+    if (!await confirm(`Delete NFC card mapping for ${card.nfc_uid}?`)) return
     try {
       const res = await fetch(`/api/admin/nfc-cards/${card.id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
@@ -841,6 +842,7 @@ function DevicesTab() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [loading, setLoading] = useState(true)
+  const confirm = useConfirm()
   const [error, setError] = useState<string | null>(null)
     const [editingDevice, setEditingDevice] = useState<any | null>(null)
     const [deletingDevice, setDeletingDevice] = useState<any | null>(null)
@@ -1319,6 +1321,7 @@ function DeviceStatusBadge({ status }: { status: string }) {
 function AuctionPlacesTab() {
   const [places, setPlaces] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const confirm = useConfirm()
   const [error, setError] = useState<string | null>(null)
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -1368,7 +1371,7 @@ function AuctionPlacesTab() {
       setNewPlaceName('')
       loadPlaces()
     } catch (err: any) {
-      alert(err.message)
+      confirm(err.message, { isAlert: true, confirmText: 'OK', title: 'Error' })
     } finally {
       setSubmitting(false)
     }
@@ -1520,7 +1523,7 @@ function AuctionPlacesTab() {
                 setEditingPlace(null);
                 loadPlaces();
               } catch (err: any) {
-                alert(err.message);
+                confirm(err.message, { isAlert: true, confirmText: 'OK', title: 'Error' });
               } finally {
                 setSubmitting(false);
               }
@@ -1551,7 +1554,7 @@ function AuctionPlacesTab() {
                   setDeletingPlace(null);
                   loadPlaces();
                 } catch (err: any) {
-                  alert(err.message);
+                  confirm(err.message, { isAlert: true, confirmText: 'OK', title: 'Error' });
                 } finally {
                   setSubmitting(false);
                 }

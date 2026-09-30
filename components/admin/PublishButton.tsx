@@ -1,15 +1,17 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
+import { useConfirm } from '@/components/ui/ConfirmProvider'
 import { useRouter } from 'next/navigation'
 
 export default function PublishButton({ gemId }: { gemId: string }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const confirm = useConfirm()
 
   const handlePublish = async () => {
     if (loading) return
-    if (!confirm('Are you sure you want to publish this item? It will be queued for auction.')) {
+    if (!await confirm('Are you sure you want to publish this item? It will be queued for auction.')) {
       return
     }
 
@@ -27,7 +29,7 @@ export default function PublishButton({ gemId }: { gemId: string }) {
 
       router.refresh()
     } catch (error) {
-      alert('Failed to publish item')
+      confirm('Failed to publish item', { title: 'Error', confirmText: 'OK', cancelText: 'Close' })
     } finally {
       setLoading(false)
     }

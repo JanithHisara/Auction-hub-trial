@@ -90,14 +90,14 @@ export default function BidderHoldManager({ auctionId, registrations }: Props) {
 
       if (!res.ok) {
         const err = await res.json()
-        alert(err.error || 'Failed to hold bidder')
+        confirm(err.error || 'Failed to hold bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       } else {
         setShowHoldModal(null)
         setHoldReason('')
         await fetchHolds()
       }
     } catch {
-      alert('Failed to hold bidder')
+      confirm('Failed to hold bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setActionLoading(null)
     }
@@ -114,12 +114,12 @@ export default function BidderHoldManager({ auctionId, registrations }: Props) {
 
       if (!res.ok) {
         const err = await res.json()
-        alert(err.error || 'Failed to release bidder')
+        confirm(err.error || 'Failed to release bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       } else {
         await fetchHolds()
       }
     } catch {
-      alert('Failed to release bidder')
+      confirm('Failed to release bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setActionLoading(null)
     }
