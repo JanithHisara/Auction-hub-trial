@@ -177,7 +177,17 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
       confirm('Please enter a valid duration', { isAlert: true, confirmText: 'OK', title: 'Notice' })
       return
     }
-    // For Incremental Approval: eliminate non-approvers first, then increment
+      if (hasNoBidsInCurrentRound) {
+        const minAllowedPrice = highestBid?.amount ?? startingPrice ?? 0;
+        const newPrice = new Decimal(currentPrice).minus(increment).toNumber();
+        
+        if (newPrice <= minAllowedPrice) {
+          confirm(`The decreased price (${formatCurrency(newPrice)}) cannot be less than or equal to the last accepted price (${formatCurrency(minAllowedPrice)}).`, { isAlert: true, confirmText: 'OK', title: 'Invalid Price' });
+          return;
+        }
+      }
+
+      // For Incremental Approval: eliminate non-approvers first, then increment
     const action = isIncrementalApproval ? 'eliminate-and-increment' : 'increment'
     const effectiveIncrement = hasNoBidsInCurrentRound ? -increment : increment
     handleAction(action, { increment: effectiveIncrement, duration })
