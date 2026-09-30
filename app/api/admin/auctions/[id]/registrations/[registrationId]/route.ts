@@ -64,7 +64,11 @@ export async function PATCH(
       return NextResponse.json({ message: 'Failed to update' }, { status: 500 })
     }
 
-    if (approval_status === 'approved' && registration.user?.email) {
+    const userRaw = registration.user as unknown;
+    const userObj = Array.isArray(userRaw) ? userRaw[0] : userRaw;
+    const userEmail = userObj?.email;
+
+    if (approval_status === 'approved' && userEmail) {
       try {
         const auctionDate = new Date(registration.auction.auction_start).toLocaleDateString('en-US', {
           weekday: 'long',
@@ -76,7 +80,7 @@ export async function PATCH(
         })
 
         await sendAuctionAccessEmail({
-          to: registration.user.email,
+          to: userEmail,
           auctionName: registration.auction.name,
           auctionDate,
           accessToken: registration.access_token,
