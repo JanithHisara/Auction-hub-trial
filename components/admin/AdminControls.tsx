@@ -340,7 +340,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                   ) : (
                     <>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       const duration = parseInt(biddingDuration)
                       const durLabel = duration >= 60
                         ? `${Math.floor(duration / 60)}m ${duration % 60 ? duration % 60 + 's' : ''}`
@@ -409,7 +409,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                   ) : (
                     <>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       const duration = parseInt(biddingDuration)
                       const durLabel = duration >= 60
                         ? `${Math.floor(duration / 60)}m ${duration % 60 ? duration % 60 + 's' : ''}`
