@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction, Gem } from '@/types/database'
@@ -27,7 +28,8 @@ async function getAuction(id: string) {
   if (!auction) return null
 
   // Get items
-  const { data: items } = await supabase
+  const adminSupabase = createAdminClient()
+  const { data: items } = await adminSupabase
     .from('gems')
     .select(`*, gem_images(*)`)
     .eq('auction_id', id)
