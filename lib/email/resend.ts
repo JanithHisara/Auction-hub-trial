@@ -759,8 +759,7 @@ export async function sendPasswordResetEmail({
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>'
   
-  const htmlContent = 
-<!DOCTYPE html>
+  const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -787,7 +786,7 @@ export async function sendPasswordResetEmail({
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="$" style="display: inline-block; background-color: #d4af37; color: #000000; font-size: 16px; font-weight: 700; text-decoration: none; padding: 16px 32px; border-radius: 12px;">
+                    <a href="${resetLink}" style="display: inline-block; background-color: #d4af37; color: #000000; font-size: 16px; font-weight: 700; text-decoration: none; padding: 16px 32px; border-radius: 12px;">
                       Reset Password
                     </a>
                   </td>
@@ -808,14 +807,14 @@ export async function sendPasswordResetEmail({
     </tr>
   </table>
 </body>
-</html>
+</html>`;
 
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
     subject: 'Reset your Auctionhub password',
     html: htmlContent,
-    text: Reset your password by clicking this link: $,
+    text: `Reset your password by clicking this link: ${resetLink}`,
   })
 
   if (error) {
