@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPasswordResetEmail } from '@/lib/email/resend'
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       type: 'recovery',
       email,
       options: {
-        redirectTo: `${requestUrl.origin}/reset-password`
+        redirectTo: `${requestUrl.origin}/auth/callback?next=/reset-password`
       }
     })
     
