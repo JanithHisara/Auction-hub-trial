@@ -257,8 +257,8 @@ export default function DateTimePicker({
             {/* Vertical Divider (Desktop Only) */}
             <div className="hidden md:block w-[1px] bg-zinc-200 self-stretch" />
 
-                        {/* Right Panel: Simple Time Input */}
-            <div className={w-full md:w-52 flex flex-col justify-center gap-6 }>
+                                    {/* Right Panel: Simple Time Input */}
+            <div className={`w-full md:w-52 flex flex-col justify-center gap-6 ${activeTab === 'time' ? 'flex' : 'hidden md:flex'}`}>
               
               <div className="text-center">
                 <span className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider block mb-3">Enter Time</span>
@@ -316,14 +316,22 @@ export default function DateTimePicker({
                 <button
                   type="button"
                   onClick={() => handleTimeChange('ampm', 'AM')}
-                  className={lex-1 py-2 text-xs font-bold rounded-lg transition-all }
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    time.ampm === 'AM'
+                      ? 'bg-white text-black shadow-sm font-extrabold'
+                      : 'text-zinc-500 hover:text-zinc-800'
+                  }`}
                 >
                   AM
                 </button>
                 <button
                   type="button"
                   onClick={() => handleTimeChange('ampm', 'PM')}
-                  className={lex-1 py-2 text-xs font-bold rounded-lg transition-all }
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    time.ampm === 'PM'
+                      ? 'bg-white text-black shadow-sm font-extrabold'
+                      : 'text-zinc-500 hover:text-zinc-800'
+                  }`}
                 >
                   PM
                 </button>
@@ -350,5 +358,6 @@ export default function DateTimePicker({
     </div>
   )
 }
+
 
 
