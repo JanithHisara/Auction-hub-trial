@@ -33,11 +33,9 @@ interface Props {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return 'Rs. ' + new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(amount)
 }
 
