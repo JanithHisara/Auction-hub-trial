@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -121,6 +121,11 @@ export default function LoginForm() {
                   className="w-full pl-12 pr-4 py-3.5"
                   placeholder=""
                 />
+              </div>
+              <div className="flex justify-end mt-2">
+                <Link href="/forgot-password" className="text-sm text-[var(--gold)] hover:text-[var(--gold-light)]">
+                  Forgot Password?
+                </Link>
               </div>
             </div>
 
