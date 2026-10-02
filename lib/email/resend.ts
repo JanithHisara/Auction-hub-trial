@@ -1,4 +1,4 @@
-﻿import { Resend } from 'resend'
+import { Resend } from 'resend'
 
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY 
@@ -645,7 +645,7 @@ function generateAuctionSummaryEmailHtml({
 }) {
   const itemsHtml = items.map(item => {
     const formattedPrice = item.winningPrice !== null && item.winningPrice !== undefined
-      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(item.winningPrice)
+      ? ('Rs. ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(item.winningPrice))
       : 'Not Sold'
     
     return `
@@ -738,6 +738,92 @@ function generateAuctionSummaryEmailHtml({
 </body>
 </html>
   `
+}
+
+
+// Password reset email
+export interface PasswordResetEmailParams {
+  to: string
+  resetLink: string
+}
+
+export async function sendPasswordResetEmail({
+  to,
+  resetLink,
+}: PasswordResetEmailParams) {
+  if (!resend) {
+    console.log('[Email] Password reset would be sent to:', to)
+    console.log('[Email] Link:', resetLink)
+    return { id: 'mock-email-id' }
+  }
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>'
+  
+  const htmlContent = 
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Your Password</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0f; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" max-width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background: linear-gradient(145deg, #1a1a24 0%, #12121a 100%); border-radius: 24px; border: 1px solid rgba(212, 175, 55, 0.2); overflow: hidden;">
+          <tr>
+            <td style="padding: 40px 40px 24px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(160, 130, 61, 0.05) 100%);">
+              <h1 style="margin: 0; color: #f5f5f7; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
+                Reset Password
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 40px 32px;">
+              <p style="margin: 0 0 24px; color: #a1a1aa; font-size: 16px; line-height: 1.6; text-align: center;">
+                We received a request to reset the password for your Auctionhub account. Click the button below to choose a new password.
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="$" style="display: inline-block; background-color: #d4af37; color: #000000; font-size: 16px; font-weight: 700; text-decoration: none; padding: 16px 32px; border-radius: 12px;">
+                      Reset Password
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 24px 0 0; color: #71717a; font-size: 13px; text-align: center;">
+                If you did not request this, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 40px; text-align: center; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <p style="margin: 0; color: #71717a; font-size: 13px;">Auctionhub</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+  const { data, error } = await resend.emails.send({
+    from: fromEmail,
+    to,
+    subject: 'Reset your Auctionhub password',
+    html: htmlContent,
+    text: Reset your password by clicking this link: $,
+  })
+
+  if (error) {
+    console.error('Failed to send password reset email:', error)
+    throw error
+  }
+
+  return data
 }
 
 export { resend }

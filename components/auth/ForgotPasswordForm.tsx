@@ -19,11 +19,16 @@ export default function ForgotPasswordForm() {
     setMessage(null)
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "${window.location.origin}/reset-password",
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
       })
 
-      if (error) throw error
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Failed to send reset email')
+      }
       
       setStatus('success')
       setMessage('Password reset instructions have been sent to your email.')
@@ -123,3 +128,4 @@ export default function ForgotPasswordForm() {
     </div>
   )
 }
+
