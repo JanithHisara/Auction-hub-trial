@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { 
@@ -139,9 +139,7 @@ export default function DateTimePicker({
   // Button option lists
   const hoursList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-  const minuteTens = Math.floor(time.minute / 10) * 10
-  const minuteOnes = time.minute % 10
-
+    
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {name && <input type="hidden" name={name} value={value} required={required} />}
@@ -259,101 +257,73 @@ export default function DateTimePicker({
             {/* Vertical Divider (Desktop Only) */}
             <div className="hidden md:block w-[1px] bg-zinc-200 self-stretch" />
 
-            {/* Right Panel: Clickable Time Selector Grids */}
-            <div className={`w-full md:w-52 flex flex-col gap-3.5 ${activeTab === 'time' ? 'block' : 'hidden md:block'}`}>
+                        {/* Right Panel: Simple Time Input */}
+            <div className={w-full md:w-52 flex flex-col justify-center gap-6 }>
               
-              {/* Selected Time Display */}
-              <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-2 flex items-center justify-between">
-                <span className="text-zinc-950 font-bold text-[10px] uppercase tracking-wider">Selected Time</span>
-                <span className="text-zinc-900 font-extrabold text-xs bg-white px-2 py-0.5 border border-zinc-200 rounded-md">
-                  {time.hour}:{String(time.minute).padStart(2, '0')} {time.ampm}
-                </span>
-              </div>
-
-              {/* Hour Grid */}
-              <div>
-                <span className="text-zinc-400 font-bold text-[9px] uppercase tracking-wider block mb-1">Hour</span>
-                <div className="grid grid-cols-4 gap-1">
-                  {hoursList.map(hr => (
-                    <button
-                      key={hr}
-                      type="button"
-                      onClick={() => handleTimeChange('hour', hr)}
-                      className={`py-1 text-[11px] font-bold rounded-lg transition-all ${
-                        time.hour === hr
-                          ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
-                          : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
-                      }`}
-                    >
-                      {hr}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Minute Tens Grid */}
-              <div>
-                <span className="text-zinc-400 font-bold text-[9px] uppercase tracking-wider block mb-1">Minute (Tens)</span>
-                <div className="grid grid-cols-6 gap-1">
-                  {[0, 10, 20, 30, 40, 50].map(tens => (
-                    <button
-                      key={tens}
-                      type="button"
-                      onClick={() => handleTimeChange('minute', tens + minuteOnes)}
-                      className={`py-1 text-[10px] font-bold rounded-lg transition-all ${
-                        minuteTens === tens
-                          ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
-                          : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
-                      }`}
-                    >
-                      {tens}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Minute Ones Grid */}
-              <div>
-                <span className="text-zinc-400 font-bold text-[9px] uppercase tracking-wider block mb-1">Minute (Ones)</span>
-                <div className="grid grid-cols-5 gap-1">
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(ones => (
-                    <button
-                      key={ones}
-                      type="button"
-                      onClick={() => handleTimeChange('minute', minuteTens + ones)}
-                      className={`py-1 text-[10px] font-bold rounded-lg transition-all ${
-                        minuteOnes === ones
-                          ? 'bg-[var(--gold)] text-black font-extrabold shadow-sm'
-                          : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
-                      }`}
-                    >
-                      {ones}
-                    </button>
-                  ))}
+              <div className="text-center">
+                <span className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider block mb-3">Enter Time</span>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={time.hour || ''}
+                      onChange={(e) => {
+                        let val = parseInt(e.target.value.replace(/\D/g, ''))
+                        if (isNaN(val)) {
+                          handleTimeChange('hour', 0)
+                          return
+                        }
+                        if (val > 12) val = 12
+                        handleTimeChange('hour', val)
+                      }}
+                      onBlur={(e) => {
+                        let val = parseInt(e.target.value)
+                        if (isNaN(val) || val < 1) handleTimeChange('hour', 12)
+                      }}
+                      className="w-14 h-14 bg-zinc-50 border border-zinc-200 rounded-xl text-center text-xl font-extrabold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-transparent transition-all"
+                      placeholder="12"
+                    />
+                    <span className="absolute -bottom-5 left-0 right-0 text-center text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Hr</span>
+                  </div>
+                  
+                  <span className="text-zinc-300 font-black text-2xl mb-4">:</span>
+                  
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={String(time.minute).padStart(2, '0')}
+                      onChange={(e) => {
+                        let val = parseInt(e.target.value.replace(/\D/g, ''))
+                        if (isNaN(val)) {
+                          handleTimeChange('minute', 0)
+                          return
+                        }
+                        if (val > 59) val = 59
+                        handleTimeChange('minute', val)
+                      }}
+                      className="w-14 h-14 bg-zinc-50 border border-zinc-200 rounded-xl text-center text-xl font-extrabold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-transparent transition-all"
+                      placeholder="00"
+                    />
+                    <span className="absolute -bottom-5 left-0 right-0 text-center text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Min</span>
+                  </div>
                 </div>
               </div>
 
               {/* Period Switcher (AM/PM) */}
-              <div className="flex gap-1 mt-0.5">
+              <div className="flex gap-1 mt-4 p-1 bg-zinc-100 rounded-xl">
                 <button
                   type="button"
                   onClick={() => handleTimeChange('ampm', 'AM')}
-                  className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all ${
-                    time.ampm === 'AM'
-                      ? 'bg-[var(--gold)] text-black shadow-sm font-extrabold'
-                      : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
-                  }`}
+                  className={lex-1 py-2 text-xs font-bold rounded-lg transition-all }
                 >
                   AM
                 </button>
                 <button
                   type="button"
                   onClick={() => handleTimeChange('ampm', 'PM')}
-                  className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all ${
-                    time.ampm === 'PM'
-                      ? 'bg-[var(--gold)] text-black shadow-sm font-extrabold'
-                      : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
-                  }`}
+                  className={lex-1 py-2 text-xs font-bold rounded-lg transition-all }
                 >
                   PM
                 </button>
@@ -361,8 +331,7 @@ export default function DateTimePicker({
 
             </div>
           </div>
-
-          {/* Close / Confirm Done Button */}
+{/* Close / Confirm Done Button */}
           <button
             type="button"
             onClick={() => {
@@ -381,3 +350,5 @@ export default function DateTimePicker({
     </div>
   )
 }
+
+
