@@ -12,11 +12,12 @@ export async function POST(request: Request) {
     const supabaseAdmin = createAdminClient()
     
     // Generate the recovery link
+    const requestUrl = new URL(request.url)
     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email,
       options: {
-        redirectTo: "${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password"
+        redirectTo: `${requestUrl.origin}/reset-password`
       }
     })
     
@@ -42,4 +43,3 @@ export async function POST(request: Request) {
     )
   }
 }
-
