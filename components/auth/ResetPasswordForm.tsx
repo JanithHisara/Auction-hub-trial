@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Lock, ArrowRight, Loader2 } from 'lucide-react'
@@ -13,6 +13,24 @@ export default function ResetPasswordForm() {
   const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      
+      if (accessToken && refreshToken) {
+        supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        }).then(({ error }) => {
+          if (error) console.error('Error setting session:', error)
+          window.history.replaceState(null, '', window.location.pathname);
+        });
+      }
+    }
+  }, [supabase.auth])
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -150,3 +168,4 @@ export default function ResetPasswordForm() {
     </div>
   )
 }
+
