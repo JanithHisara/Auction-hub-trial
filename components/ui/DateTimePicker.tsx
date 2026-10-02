@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { 
@@ -267,7 +267,7 @@ export default function DateTimePicker({
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={time.hour || ''}
+                      value={time.hour === 0 ? '0' : (time.hour || '')}
                       onChange={(e) => {
                         let val = parseInt(e.target.value.replace(/\D/g, ''))
                         if (isNaN(val)) {
