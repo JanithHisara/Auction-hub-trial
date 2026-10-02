@@ -270,8 +270,8 @@ export default function DateTimePicker({
                       value={time.hour === 0 ? '0' : (time.hour || '')}
                       onChange={(e) => {
                         let val = parseInt(e.target.value.replace(/\D/g, ''))
-                        if (isNaN(val)) {
-                          handleTimeChange('hour', 0)
+                        if (isNaN(val) || val === 0) {
+                          setTime({ ...time, hour: 0 })
                           return
                         }
                         if (val > 12) val = 12
