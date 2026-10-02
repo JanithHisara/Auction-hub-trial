@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -35,12 +35,7 @@ interface Props {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount)
+  return ('Rs. ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount))
 }
 
 function formatTime(dateStr: string) {
