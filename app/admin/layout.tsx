@@ -63,11 +63,7 @@ export default async function AdminLayout({
                   Auctions
                 </NavLink>
               )}
-              {hasPermission(PERMISSIONS.MANAGE_ITEMS) && (
-                <NavLink href="/admin/gems" icon={<Gem className="w-4 h-4" />}>
-                  Items
-                </NavLink>
-              )}
+
               {hasPermission(PERMISSIONS.MANAGE_REGISTRATIONS) && (
                 <NavLink href="/admin/approvals" icon={<UserCheck className="w-4 h-4" />} badge={pendingCount}>
                   Approvals
