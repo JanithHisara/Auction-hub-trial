@@ -1,10 +1,11 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction, Gem } from '@/types/database'
 import RegisterButton from '@/components/auctions/RegisterButton'
 import AuctionCountdown from '@/components/auctions/AuctionCountdown'
 import AuctionLobbyClient from '@/components/auctions/AuctionLobbyClient'
+import AuctionItemsPreview from '@/components/auctions/AuctionItemsPreview'
 import LocalTime from '@/components/ui/LocalTime'
 
 async function getAuction(id: string) {
@@ -182,55 +183,13 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                   </span>
                 </div>
 
-                {auction.items.length > 0 ? (
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {auction.items.slice(0, 6).map((item: Gem & { gem_images: { image_url: string }[] }) => (
-                      <div key={item.id} className="group relative rounded-xl overflow-hidden bg-[var(--surface)] border border-[var(--border)] cursor-pointer">
-                        <div className="aspect-square overflow-hidden">
-                          {item.gem_images?.[0]?.image_url ? (
-                            <img 
-                              src={item.gem_images[0].image_url}
-                              alt={item.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[var(--surface-elevated)] to-[var(--background)] flex items-center justify-center">
-                              <span className="text-4xl opacity-30"></span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform">
-                          <h3 className="font-bold text-white mb-1">{item.name}</h3>
-                          {item.description && (
-                            <p className="text-xs text-white/70 line-clamp-2 mb-2">
-                              {item.description}
-                            </p>
-                          )}
-                          <p className="text-[var(--gold)] font-mono text-sm">
-                            Starting: {formatCurrency(item.starting_price)}
-                          </p>
-                        </div>
-                        {/* Always visible name badge */}
-                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent group-hover:opacity-0 transition-opacity">
-                          <h3 className="font-bold text-white text-sm truncate">{item.name}</h3>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                                {auction.items.length > 0 ? (
+                  <AuctionItemsPreview items={auction.items} />
                 ) : (
-                  <div className="text-center py-12 text-[var(--text-muted)]">
-                    Items will be revealed soon
+                  <div className="text-center py-12 bg-[var(--background-secondary)] rounded-xl border border-[var(--border)] border-dashed">
+                    <p className="text-[var(--text-muted)]">No items added to this auction yet.</p>
                   </div>
                 )}
-
-                {auction.items.length > 6 && (
-                  <p className="text-center text-[var(--text-muted)] mt-6">
-                    +{auction.items.length - 6} more items
-                  </p>
-                )}
-              </div>
-            </div>
 
             {/* Sidebar */}
             <div className="space-y-4 sm:space-y-6">

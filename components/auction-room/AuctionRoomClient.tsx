@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect, useRef } from 'react'
@@ -8,6 +8,7 @@ import { Auction, Gem, Bid, UserRewards, AuctionRegistration, User } from '@/typ
 import { Check, Loader2, Trophy, Pencil, LogOut } from 'lucide-react'
 import AuctionChatWidget from '@/components/chat/AuctionChatWidget'
 import MediaRenderer from '@/components/gems/MediaRenderer'
+import ImageCarousel from '@/components/ui/ImageCarousel'
 import Decimal from 'decimal.js'
 
 interface WinnerInfo {
@@ -1038,12 +1039,11 @@ export default function AuctionRoomClient({
               <div className="card-glass rounded-2xl overflow-hidden">
                 {/* Item Image/Video */}
                 <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
-                  {selectedItem.gem_images?.[0]?.image_url ? (
-                    <MediaRenderer
-                      src={selectedItem.gem_images[0].image_url}
+                  {selectedItem.gem_images?.length > 0 ? (
+                    <ImageCarousel 
+                      media={selectedItem.gem_images.map(img => ({ url: img.image_url, type: (img as any).media_type }))}
                       alt={selectedItem.name}
-                      mediaType={(selectedItem.gem_images[0] as { media_type?: string }).media_type}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[var(--surface)] to-[var(--background)] flex items-center justify-center">
