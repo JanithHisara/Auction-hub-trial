@@ -190,6 +190,8 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
                     <p className="text-[var(--text-muted)]">No items added to this auction yet.</p>
                   </div>
                 )}
+              </div>
+            </div>
 
             {/* Sidebar */}
             <div className="space-y-4 sm:space-y-6">
