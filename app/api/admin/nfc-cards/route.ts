@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     let query = adminClient
       .from('nfc_cards')
       .select(`
-        id, nfc_uid, user_id, is_active, label, created_at, updated_at,
+        id, nfc_uid, user_id, is_active, label, nfc_type, created_at, updated_at,
         users:users!user_id (id, email, display_name),
         created_by_user:users!created_by (id, email, display_name)
       `, { count: 'exact' })
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
-    const { nfc_uid, user_id, label } = body
+    const { nfc_uid, user_id, label, nfc_type } = body
 
     if (!nfc_uid || !user_id) {
       return NextResponse.json(
@@ -99,10 +99,11 @@ export async function POST(request: NextRequest) {
         nfc_uid,
         user_id,
         label: label || null,
+        nfc_type: nfc_type || 'permanent',
         is_active: true,
       })
       .select(`
-        id, nfc_uid, user_id, is_active, label, created_at, updated_at,
+        id, nfc_uid, user_id, is_active, label, nfc_type, created_at, updated_at,
         users:users!user_id (id, email, display_name),
         created_by_user:users!created_by (id, email, display_name)
       `)

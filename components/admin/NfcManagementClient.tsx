@@ -31,6 +31,7 @@ interface NfcCard {
   user_id: string
   is_active: boolean
   label: string | null
+  nfc_type?: 'permanent' | 'temporary' 
   created_at: string
   updated_at: string
   users: { id: string; email: string; display_name: string | null }
@@ -72,6 +73,33 @@ interface AuctionOption {
 
 export default function NfcManagementClient() {
   const [activeTab, setActiveTab] = useState<'nfc' | 'devices' | 'places'>('nfc')
+
+  const [quickDeleteUid, setQuickDeleteUid] = useState('')
+  const [quickDeleting, setQuickDeleting] = useState(false)
+  const [quickDeleteMsg, setQuickDeleteMsg] = useState<{text: string, type: 'success'|'error'} | null>(null)
+
+  async function handleQuickDelete(e: React.FormEvent) {
+    e.preventDefault()
+    if (!quickDeleteUid.trim()) return
+    setQuickDeleting(true)
+    setQuickDeleteMsg(null)
+    try {
+      const res = await fetch('/api/admin/nfc-cards/quick-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nfc_uid: quickDeleteUid.trim() })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to delete')
+      setQuickDeleteMsg({text: Temporary card  successfully deleted., type: 'success'})
+      setQuickDeleteUid('')
+      fetchCards(currentPage)
+    } catch (err) {
+      setQuickDeleteMsg({text: err instanceof Error ? err.message : 'Error', type: 'error'})
+    } finally {
+      setQuickDeleting(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -282,7 +310,7 @@ function NfcCardsTab() {
                       <div className="flex items-center gap-2">
                         <CreditCard className="w-4 h-4 text-[var(--gold)] shrink-0" />
                         <div>
-                          <div className="text-sm font-mono font-medium text-white">{card.nfc_uid}</div>
+                          <div className="flex gap-2 items-center"><div className="text-sm font-mono font-medium text-white">{card.nfc_uid}</div><span className="text-[10px] px-1.5 py-0.5 rounded-full border border-[var(--border)] text-[var(--text-secondary)]">{card.nfc_type === 'temporary' ? 'Temp' : 'Perm'}</span></div>
                           {card.label && (
                             <div className="text-xs text-[var(--text-secondary)]">{card.label}</div>
                           )}
@@ -513,7 +541,7 @@ function CreateNfcCardModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-sm font-medium text-[var(--text-secondary)]">User *</label>
-              {!selectedUser && (
+              {!selectedUser && nfcType === 'temporary' && (
                 <button
                   type="button"
                   onClick={() => setShowCreateUser(true)}
@@ -613,6 +641,8 @@ function InlineCreateUserModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!displayName.trim()) { setError('Name is required'); return }
+    if (!email.trim()) { setError('Email is required'); return }
+    if (!phone.trim()) { setError('Phone is required'); return }
     if (!password.trim()) { setError('Password is required'); return }
 
     setSubmitting(true)
@@ -687,7 +717,7 @@ function InlineCreateUserModal({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email</label>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email *</label>
             <input
               type="email"
               value={email}
