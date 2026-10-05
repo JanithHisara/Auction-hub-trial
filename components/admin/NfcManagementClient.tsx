@@ -145,29 +145,35 @@ function NfcCardsTab() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingCard, setEditingCard] = useState<NfcCard | null>(null)
 
-  const fetchCards = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const params = new URLSearchParams({ page: page.toString() })
-      if (search) params.set('search', search)
-      if (statusFilter) params.set('status', statusFilter)
-
-      const res = await fetch(`/api/admin/nfc-cards?${params}`)
-      if (!res.ok) throw new Error('Failed to load NFC cards')
-      const data = await res.json()
-      setCards(data.nfcCards)
-      setTotal(data.total)
-      setTotalPages(data.totalPages)
-    } catch {
-      setError('Failed to load NFC cards')
-    } finally {
-      setLoading(false)
-    }
-  }, [page, search, statusFilter])
+  
 
   useEffect(() => { fetchCards() }, [fetchCards])
-  useEffect(() => { setPage(1) }, [search, statusFilter])
+  async function handleQuickDelete(e: React.FormEvent) {
+    e.preventDefault()
+    if (!quickDeleteUid.trim()) return
+    setQuickDeleting(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const res = await fetch('/api/admin/nfc-cards/quick-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nfc_uid: quickDeleteUid.trim() })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to delete')
+      setSuccess(`Temporary card ${quickDeleteUid} successfully deleted.`)
+      setQuickDeleteUid('')
+      setShowQuickDelete(false)
+      fetchCards()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error deleting card')
+    } finally {
+      setQuickDeleting(false)
+    }
+  }
+
+  useEffect(() => { setPage(1) }, [search, statusFilter, nfcSubTab])
 
   async function handleToggleActive(card: NfcCard) {
     try {
@@ -898,10 +904,10 @@ function DevicesTab() {
     } finally {
       setLoading(false)
     }
-  }, [page, search, statusFilter])
+  }, [page, search, statusFilter, nfcSubTab])
 
   useEffect(() => { fetchDevices() }, [fetchDevices])
-  useEffect(() => { setPage(1) }, [search, statusFilter])
+  useEffect(() => { setPage(1) }, [search, statusFilter, nfcSubTab])
 
   function handleCreated() {
     setShowCreateForm(false)
