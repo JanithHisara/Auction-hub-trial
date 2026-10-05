@@ -147,31 +147,7 @@ function NfcCardsTab() {
 
   
 
-  useEffect(() => { fetchCards() }, [fetchCards])
-  async function handleQuickDelete(e: React.FormEvent) {
-    e.preventDefault()
-    if (!quickDeleteUid.trim()) return
-    setQuickDeleting(true)
-    setError(null)
-    setSuccess(null)
-    try {
-      const res = await fetch('/api/admin/nfc-cards/quick-delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nfc_uid: quickDeleteUid.trim() })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to delete')
-      setSuccess(`Temporary card ${quickDeleteUid} successfully deleted.`)
-      setQuickDeleteUid('')
-      setShowQuickDelete(false)
-      fetchCards()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error deleting card')
-    } finally {
-      setQuickDeleting(false)
-    }
-  }
+  
 
   useEffect(() => { setPage(1) }, [search, statusFilter, nfcSubTab])
 
