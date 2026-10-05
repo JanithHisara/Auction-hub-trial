@@ -285,9 +285,10 @@ export default function DateTimePicker({
                 <div className="flex items-center justify-center gap-4">
                   
                   {/* Hour Roller */}
-                  <div 
-                    className="relative flex flex-col items-center"
-                    onWheel={(e) => { e.preventDefault(); e.stopPropagation();
+                    <div 
+                      ref={hourRef}
+                      className="relative flex flex-col items-center"
+                      onWheel={(e) => { 
                       if (e.deltaY > 0) {
                         handleTimeChange('hour', time.hour === 1 ? 12 : time.hour - 1);
                       } else {
@@ -321,9 +322,10 @@ export default function DateTimePicker({
                   <span className="text-zinc-300 font-black text-2xl mb-4">:</span>
                   
                   {/* Minute Roller */}
-                  <div 
-                    className="relative flex flex-col items-center"
-                    onWheel={(e) => { e.preventDefault(); e.stopPropagation();
+                    <div 
+                      ref={minRef}
+                      className="relative flex flex-col items-center"
+                      onWheel={(e) => { 
                       if (e.deltaY > 0) {
                         handleTimeChange('minute', time.minute === 0 ? 59 : time.minute - 1);
                       } else {
