@@ -402,6 +402,7 @@ function CreateNfcCardModal({
   const [error, setError] = useState<string | null>(null)
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [showCreateUser, setShowCreateUser] = useState(false)
+    const [nfcType, setNfcType] = useState<'permanent' | 'temporary'>('permanent')
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -440,8 +441,9 @@ function CreateNfcCardModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nfc_uid: nfcUid.trim(),
-          user_id: userId,
-          label: label.trim() || null,
+              user_id: userId,
+              label: label.trim() || null,
+              nfc_type: nfcType,
         }),
       })
 
