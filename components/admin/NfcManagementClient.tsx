@@ -220,8 +220,18 @@ function NfcCardsTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nfc_uid: quickDeleteUid.trim() })
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to delete')
+      
+      let data = {}
+      const text = await res.text()
+      if (text) {
+        try {
+          data = JSON.parse(text)
+        } catch (e) {
+          throw new Error(`Server returned non-JSON response: ${text || res.statusText}`)
+        }
+      }
+      
+      if (!res.ok) throw new Error(data.error || `Failed to delete (${res.status})`)
       setSuccess(`Temporary card ${quickDeleteUid} successfully deleted.`)
       setQuickDeleteUid('')
       setShowQuickDelete(false)
