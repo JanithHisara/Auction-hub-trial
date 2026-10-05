@@ -221,7 +221,7 @@ function NfcCardsTab() {
         body: JSON.stringify({ nfc_uid: quickDeleteUid.trim() })
       })
       
-      let data = {}
+      let data: any = {}
       const text = await res.text()
       if (text) {
         try {
