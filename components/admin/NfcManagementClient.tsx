@@ -91,7 +91,7 @@ export default function NfcManagementClient() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to delete')
-      setQuickDeleteMsg({text: Temporary card  successfully deleted., type: 'success'})
+      setQuickDeleteMsg({text: `Temporary card ${quickDeleteUid} successfully deleted.`, type: 'success'})
       setQuickDeleteUid('')
       fetchCards(currentPage)
     } catch (err) {
