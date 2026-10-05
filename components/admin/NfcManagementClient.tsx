@@ -1002,10 +1002,10 @@ function DevicesTab() {
     } finally {
       setLoading(false)
     }
-  }, [page, search, statusFilter, nfcSubTab])
+  }, [page, search, statusFilter])
 
   useEffect(() => { fetchDevices() }, [fetchDevices])
-  useEffect(() => { setPage(1) }, [search, statusFilter, nfcSubTab])
+  useEffect(() => { setPage(1) }, [search, statusFilter])
 
   function handleCreated() {
     setShowCreateForm(false)
