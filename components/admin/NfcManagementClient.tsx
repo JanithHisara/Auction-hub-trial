@@ -78,28 +78,7 @@ export default function NfcManagementClient() {
   const [quickDeleting, setQuickDeleting] = useState(false)
   const [quickDeleteMsg, setQuickDeleteMsg] = useState<{text: string, type: 'success'|'error'} | null>(null)
 
-  async function handleQuickDelete(e: React.FormEvent) {
-    e.preventDefault()
-    if (!quickDeleteUid.trim()) return
-    setQuickDeleting(true)
-    setQuickDeleteMsg(null)
-    try {
-      const res = await fetch('/api/admin/nfc-cards/quick-delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nfc_uid: quickDeleteUid.trim() })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to delete')
-      setQuickDeleteMsg({text: `Temporary card ${quickDeleteUid} successfully deleted.`, type: 'success'})
-      setQuickDeleteUid('')
-      fetchCards(currentPage)
-    } catch (err) {
-      setQuickDeleteMsg({text: err instanceof Error ? err.message : 'Error', type: 'error'})
-    } finally {
-      setQuickDeleting(false)
-    }
-  }
+
 
   return (
     <div className="space-y-4">
