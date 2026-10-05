@@ -38,7 +38,15 @@ interface MonitorData {
 }
 
 function formatCurrency(amount: number) {
-  return ('Rs. ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount))
+  if (amount >= 1_000_000_000) {
+    return 'Rs. ' + (amount / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+  } else if (amount >= 1_000_000) {
+    return 'Rs. ' + (amount / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  } else if (amount >= 1_000) {
+    return 'Rs. ' + (amount / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  } else {
+    return 'Rs. ' + amount.toString();
+  }
 }
 
 function formatTime(dateStr: string) {
