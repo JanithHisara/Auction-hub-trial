@@ -37,6 +37,8 @@ export default function DateTimePicker({
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'date' | 'time'>('date')
   const containerRef = useRef<HTMLDivElement>(null)
+  const hourRef = useRef<HTMLDivElement>(null)
+  const minRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -84,6 +86,24 @@ export default function DateTimePicker({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // Prevent page scroll when using mouse wheel on time pickers
+  useEffect(() => {
+    const preventScroll = (e: WheelEvent) => {
+      e.preventDefault()
+    }
+    
+    const hrEl = hourRef.current
+    const minEl = minRef.current
+    
+    if (hrEl) hrEl.addEventListener('wheel', preventScroll, { passive: false })
+    if (minEl) minEl.addEventListener('wheel', preventScroll, { passive: false })
+    
+    return () => {
+      if (hrEl) hrEl.removeEventListener('wheel', preventScroll)
+      if (minEl) minEl.removeEventListener('wheel', preventScroll)
+    }
+  }, [isOpen, activeTab])
 
   // Helper to format output
   const updateValue = (newDay: number, newHour: number, newMin: number, newAmpm: 'AM' | 'PM') => {
