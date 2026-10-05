@@ -1394,7 +1394,7 @@ export default function AuctionRoomClient({
                                     <input
                                       type="text"
                                       inputMode="decimal"
-                                      value={bidAmount}
+                                      value={bidAmount ? bidAmount.split('.').map((p,i) => i===0 ? p.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',') : p).join('.') : ''}
                                       onChange={(e) => setBidAmount(e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'))}
                                       placeholder={(userBidAmount || minBid).toString()}
                                       className="w-full pl-8 pr-4 py-4 text-2xl font-bold bg-[var(--surface)] border-2 border-[var(--border)] rounded-xl focus:border-[var(--gold)] text-white"
@@ -1483,7 +1483,7 @@ export default function AuctionRoomClient({
                               <input
                                 type="text"
                                 inputMode="decimal"
-                                value={bidAmount}
+                                value={bidAmount ? bidAmount.split('.').map((p,i) => i===0 ? p.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',') : p).join('.') : ''}
                                 onChange={(e) => {
                                       const val = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
                                       setBidAmount(val)
