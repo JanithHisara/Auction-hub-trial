@@ -31,15 +31,17 @@ interface MonitorData {
   totalItems: number
 }
 
-function formatCurrency(amount: number) {
-  if (amount >= 1_000_000_000) {
-    return 'Rs. ' + (amount / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
-  } else if (amount >= 1_000_000) {
-    return 'Rs. ' + (amount / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
-  } else if (amount >= 1_000) {
-    return 'Rs. ' + (amount / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+function formatCurrency(amount: number | null | undefined) {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) return 'Rs. 0';
+  const val = Number(amount);
+  if (val >= 1_000_000_000) {
+    return 'Rs. ' + (val / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+  } else if (val >= 1_000_000) {
+    return 'Rs. ' + (val / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  } else if (val >= 1_000) {
+    return 'Rs. ' + (val / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
   } else {
-    return 'Rs. ' + amount.toString();
+    return 'Rs. ' + val.toString();
   }
 }
 
