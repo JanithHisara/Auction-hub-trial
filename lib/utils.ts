@@ -6,7 +6,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  return ('Rs. ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount))
+  if (amount >= 1_000_000_000) {
+    return 'Rs. ' + (amount / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+  } else if (amount >= 1_000_000) {
+    return 'Rs. ' + (amount / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  } else if (amount >= 1_000) {
+    return 'Rs. ' + (amount / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  } else {
+    return 'Rs. ' + amount.toString();
+  }
 }
 
 export function formatDate(date: Date | string): string {
