@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PERMISSIONS } from '@/lib/permissions'
+import { sendAuctionAccessEmail } from '@/lib/email/resend'
 
 export async function GET(request: NextRequest) {
   try {
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     const { data: targetUser } = await adminClient
       .from('users')
-      .select('id')
+      .select('id, email')
       .eq('id', user_id)
       .single()
 
@@ -141,6 +142,36 @@ export async function POST(request: NextRequest) {
         })
         if (regError) {
           console.error("Auction registration error:", regError)
+        } else if (targetUser.email) {
+          // Fetch auction details for the email
+          const { data: auction } = await adminClient
+            .from('auctions')
+            .select('name, description, auction_start')
+            .eq('id', auction_id)
+            .single()
+
+          if (auction) {
+            try {
+              const auctionDate = new Date(auction.auction_start).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+              
+              await sendAuctionAccessEmail({
+                to: targetUser.email,
+                auctionName: auction.name,
+                auctionDate,
+                auctionDescription: auction.description,
+                accessToken: token,
+              })
+            } catch (emailErr) {
+              console.error('Failed to send confirm email:', emailErr)
+            }
+          }
         }
       }
     }

@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { requirePermission } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PERMISSIONS } from '@/lib/permissions'
+import { sendAuctionAccessEmail } from '@/lib/email/resend'
 
 export async function POST(
   request: NextRequest,
@@ -24,7 +25,7 @@ export async function POST(
     // Verify auction exists
     const { data: auction } = await adminClient
       .from('auctions')
-      .select('id, name, max_participants')
+      .select('id, name, description, auction_start, max_participants')
       .eq('id', auctionId)
       .single()
 
@@ -90,6 +91,29 @@ export async function POST(
 
     if (regError) {
       return NextResponse.json({ error: regError.message }, { status: 500 })
+    }
+
+    if (user.email) {
+      try {
+        const auctionDate = new Date(auction.auction_start).toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+        
+        await sendAuctionAccessEmail({
+          to: user.email,
+          auctionName: auction.name,
+          auctionDate,
+          auctionDescription: auction.description,
+          accessToken: registration.access_token,
+        })
+      } catch (emailErr) {
+        console.error('Failed to send confirm email:', emailErr)
+      }
     }
 
     return NextResponse.json({
