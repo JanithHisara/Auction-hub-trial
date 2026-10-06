@@ -21,7 +21,7 @@ export async function PATCH(
 
     const { data: registration, error: regError } = await supabase
       .from('auction_registrations')
-      .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name), auction:auctions(name, auction_start)')
+      .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name), auction:auctions(name, description, auction_start)')
       .eq('id', registrationId)
       .eq('auction_id', auctionId)
       .single()
@@ -68,9 +68,12 @@ export async function PATCH(
     const userObj = Array.isArray(userRaw) ? userRaw[0] : userRaw;
     const userEmail = userObj?.email;
 
-    if (approval_status === 'approved' && userEmail) {
+if (approval_status === 'approved' && userEmail) {
       try {
-        const auctionDate = new Date(registration.auction.auction_start).toLocaleDateString('en-US', {
+        const auctionRaw = registration.auction as any;
+        const auctionObj = Array.isArray(auctionRaw) ? auctionRaw[0] : auctionRaw;
+
+        const auctionDate = new Date(auctionObj.auction_start).toLocaleDateString('en-US', {
           weekday: 'long',
           month: 'long',
           day: 'numeric',
@@ -81,8 +84,9 @@ export async function PATCH(
 
         await sendAuctionAccessEmail({
           to: userEmail,
-          auctionName: registration.auction.name,
+          auctionName: auctionObj.name,
           auctionDate,
+          auctionDescription: auctionObj.description,
           accessToken: registration.access_token,
         })
 
