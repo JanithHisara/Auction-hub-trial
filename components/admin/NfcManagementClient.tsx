@@ -670,7 +670,7 @@ function CreateNfcCardModal({
               >
                 <option value="">-- No Auction (Skip Registration) --</option>
                 {auctions.map(a => (
-                  <option key={a.id} value={a.id}>{a.title} ({a.status})</option>
+                  <option key={a.id} value={a.id}>{a.name} ({a.status})</option>
                 ))}
               </select>
             </div>
