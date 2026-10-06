@@ -243,19 +243,53 @@ export default async function AuctionRoomPage({ params }: { params: Promise<{ to
   }
 
   return (
-    <AuctionRoomClient 
-      auction={result.auction}
-      items={result.items}
-      user={result.user}
-      registration={result.registration}
-      rewards={result.rewards}
-      token={token}
-      initialIsHeld={result.isHeld}
-      adminPhone={result.adminPhone}
-      initialEliminations={result.eliminations}
-      totalRegisteredBidders={result.totalRegisteredBidders}
-      initialEliminationCounts={result.eliminationCounts}
-    />
+    <>
+        {result.auction.auction_type === 'progressive_elimination_auction' && (
+          <ProgressiveRoomClient 
+            auction={result.auction}
+            items={result.items}
+            user={result.user}
+            registration={result.registration}
+            rewards={result.rewards}
+            token={token}
+            initialIsHeld={result.isHeld}
+            adminPhone={result.adminPhone}
+            initialEliminations={result.eliminations}
+            totalRegisteredBidders={result.totalRegisteredBidders}
+            initialEliminationCounts={result.eliminationCounts}
+          />
+        )}
+        {result.auction.auction_type === 'tender_base_fixed_bid' && (
+          <TenderRoomClient 
+            auction={result.auction}
+            items={result.items}
+            user={result.user}
+            registration={result.registration}
+            rewards={result.rewards}
+            token={token}
+            initialIsHeld={result.isHeld}
+            adminPhone={result.adminPhone}
+            initialEliminations={result.eliminations}
+            totalRegisteredBidders={result.totalRegisteredBidders}
+            initialEliminationCounts={result.eliminationCounts}
+          />
+        )}
+        {result.auction.auction_type === 'incremental_approval_auction' && (
+          <IncrementalRoomClient 
+            auction={result.auction}
+            items={result.items}
+            user={result.user}
+            registration={result.registration}
+            rewards={result.rewards}
+            token={token}
+            initialIsHeld={result.isHeld}
+            adminPhone={result.adminPhone}
+            initialEliminations={result.eliminations}
+            totalRegisteredBidders={result.totalRegisteredBidders}
+            initialEliminationCounts={result.eliminationCounts}
+          />
+        )}
+      </>
   )
 }
 
