@@ -70,14 +70,11 @@ export default function NewAuctionPage() {
         throw new Error('Auction end time must be in the future')
       }
 
-      if (regEnd <= regStart) {
-        throw new Error('Registration end time must be after registration start time')
-      }
-      if (aucStart <= regEnd) {
-        throw new Error('Auction start time must be after registration end time')
-      }
       if (aucEnd <= aucStart) {
         throw new Error('Auction end time must be after auction start time')
+      }
+      if (aucStart < regStart) {
+        throw new Error('Auction start time cannot be before registration start time')
       }
 
       if (!formData.password || formData.password.length !== 4 || !/^\d{4}$/.test(formData.password)) {
