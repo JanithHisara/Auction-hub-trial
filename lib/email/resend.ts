@@ -5,6 +5,12 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null
 
+// Validate that a string looks like a real email before using it
+function isValidEmail(val: string | undefined): val is string {
+  if (!val) return false
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.replace(/^.*<(.+)>$/, '$1'))
+}
+
 export interface AuctionAccessEmailParams {
   to: string
   auctionName: string
@@ -39,7 +45,7 @@ export async function sendAuctionAccessEmail({
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    ...(replyTo ? { replyTo } : {}),
+    ...(isValidEmail(replyTo) ? { replyTo } : {}),
     subject: `Registration Confirmed: ${auctionName}`,
     html: generateAuctionEmailHtml({
       auctionName,
@@ -49,9 +55,6 @@ export async function sendAuctionAccessEmail({
       userName,
     }),
     text: `Your Auction Access Pass\n\n${userName ? `Hi ${userName},` : 'Hello,'}\n\nYou've been approved for ${auctionName}.\nDate: ${auctionDate}\n\nEnter your auction room: ${auctionUrl}\n\nThis link is unique to you. Do not share it with others.\n\nImportant:\n- You must be logged into your account to enter\n- This link is personal and non-transferable\n- Join on time - late entry may limit bidding\n\nAuctionhub - Premium gem auctions`,
-    headers: {
-      'List-Unsubscribe': `<mailto:${replyTo || 'unsubscribe@auctionhub.com'}>`,
-    },
   })
 
   if (error) {
@@ -256,7 +259,7 @@ export async function sendWinnerEmail({
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    ...(replyTo ? { replyTo } : {}),
+    ...(isValidEmail(replyTo) ? { replyTo } : {}),
     subject: `Congratulations! You Won: ${gemName}`,
     html: generateWinnerEmailHtml({
       userName,
@@ -268,9 +271,6 @@ export async function sendWinnerEmail({
       profileUrl,
     }),
     text: `Congratulations! You Won: ${gemName}\n\n${userName ? `Dear ${userName},` : 'Hello,'}\n\nYou've won ${gemName} in the ${auctionName} auction!\n\nWinning Bid: ${formattedAmount}\n\nNext Steps:\n1. Complete payment within 48 hours: ${finalPaymentUrl}\n2. We'll contact you for delivery arrangements\n3. Securely packaged and insured delivery\n\nView your profile: ${profileUrl}\n\nThank you for participating!\nAuctionhub - Premium gem auctions`,
-    headers: {
-      'List-Unsubscribe': `<mailto:${replyTo || 'unsubscribe@auctionhub.com'}>`,
-    },
   })
 
   if (error) {
@@ -625,7 +625,7 @@ export async function sendAuctionSummaryEmail({
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    ...(replyTo ? { replyTo } : {}),
+    ...(isValidEmail(replyTo) ? { replyTo } : {}),
     subject: `Auction Summary: ${auctionName}`,
     html: generateAuctionSummaryEmailHtml({
       userName,
