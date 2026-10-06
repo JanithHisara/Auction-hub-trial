@@ -72,12 +72,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
           const aucStart = new Date(selectedAuction.auction_start)
           const aucEnd = new Date(selectedAuction.auction_end)
           
-          if (formData.start_time) {
-            const start = new Date(formData.start_time)
-            if (start < aucStart || start > aucEnd) {
-              throw new Error(`Item start time must be between the selected auction's start time (${new Date(selectedAuction.auction_start).toLocaleString()}) and end time (${new Date(selectedAuction.auction_end).toLocaleString()})`)
-            }
-          }
+          
           
         }
       }
