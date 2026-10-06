@@ -182,7 +182,7 @@ function NfcCardsTab() {
         const res = await fetch('/api/admin/auctions-list')
         if (res.ok) {
           const data = await res.json()
-          const activeAuctions = data.auctions.filter((a: any) => ['open', 'close', 'register', 'live'].includes(a.status.toLowerCase()))
+          const activeAuctions = data.auctions.filter((a: any) => ['registration_open', 'live'].includes(a.status.toLowerCase()))
           setAuctions(activeAuctions)
         }
       } catch (err) {
