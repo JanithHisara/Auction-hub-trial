@@ -51,8 +51,10 @@ export default function NewAuctionPage() {
     setLoading(true)
 
     try {
+      // Auto-set registration_end to auction_end since they end together
+      formData.registration_end = formData.auction_end;
+
       const regStart = new Date(formData.registration_start)
-      const regEnd = new Date(formData.registration_end)
       const aucStart = new Date(formData.auction_start)
       const aucEnd = new Date(formData.auction_end)
 
@@ -60,21 +62,18 @@ export default function NewAuctionPage() {
       if (regStart < now) {
         throw new Error('Registration start time must be in the future')
       }
-      if (regEnd < now) {
-        throw new Error('Registration end time must be in the future')
-      }
       if (aucStart < now) {
         throw new Error('Auction start time must be in the future')
       }
       if (aucEnd < now) {
-        throw new Error('Auction end time must be in the future')
+        throw new Error('End bidding time must be in the future')
       }
 
-      if (regEnd <= aucStart) {
-        throw new Error('End bidding time must be after bid start time')
+      if (aucStart <= regStart) {
+        throw new Error('Bid start time must be after registration opens')
       }
-      if (aucStart < regStart) {
-        throw new Error('Bid start time cannot be before registration start time')
+      if (aucEnd <= aucStart) {
+        throw new Error('End bidding time must be after bid start time')
       }
 
       if (!formData.password || formData.password.length !== 4 || !/^\d{4}$/.test(formData.password)) {
@@ -228,13 +227,13 @@ export default function NewAuctionPage() {
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  End Bidding Time *
+                  Bid Start Time *
                 </label>
                 <DateTimePicker
-                  value={formData.registration_end}
-                  onChange={(val) => setFormData(prev => ({ ...prev, registration_end: val }))}
+                  value={formData.auction_start}
+                  onChange={(val) => setFormData(prev => ({ ...prev, auction_start: val }))}
                   required
-                  placeholder="Select end bidding time"
+                  placeholder="Select bid start time"
                 />
               </div>
             </div>
@@ -243,13 +242,13 @@ export default function NewAuctionPage() {
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Bid Start Time *
+                  End Bidding Time *
                 </label>
                 <DateTimePicker
-                  value={formData.auction_start}
-                  onChange={(val) => setFormData(prev => ({ ...prev, auction_start: val }))}
+                  value={formData.auction_end}
+                  onChange={(val) => setFormData(prev => ({ ...prev, auction_end: val }))}
                   required
-                  placeholder="Select bid start time"
+                  placeholder="Select end bidding time"
                 />
               </div>
             </div>

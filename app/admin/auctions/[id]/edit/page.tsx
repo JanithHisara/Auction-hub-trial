@@ -241,171 +241,104 @@ export default function EditAuctionPage() {
             </div>
           </section>
 
-          {/* Auction Type */}
-          <section className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm">2</span>
-              Auction Type
-            </h2>
-            
-            <div className="grid sm:grid-cols-2 gap-4">
-              <label 
-                className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
-                  formData.auction_type === 'tender_base_fixed_bid' 
-                    ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
-                    : 'border-[var(--border)] hover:border-[var(--gold)]/50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="auction_type"
-                  value="tender_base_fixed_bid"
-                  checked={formData.auction_type === 'tender_base_fixed_bid'}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    formData.auction_type === 'tender_base_fixed_bid' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
-                  }`}>
-                    <TrendingUp className={`w-5 h-5 ${formData.auction_type === 'tender_base_fixed_bid' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">Closed Bid Auction</h3>
-                    <p className="text-sm text-[var(--text-muted)] mt-1">
-                      Bidders submit any amount above minimum. Highest bid wins.
-                    </p>
-                  </div>
-                </div>
-                {formData.auction_type === 'tender_base_fixed_bid' && (
-                  <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
-                    <span className="text-black text-xs"></span>
-                  </div>
-                )}
-              </label>
-
-              <label 
-                className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
-                  formData.auction_type === 'progressive_elimination_auction' 
-                    ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
-                    : 'border-[var(--border)] hover:border-[var(--gold)]/50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="auction_type"
-                  value="progressive_elimination_auction"
-                  checked={formData.auction_type === 'progressive_elimination_auction'}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    formData.auction_type === 'progressive_elimination_auction' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
-                  }`}>
-                    <Gavel className={`w-5 h-5 ${formData.auction_type === 'progressive_elimination_auction' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">English Auction</h3>
-                    <p className="text-sm text-[var(--text-muted)] mt-1">
-                      Admin raises the price each round and only one bidder wins per round. If no one accepts, the last round winner wins.
-                    </p>
-                  </div>
-                </div>
-                {formData.auction_type === 'progressive_elimination_auction' && (
-                  <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
-                    <span className="text-black text-xs"></span>
-                  </div>
-                )}
-              </label>
-
-              <label 
-                className={`relative cursor-pointer p-5 rounded-xl border-2 transition-all ${
-                  formData.auction_type === 'incremental_approval_auction' 
-                    ? 'border-[var(--gold)] bg-[var(--gold)]/10' 
-                    : 'border-[var(--border)] hover:border-[var(--gold)]/50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="auction_type"
-                  value="incremental_approval_auction"
-                  checked={formData.auction_type === 'incremental_approval_auction'}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    formData.auction_type === 'incremental_approval_auction' ? 'bg-[var(--gold)]' : 'bg-[var(--surface)]'
-                  }`}>
-                    <Target className={`w-5 h-5 ${formData.auction_type === 'incremental_approval_auction' ? 'text-black' : 'text-[var(--text-muted)]'}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">Progressive Elimination Auction</h3>
-                    <p className="text-sm text-[var(--text-muted)] mt-1">
-                      Admin raises the price each round. Bidders who don&apos;t accept are eliminated. If no one accepts, the next round can start with a decreased price. Last remaining bidder wins.
-                    </p>
-                  </div>
-                </div>
-                {formData.auction_type === 'incremental_approval_auction' && (
-                  <div className="absolute top-3 right-3 w-5 h-5 bg-[var(--gold)] rounded-full flex items-center justify-center">
-                    <span className="text-black text-xs"></span>
-                  </div>
-                )}
-              </label>
-            </div>
-          </section>
+          
 
           {/* Schedule */}
           <section className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm">3</span>
+              <span className="w-8 h-8 rounded-lg bg-[var(--gold)]/20 flex items-center justify-center text-sm">2</span>
               Schedule
             </h2>
             
 
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Registration Opens *
-                </label>
-                <DateTimePicker
-                  value={formData.registration_start}
-                  onChange={(val) => setFormData(prev => ({ ...prev, registration_start: val }))}
-                  required
-                  placeholder="Select registration open time"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Registration Closes *
-                </label>
-                <DateTimePicker
-                  value={formData.registration_end}
-                  onChange={(val) => setFormData(prev => ({ ...prev, registration_end: val }))}
-                  required
-                  placeholder="Select registration close time"
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-1 gap-4">
-              <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Auction Starts *
-                </label>
-                <DateTimePicker
-                  value={formData.auction_start}
-                  onChange={(val) => setFormData(prev => ({ ...prev, auction_start: val }))}
-                  required
-                  placeholder="Select auction start time"
-                />
-              </div>
-            </div>
+            {formData.auction_type === 'tender_base_fixed_bid' ? (
+              <>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Registration Opens *
+                    </label>
+                    <DateTimePicker
+                      value={formData.registration_start}
+                      onChange={(val) => setFormData(prev => ({ ...prev, registration_start: val }))}
+                      required
+                      placeholder="Select registration open time"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Bid Start Time *
+                    </label>
+                    <DateTimePicker
+                      value={formData.auction_start}
+                      onChange={(val) => setFormData(prev => ({ ...prev, auction_start: val }))}
+                      required
+                      placeholder="Select bid start time"
+                    />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      End Bidding Time *
+                    </label>
+                    <DateTimePicker
+                      value={formData.registration_end} // using registration_end here but we will also set auction_end
+                      onChange={(val) => setFormData(prev => ({ ...prev, registration_end: val }))}
+                      required
+                      placeholder="Select end bidding time"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Registration Opens *
+                    </label>
+                    <DateTimePicker
+                      value={formData.registration_start}
+                      onChange={(val) => setFormData(prev => ({ ...prev, registration_start: val }))}
+                      required
+                      placeholder="Select registration open time"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Registration Closes *
+                    </label>
+                    <DateTimePicker
+                      value={formData.registration_end}
+                      onChange={(val) => setFormData(prev => ({ ...prev, registration_end: val }))}
+                      required
+                      placeholder="Select registration close time"
+                    />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Auction Starts *
+                    </label>
+                    <DateTimePicker
+                      value={formData.auction_start}
+                      onChange={(val) => setFormData(prev => ({ ...prev, auction_start: val }))}
+                      required
+                      placeholder="Select auction start time"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </section>
 
           {/* Settings */}
