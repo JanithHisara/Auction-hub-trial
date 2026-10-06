@@ -70,11 +70,11 @@ export default function NewAuctionPage() {
         throw new Error('Auction end time must be in the future')
       }
 
-      if (aucEnd <= aucStart) {
-        throw new Error('Auction end time must be after auction start time')
+      if (regEnd <= aucStart) {
+        throw new Error('End bidding time must be after bid start time')
       }
       if (aucStart < regStart) {
-        throw new Error('Auction start time cannot be before registration start time')
+        throw new Error('Bid start time cannot be before registration start time')
       }
 
       if (!formData.password || formData.password.length !== 4 || !/^\d{4}$/.test(formData.password)) {
@@ -111,7 +111,7 @@ export default function NewAuctionPage() {
           registration_start: toUTCISO(formData.registration_start),
           registration_end: toUTCISO(formData.registration_end),
           auction_start: toUTCISO(formData.auction_start),
-          auction_end: new Date('2099-12-31T23:59:59Z').toISOString(),
+          auction_end: toUTCISO(formData.registration_end),
           max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
           entry_fee: parseFloat(formData.entry_fee) || 0,
           status: 'draft',
