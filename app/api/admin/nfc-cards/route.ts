@@ -119,8 +119,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (auction_id && nfc_type === 'temporary') {
-      const crypto = require('crypto')
-      const token = crypto.randomBytes(32).toString('hex')
+      const { randomUUID } = require('crypto')
+      const token = randomUUID()
       
       // Check if already registered
       const { data: existingReg } = await adminClient
@@ -131,12 +131,17 @@ export async function POST(request: NextRequest) {
         .limit(1)
         
       if (!existingReg || existingReg.length === 0) {
-        await adminClient.from('auction_registrations').insert({
+        const { error: regError } = await adminClient.from('auction_registrations').insert({
           auction_id,
           user_id,
           access_token: token,
+          approval_status: 'approved',
+          approved_at: new Date().toISOString(),
           is_active: true
         })
+        if (regError) {
+          console.error("Auction registration error:", regError)
+        }
       }
     }
 
