@@ -45,6 +45,7 @@ export async function sendAuctionAccessEmail({
       auctionName,
       auctionDate,
       auctionUrl,
+      auctionDescription,
       userName,
     }),
     text: `Your Auction Access Pass\n\n${userName ? `Hi ${userName},` : 'Hello,'}\n\nYou've been approved for ${auctionName}.\nDate: ${auctionDate}\n\nEnter your auction room: ${auctionUrl}\n\nThis link is unique to you. Do not share it with others.\n\nImportant:\n- You must be logged into your account to enter\n- This link is personal and non-transferable\n- Join on time - late entry may limit bidding\n\nAuctionhub - Premium gem auctions`,
@@ -65,11 +66,13 @@ function generateAuctionEmailHtml({
   auctionName,
   auctionDate,
   auctionUrl,
+  auctionDescription,
   userName,
 }: {
   auctionName: string
   auctionDate: string
   auctionUrl: string
+  auctionDescription?: string | null
   userName?: string
 }) {
   return `
