@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { sendAuctionRegistrationConfirmEmail } from '@/lib/email/resend'
 
 export async function POST(
   request: NextRequest,
@@ -87,18 +86,6 @@ export async function POST(
     if (regError) {
       console.error('Registration error:', regError)
       return NextResponse.json({ message: 'Failed to register' }, { status: 500 })
-    }
-
-    if (user.email) {
-      try {
-        await sendAuctionRegistrationConfirmEmail({
-          to: user.email,
-          userName: user.user_metadata?.display_name || undefined,
-          auctionName: auction.name
-        })
-      } catch (emailErr) {
-        console.error('Failed to send confirm email:', emailErr)
-      }
     }
 
     return NextResponse.json({
