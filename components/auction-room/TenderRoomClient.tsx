@@ -152,7 +152,7 @@ export default function TenderRoomClient({ auction, items: initialItems, user, r
                     <ImageCarousel media={gem.gem_images.map((img: any) => ({ url: img.image_url }))} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <MediaRenderer src="/placeholder.png" alt="No image" fill className="object-cover opacity-50" />
+                      <img src="/placeholder.png" alt="No image" className="object-cover opacity-50 w-full h-full" />
                     </div>
                   )}
                 </div>
