@@ -18,7 +18,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
 
   const { data: gem } = await supabase
     .from('gems')
-    .select('*, auction:auctions(name, auction_type)')
+    .select('*, auction:auctions(name, auction_type, status)')
     .eq('id', id)
     .eq('admin_id', user.id)
     .single()
@@ -62,7 +62,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
   const isIncrementalApproval = (gem.auction as { auction_type?: string } | null)?.auction_type === 'incremental_approval_auction'
     const isTenderBase = (gem.auction as { auction_type?: string } | null)?.auction_type === 'tender_base_fixed_bid'
     const isRoundActive = ['active', 'running', 'ready'].includes(gem.status)
-    const hideBids = isTenderBase && isRoundActive
+    const hideBids = isTenderBase && isRoundActive && (gem.auction as any)?.status !== 'ended' && (gem.auction as any)?.status !== 'completed'
   
   let eligibleBiddersCount = registeredBiddersCount || 0
   

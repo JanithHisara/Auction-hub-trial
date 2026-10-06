@@ -288,38 +288,15 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           {/* TENDER BASE / FIXED BID CONTROLS */}
           {isTenderBaseFixedBid && (
             <>
-              {status === 'active' && !roundEndTime && (
-                <button
-                  onClick={() => setShowStartBiddingModal(true)}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                  Start Bidding
-                </button>
-              )}
-
-              {status === 'active' && isRoundActive && (
-                <button
-                  onClick={() => handleAction('end-round')}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Square className="w-4 h-4" />}
-                  End Bidding
-                </button>
-              )}
-
-              {(status === 'active' || status === 'ended') && !isRoundActive && (
-                <button
-                  onClick={() => setShowAnnounceWinnerModal(true)}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                  Announce Winner
-                </button>
-              )}
+              {/* For sealed bid, admin just needs to announce winner after auction ends */}
+              <button
+                onClick={() => setShowAnnounceWinnerModal(true)}
+                disabled={loading}
+                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
+                Announce Winner
+              </button>
             </>
           )}
 
