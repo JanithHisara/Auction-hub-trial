@@ -38,18 +38,18 @@ const statusFlow: Record<AuctionStatus, { next: AuctionStatus | null; label: str
     description: 'Start accepting bids. Users can still register.'
   },
   registration_closed: { 
-    next: 'live', 
-    label: 'Go Live', 
-    icon: <Radio className="w-4 h-4" />,
-    color: 'bg-red-500 hover:bg-red-600',
-    description: 'Start the live auction.'
+    next: 'ended', 
+    label: 'End Auction', 
+    icon: <StopCircle className="w-4 h-4" />,
+    color: 'bg-orange-500 hover:bg-orange-600',
+    description: 'The physical auction event has concluded.'
   },
   live: { 
-    next: 'ended', 
+    next: 'registration_closed', 
     label: 'End Bidding', 
-    icon: <StopCircle className="w-4 h-4" />,
+    icon: <Lock className="w-4 h-4" />,
     color: 'bg-amber-500 hover:bg-amber-600',
-    description: 'Stop accepting bids. You can then select winners for each item.'
+    description: 'Stop accepting bids and new registrations.'
   },
   ended: { 
     next: 'completed', 
