@@ -86,7 +86,7 @@ export default function TenderRoomClient({ auction, items: initialItems, user, r
       const { data, error } = await supabase
         .from('bids')
         .insert({
-          auction_id: auction.id,
+          
           gem_id: gem.id,
           user_id: user.id,
           bid_amount: bidAmount,
