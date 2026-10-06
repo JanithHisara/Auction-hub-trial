@@ -89,14 +89,16 @@ export async function POST(
       return NextResponse.json({ message: 'Failed to register' }, { status: 500 })
     }
 
-    try {
-      await sendAuctionRegistrationConfirmEmail({
-        to: user.email,
-        userName: user.user_metadata?.display_name || undefined,
-        auctionName: auction.name
-      })
-    } catch (emailErr) {
-      console.error('Failed to send confirm email:', emailErr)
+    if (user.email) {
+      try {
+        await sendAuctionRegistrationConfirmEmail({
+          to: user.email,
+          userName: user.user_metadata?.display_name || undefined,
+          auctionName: auction.name
+        })
+      } catch (emailErr) {
+        console.error('Failed to send confirm email:', emailErr)
+      }
     }
 
     return NextResponse.json({
