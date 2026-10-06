@@ -112,7 +112,7 @@ export async function PATCH(
           userName: registeredUser.display_name || undefined,
         })
 
-        await supabase
+        await adminDb
           .from('auction_registrations')
           .update({ email_sent_at: new Date().toISOString() })
           .eq('id', registrationId)
