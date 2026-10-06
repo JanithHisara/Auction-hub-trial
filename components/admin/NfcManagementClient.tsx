@@ -179,7 +179,7 @@ function NfcCardsTab() {
   useEffect(() => {
     async function loadAuctions() {
       try {
-        const res = await fetch('/api/admin/auctions')
+        const res = await fetch('/api/admin/auctions-list')
         if (res.ok) {
           const data = await res.json()
           const activeAuctions = data.auctions.filter((a: any) => ['open', 'close', 'register', 'live'].includes(a.status.toLowerCase()))
