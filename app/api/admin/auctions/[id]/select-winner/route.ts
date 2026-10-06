@@ -118,8 +118,8 @@ export async function POST(
       }
     }
 
-    // Get winner's user info for email
-    const { data: winnerUser } = await supabase
+    // Get winner's user info for email (use adminDb to bypass RLS)
+    const { data: winnerUser } = await adminDb
       .from('users')
       .select('email, anonymous_name')
       .eq('id', winningBid.user_id)
