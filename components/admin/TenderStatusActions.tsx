@@ -46,7 +46,7 @@ const statusFlow: Record<AuctionStatus, { next: AuctionStatus | null; label: str
   },
   live: { 
     next: 'ended', 
-    label: 'End Auction', 
+    label: 'End Bidding', 
     icon: <StopCircle className="w-4 h-4" />,
     color: 'bg-amber-500 hover:bg-amber-600',
     description: 'Stop accepting bids. You can then select winners for each item.'
