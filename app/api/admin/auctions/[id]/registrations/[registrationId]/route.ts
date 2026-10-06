@@ -1,4 +1,5 @@
 ﻿import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
@@ -15,21 +16,33 @@ export async function PATCH(
 
     const user = await requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS)
     const supabase = await createClient()
+    const adminDb = createAdminClient()
 
     if (!['approved', 'rejected'].includes(approval_status)) {
       return NextResponse.json({ message: 'Invalid status' }, { status: 400 })
     }
 
-    const { data: registration, error: regError } = await supabase
+    // Use admin client to fetch registration + user data (bypasses RLS on users table)
+    const { data: registration, error: regError } = await adminDb
       .from('auction_registrations')
-      .select('*, user:users!auction_registrations_user_id_fkey(email, anonymous_name), auction:auctions(name, description, auction_start)')
+      .select('*, auction:auctions(name, description, auction_start)')
       .eq('id', registrationId)
       .eq('auction_id', auctionId)
       .single()
 
     if (regError || !registration) {
+      console.error('[Approval] Registration not found:', regError)
       return NextResponse.json({ message: 'Registration not found' }, { status: 404 })
     }
+
+    // Fetch user email separately using admin client (guaranteed to bypass RLS)
+    const { data: registeredUser } = await adminDb
+      .from('users')
+      .select('email, display_name')
+      .eq('id', registration.user_id)
+      .single()
+
+    console.log('[Approval] User found:', registeredUser?.email)
 
     if (approval_status === 'approved') {
       const { data: auction } = await supabase
@@ -70,51 +83,46 @@ export async function PATCH(
     }
 
     // Send email only when approved
-    if (approval_status === 'approved') {
-      const userRaw = registration.user as unknown
-      const userObj = Array.isArray(userRaw) ? (userRaw as Array<{email?: string; anonymous_name?: string}>)[0] : (userRaw as {email?: string; anonymous_name?: string} | null)
-      const userEmail = userObj?.email
+    if (approval_status === 'approved' && registeredUser?.email) {
+      try {
+        const auctionRaw = registration.auction as unknown
+        const auctionObj = Array.isArray(auctionRaw)
+          ? (auctionRaw as Array<{name: string; description?: string | null; auction_start: string}>)[0]
+          : (auctionRaw as {name: string; description?: string | null; auction_start: string} | null)
 
-      if (userEmail) {
-        try {
-          const auctionRaw = registration.auction as unknown
-          const auctionObj = Array.isArray(auctionRaw)
-            ? (auctionRaw as Array<{name: string; description?: string | null; auction_start: string}>)[0]
-            : (auctionRaw as {name: string; description?: string | null; auction_start: string} | null)
+        if (!auctionObj) throw new Error('Auction data missing')
 
-          if (!auctionObj) throw new Error('Auction data missing')
+        const auctionDate = new Date(auctionObj.auction_start).toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
 
-          const auctionDate = new Date(auctionObj.auction_start).toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })
+        console.log('[Email] Sending registration confirm to:', registeredUser.email, 'for auction:', auctionObj.name)
 
-          console.log('[Email] Sending registration confirm to:', userEmail, 'for auction:', auctionObj.name)
+        await sendAuctionAccessEmail({
+          to: registeredUser.email,
+          auctionName: auctionObj.name,
+          auctionDate,
+          auctionDescription: auctionObj.description,
+          accessToken,
+          userName: registeredUser.display_name || undefined,
+        })
 
-          await sendAuctionAccessEmail({
-            to: userEmail,
-            auctionName: auctionObj.name,
-            auctionDate,
-            auctionDescription: auctionObj.description,
-            accessToken,
-          })
+        await supabase
+          .from('auction_registrations')
+          .update({ email_sent_at: new Date().toISOString() })
+          .eq('id', registrationId)
 
-          await supabase
-            .from('auction_registrations')
-            .update({ email_sent_at: new Date().toISOString() })
-            .eq('id', registrationId)
-
-          console.log('[Email] Registration confirm sent successfully to:', userEmail)
-        } catch (emailError) {
-          console.error('[Email] Send error:', emailError)
-        }
-      } else {
-        console.log('[Email] Skipping - no email address for user')
+        console.log('[Email] Registration confirm sent successfully to:', registeredUser.email)
+      } catch (emailError) {
+        console.error('[Email] Send error:', emailError)
       }
+    } else if (approval_status === 'approved') {
+      console.log('[Email] Skipping - no email address found for user_id:', registration.user_id)
     }
 
     return NextResponse.json({
