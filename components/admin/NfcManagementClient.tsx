@@ -145,6 +145,7 @@ function NfcCardsTab() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingCard, setEditingCard] = useState<NfcCard | null>(null)
   const [nfcSubTab, setNfcSubTab] = useState<'permanent' | 'temporary'>('permanent')
+  const [auctions, setAuctions] = useState<any[]>([])
   const [showQuickDelete, setShowQuickDelete] = useState(false)
   const [quickDeleteUid, setQuickDeleteUid] = useState('')
   const [quickDeleting, setQuickDeleting] = useState(false)
@@ -174,6 +175,22 @@ function NfcCardsTab() {
       setLoading(false)
     }
   }, [page, search, statusFilter, nfcSubTab])
+
+  useEffect(() => {
+    async function loadAuctions() {
+      try {
+        const res = await fetch('/api/admin/auctions')
+        if (res.ok) {
+          const data = await res.json()
+          const activeAuctions = data.auctions.filter((a: any) => ['open', 'close', 'register', 'live'].includes(a.status.toLowerCase()))
+          setAuctions(activeAuctions)
+        }
+      } catch (err) {
+        console.error('Failed to load auctions:', err)
+      }
+    }
+    loadAuctions()
+  }, [])
 
   useEffect(() => { fetchCards() }, [fetchCards])
 
@@ -478,6 +495,7 @@ function NfcCardsTab() {
 
       {showCreateForm && (
         <CreateNfcCardModal
+          auctions={auctions}
           onClose={() => setShowCreateForm(false)}
           onCreated={handleCreated}
         />
@@ -499,12 +517,15 @@ function NfcCardsTab() {
 function CreateNfcCardModal({
   onClose,
   onCreated,
+  auctions,
 }: {
   onClose: () => void
   onCreated: () => void
+  auctions: any[]
 }) {
   const [nfcUid, setNfcUid] = useState('')
   const [label, setLabel] = useState('')
+  const [selectedAuction, setSelectedAuction] = useState('')
   const [userId, setUserId] = useState('')
   const [selectedUser, setSelectedUser] = useState<UserOption | null>(null)
   const [users, setUsers] = useState<UserOption[]>([])
@@ -558,6 +579,7 @@ function CreateNfcCardModal({
               user_id: userId,
               label: label.trim() || null,
               nfc_type: nfcType,
+              auction_id: selectedAuction || undefined,
         }),
       })
 
@@ -635,6 +657,24 @@ function CreateNfcCardModal({
               required
             />
           </div>
+
+          {nfcType === 'temporary' && (
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+                Assign to Auction
+              </label>
+              <select
+                value={selectedAuction}
+                onChange={e => setSelectedAuction(e.target.value)}
+                className="w-full px-4 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)]/50"
+              >
+                <option value="">-- No Auction (Skip Registration) --</option>
+                {auctions.map(a => (
+                  <option key={a.id} value={a.id}>{a.title} ({a.status})</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">

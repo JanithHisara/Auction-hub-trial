@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const user = await requirePermission(PERMISSIONS.MANAGE_DEVICES)
 
     const body = await request.json()
-    const { nfc_uid, user_id, label, nfc_type } = body
+    const { nfc_uid, user_id, label, nfc_type, auction_id } = body
 
     if (!nfc_uid || !user_id) {
       return NextResponse.json(
@@ -116,6 +116,28 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (auction_id && nfc_type === 'temporary') {
+      const crypto = require('crypto')
+      const token = crypto.randomBytes(32).toString('hex')
+      
+      // Check if already registered
+      const { data: existingReg } = await adminClient
+        .from('auction_registrations')
+        .select('id')
+        .eq('auction_id', auction_id)
+        .eq('user_id', user_id)
+        .limit(1)
+        
+      if (!existingReg || existingReg.length === 0) {
+        await adminClient.from('auction_registrations').insert({
+          auction_id,
+          user_id,
+          access_token: token,
+          is_active: true
+        })
+      }
     }
 
     return NextResponse.json({ nfcCard }, { status: 201 })
