@@ -1,8 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendAuctionAccessEmail } from '@/lib/email/resend'
+import { randomUUID } from 'crypto'
 
 export async function PATCH(
   request: NextRequest,
@@ -50,12 +51,16 @@ export async function PATCH(
       }
     }
 
+    // Generate access_token if not already present (user self-registered without token)
+    const accessToken = registration.access_token || randomUUID()
+
     const { error: updateError } = await supabase
       .from('auction_registrations')
       .update({
         approval_status,
         approved_at: new Date().toISOString(),
         approved_by: user.id,
+        access_token: accessToken,
       })
       .eq('id', registrationId)
 
@@ -64,39 +69,51 @@ export async function PATCH(
       return NextResponse.json({ message: 'Failed to update' }, { status: 500 })
     }
 
-    const userRaw = registration.user as unknown;
-    const userObj = Array.isArray(userRaw) ? userRaw[0] : userRaw;
-    const userEmail = userObj?.email;
+    // Send email only when approved
+    if (approval_status === 'approved') {
+      const userRaw = registration.user as unknown
+      const userObj = Array.isArray(userRaw) ? (userRaw as Array<{email?: string; anonymous_name?: string}>)[0] : (userRaw as {email?: string; anonymous_name?: string} | null)
+      const userEmail = userObj?.email
 
-if (approval_status === 'approved' && userEmail) {
-      try {
-        const auctionRaw = registration.auction as any;
-        const auctionObj = Array.isArray(auctionRaw) ? auctionRaw[0] : auctionRaw;
+      if (userEmail) {
+        try {
+          const auctionRaw = registration.auction as unknown
+          const auctionObj = Array.isArray(auctionRaw)
+            ? (auctionRaw as Array<{name: string; description?: string | null; auction_start: string}>)[0]
+            : (auctionRaw as {name: string; description?: string | null; auction_start: string} | null)
 
-        const auctionDate = new Date(auctionObj.auction_start).toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
+          if (!auctionObj) throw new Error('Auction data missing')
 
-        await sendAuctionAccessEmail({
-          to: userEmail,
-          auctionName: auctionObj.name,
-          auctionDate,
-          auctionDescription: auctionObj.description,
-          accessToken: registration.access_token,
-        })
+          const auctionDate = new Date(auctionObj.auction_start).toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
 
-        await supabase
-          .from('auction_registrations')
-          .update({ email_sent_at: new Date().toISOString() })
-          .eq('id', registrationId)
+          console.log('[Email] Sending registration confirm to:', userEmail, 'for auction:', auctionObj.name)
 
-      } catch (emailError) {
-        console.error('Email send error:', emailError)
+          await sendAuctionAccessEmail({
+            to: userEmail,
+            auctionName: auctionObj.name,
+            auctionDate,
+            auctionDescription: auctionObj.description,
+            accessToken,
+          })
+
+          await supabase
+            .from('auction_registrations')
+            .update({ email_sent_at: new Date().toISOString() })
+            .eq('id', registrationId)
+
+          console.log('[Email] Registration confirm sent successfully to:', userEmail)
+        } catch (emailError) {
+          console.error('[Email] Send error:', emailError)
+        }
+      } else {
+        console.log('[Email] Skipping - no email address for user')
       }
     }
 
