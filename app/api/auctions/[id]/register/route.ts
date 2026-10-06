@@ -28,7 +28,7 @@ export async function POST(
     }
 
     // Registration is allowed when admin sets status to 'registration_open'
-    if (auction.status !== 'registration_open') {
+    if (auction.status !== 'registration_open' && auction.status !== 'live') {
       return NextResponse.json({ message: 'Registration is not open' }, { status: 400 })
     }
 

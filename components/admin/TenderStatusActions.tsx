@@ -28,21 +28,21 @@ const statusFlow: Record<AuctionStatus, { next: AuctionStatus | null; label: str
     label: 'Open Registration', 
     icon: <Users className="w-4 h-4" />,
     color: 'bg-emerald-500 hover:bg-emerald-600',
-    description: 'Allow users to register for this auction. Make sure all items are added.'
+    description: 'Allow users to register for this auction.'
   },
-    registration_open: { 
-    next: 'registration_closed', 
-    label: 'Close Registration', 
-    icon: <Lock className="w-4 h-4" />,
-    color: 'bg-indigo-500 hover:bg-indigo-600',
-    description: 'Stop accepting new registrations. Devices will now show the auction screen.'
+  registration_open: { 
+    next: 'live', 
+    label: 'Start Bidding (Keep Registration Open)', 
+    icon: <Radio className="w-4 h-4" />,
+    color: 'bg-red-500 hover:bg-red-600',
+    description: 'Start accepting bids. Users can still register.'
   },
   registration_closed: { 
     next: 'live', 
     label: 'Go Live', 
     icon: <Radio className="w-4 h-4" />,
     color: 'bg-red-500 hover:bg-red-600',
-    description: 'Start the live auction. Approved bidders will be able to place bids.'
+    description: 'Start the live auction.'
   },
   live: { 
     next: 'ended', 
