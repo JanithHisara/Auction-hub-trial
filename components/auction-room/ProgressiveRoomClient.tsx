@@ -36,13 +36,13 @@ function formatCurrency(amount: number | null | undefined) {
   if (amount === null || amount === undefined || isNaN(Number(amount))) return 'Rs. 0';
   const val = Number(amount);
   if (val >= 1_000_000_000) {
-    return 'Rs. ' + (val / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+    return 'LKR ' + (val / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
   } else if (val >= 1_000_000) {
-    return 'Rs. ' + (val / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    return 'LKR ' + (val / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
   } else if (val >= 1_000) {
-    return 'Rs. ' + (val / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return 'LKR ' + (val / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
   } else {
-    return 'Rs. ' + val.toString();
+    return 'LKR ' + val.toString();
   }
 }
 
@@ -1390,7 +1390,7 @@ export default function ProgressiveRoomClient({
                                     New Bid Amount (min: {formatCurrency(minBid)})
                                   </label>
                                   <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">LKR</span>
                                     <input
                                       type="text"
                                       inputMode="decimal"
@@ -1479,7 +1479,7 @@ export default function ProgressiveRoomClient({
                               Your Bid (min: {formatCurrency(minBid)})
                             </label>
                             <div className="relative">
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">LKR</span>
                               <input
                                 type="text"
                                 inputMode="decimal"

@@ -660,7 +660,7 @@ function generateAuctionSummaryEmailHtml({
 }) {
   const itemsHtml = items.map(item => {
     const formattedPrice = item.winningPrice !== null && item.winningPrice !== undefined
-      ? ('Rs. ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(item.winningPrice))
+      ? ('LKR ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(item.winningPrice))
       : 'Not Sold'
     
     return `

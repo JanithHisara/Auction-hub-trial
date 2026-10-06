@@ -740,7 +740,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 <div className="flex-1">
                   <p className="text-white font-medium mb-2">{hasNoBidsInCurrentRound ? 'Custom Decrease' : 'Custom Increment'}</p>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">LKR</span>
                     <input
                       type="text"
                       inputMode="numeric"
