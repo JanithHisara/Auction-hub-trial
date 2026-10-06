@@ -9,6 +9,7 @@ export interface AuctionAccessEmailParams {
   to: string
   auctionName: string
   auctionDate: string
+  auctionDescription?: string | null
   accessToken: string
   userName?: string
 }
@@ -17,6 +18,7 @@ export async function sendAuctionAccessEmail({
   to,
   auctionName,
   auctionDate,
+  auctionDescription,
   accessToken,
   userName,
 }: AuctionAccessEmailParams) {
@@ -32,13 +34,13 @@ export async function sendAuctionAccessEmail({
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>'
-  const replyTo = process.env.RESEND_REPLY_TO || undefined
+  const replyTo = process.env.RESEND_REPLY_TO
 
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    replyTo,
-    subject: `Your Access Pass: ${auctionName}`,
+    ...(replyTo ? { replyTo } : {}),
+    subject: `Registration Confirmed: ${auctionName}`,
     html: generateAuctionEmailHtml({
       auctionName,
       auctionDate,
@@ -124,13 +126,23 @@ function generateAuctionEmailHtml({
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <span style="color: #f5f5f7; font-size: 14px;"> ${auctionDate}</span>
                     </div>
-                  </td>
+</td>
                 </tr>
               </table>
             </td>
           </tr>
           
+${auctionDescription ? `
+          <tr>
+            <td style="padding: 16px 40px 24px;">
+              <h3 style="margin: 0 0 12px; color: #d4af37; font-size: 16px; font-weight: 600;">Auction Details</h3>
+              <p style="margin: 0; color: #a1a1aa; font-size: 14px; line-height: 1.6;">${auctionDescription}</p>
+            </td>
+          </tr>
+` : ''}
+
           <!-- CTA Button -->
+
           <tr>
             <td style="padding: 0 40px 32px;">
               <table width="100%" cellpadding="0" cellspacing="0">
@@ -236,12 +248,12 @@ export async function sendWinnerEmail({
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>'
-  const replyTo = process.env.RESEND_REPLY_TO || undefined
+  const replyTo = process.env.RESEND_REPLY_TO
 
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    replyTo,
+    ...(replyTo ? { replyTo } : {}),
     subject: `Congratulations! You Won: ${gemName}`,
     html: generateWinnerEmailHtml({
       userName,
@@ -605,12 +617,12 @@ export async function sendAuctionSummaryEmail({
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'Auctionhub <onboarding@resend.dev>'
-  const replyTo = process.env.RESEND_REPLY_TO || undefined
+  const replyTo = process.env.RESEND_REPLY_TO
 
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    replyTo,
+    ...(replyTo ? { replyTo } : {}),
     subject: `Auction Summary: ${auctionName}`,
     html: generateAuctionSummaryEmailHtml({
       userName,
