@@ -63,13 +63,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
           throw new Error('Start time must be in the future')
         }
       }
-      if (formData.end_time) {
-        const end = new Date(formData.end_time)
-        const originalEnd = gem?.end_time ? new Date(gem.end_time) : null
-        if (end < now && (!originalEnd || end.getTime() !== originalEnd.getTime())) {
-          throw new Error('End time must be in the future')
-        }
-      }
+      
 
 
       if (formData.auction_id) {
@@ -84,12 +78,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
               throw new Error(`Item start time must be between the selected auction's start time (${new Date(selectedAuction.auction_start).toLocaleString()}) and end time (${new Date(selectedAuction.auction_end).toLocaleString()})`)
             }
           }
-          if (formData.end_time) {
-            const end = new Date(formData.end_time)
-            if (end < aucStart || end > aucEnd) {
-              throw new Error(`Item end time must be between the selected auction's start time (${new Date(selectedAuction.auction_start).toLocaleString()}) and end time (${new Date(selectedAuction.auction_end).toLocaleString()})`)
-            }
-          }
+          
         }
       }
 
