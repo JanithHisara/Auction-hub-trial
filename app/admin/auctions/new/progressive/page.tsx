@@ -27,7 +27,7 @@ export default function NewAuctionPage() {
     description: '',
     banner_image_url: '',
     password: '',
-    auction_type: 'progressive_elimination_auction' as 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction' as const,
+    auction_type: 'progressive_elimination_auction',
     registration_start: '',
     registration_end: '',
     auction_start: '',
