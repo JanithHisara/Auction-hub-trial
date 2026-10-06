@@ -122,7 +122,7 @@ export default function TenderRoomClient({ auction, items: initialItems, user, r
         <div className="flex flex-col items-end">
           <p className="text-sm text-[var(--text-secondary)] mb-1">Bidding Ends In</p>
           <div className="text-xl sm:text-2xl font-bold text-[var(--gold)] tabular-nums">
-            <AuctionCountdown endTime={auction.auction_end} onExpire={() => window.location.reload()} />
+            <AuctionCountdown roundEndTime={auction.auction_end} onExpire={() => window.location.reload()} />
           </div>
         </div>
       </div>
