@@ -92,7 +92,9 @@ const itemStatusColors: Record<string, string> = {
   completed: 'bg-purple-500/20 text-purple-400',
 }
 
-import AuctionStatusActions from '@/components/admin/AuctionStatusActions'
+import ProgressiveStatusActions from '@/components/admin/ProgressiveStatusActions'
+import TenderStatusActions from '@/components/admin/TenderStatusActions'
+import IncrementalStatusActions from '@/components/admin/IncrementalStatusActions'
 import AuctionDetailClient from '@/components/admin/AuctionDetailClient'
 import BidderHoldManager from '@/components/admin/BidderHoldManager'
 import AuctionChatButton from '@/components/admin/AuctionChatButton'
@@ -169,12 +171,30 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
       <div className="card-glass rounded-xl p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Auction Controls</h2>
         <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
-          <AuctionStatusActions 
-            auctionId={id} 
-            currentStatus={auction.status as 'draft' | 'upcoming' | 'registration_open' | 'registration_closed' | 'live' | 'ended' | 'completed'} 
-            itemCount={items.length}
-            approvedCount={approvedCount}
-          />
+          {auction.auction_type === 'progressive_elimination_auction' && (
+            <ProgressiveStatusActions 
+              auctionId={id} 
+              currentStatus={auction.status as any} 
+              itemCount={items.length}
+              approvedCount={approvedCount}
+            />
+          )}
+          {auction.auction_type === 'tender_base_fixed_bid' && (
+            <TenderStatusActions 
+              auctionId={id} 
+              currentStatus={auction.status as any} 
+              itemCount={items.length}
+              approvedCount={approvedCount}
+            />
+          )}
+          {auction.auction_type === 'incremental_approval_auction' && (
+            <IncrementalStatusActions 
+              auctionId={id} 
+              currentStatus={auction.status as any} 
+              itemCount={items.length}
+              approvedCount={approvedCount}
+            />
+          )}
           <Link 
             href={`/admin/auctions/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2.5 bg-[var(--gold)]/20 border border-[var(--gold)]/30 rounded-lg text-[var(--gold)] hover:bg-[var(--gold)]/30 transition-colors"

@@ -1,7 +1,9 @@
 ﻿import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import AuctionRoomClient from '@/components/auction-room/AuctionRoomClient'
+import ProgressiveRoomClient from '@/components/auction-room/ProgressiveRoomClient'
+import TenderRoomClient from '@/components/auction-room/TenderRoomClient'
+import IncrementalRoomClient from '@/components/auction-room/IncrementalRoomClient'
 import { Gem, Bid, Auction, AuctionRegistration, UserRewards, User, GemElimination } from '@/types/database'
 import LocalTime from '@/components/ui/LocalTime'
 
