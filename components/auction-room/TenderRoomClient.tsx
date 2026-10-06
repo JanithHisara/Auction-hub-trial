@@ -90,7 +90,7 @@ export default function TenderRoomClient({ auction, items: initialItems, user, r
           gem_id: gem.id,
           user_id: user.id,
           bid_amount: bidAmount,
-          is_auto: false
+          
         })
         .select()
         .single()
