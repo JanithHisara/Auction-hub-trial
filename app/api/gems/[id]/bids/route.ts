@@ -303,7 +303,7 @@ export async function PATCH(
 
     const { data: updatedBid, error: updateError } = await supabase
       .from('bids')
-      .update({ bid_amount: newAmount })
+      .update({ bid_amount: newAmount, created_at: new Date().toISOString() })
       .eq('id', existingBid[0].id)
       .eq('user_id', user.id)
       .select()

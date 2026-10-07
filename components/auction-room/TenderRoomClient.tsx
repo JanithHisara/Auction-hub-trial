@@ -75,27 +75,17 @@ export default function TenderRoomClient({ auction, items: initialItems, user, r
     setSubmittingGems(prev => ({ ...prev, [gem.id]: true }))
 
     try {
-      // Delete any previous bids from this user for this gem
-      await supabase
-        .from('bids')
-        .delete()
-        .eq('gem_id', gem.id)
-        .eq('user_id', user.id)
+      const isUpdate = !!userBids[gem.id]
+      const res = await fetch(`/api/gems/${gem.id}/bids`, {
+        method: isUpdate ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bid_amount: bidAmount }),
+      })
 
-      // Insert new sealed bid
-      const { data, error } = await supabase
-        .from('bids')
-        .insert({
-          
-          gem_id: gem.id,
-          user_id: user.id,
-          bid_amount: bidAmount,
-          
-        })
-        .select()
-        .single()
-
-      if (error) throw error
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Failed to place bid')
+      }
 
       setUserBids(prev => ({ ...prev, [gem.id]: bidAmount }))
       setBiddingInputs(prev => ({ ...prev, [gem.id]: '' }))
