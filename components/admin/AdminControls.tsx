@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect } from 'react'
@@ -751,7 +751,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                         setUseCustomIncrement(true)
                       }}
                       placeholder="Enter amount"
-                      className="w-full pl-8 pr-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-white focus:border-[var(--gold)]"
+                      className="w-full pl-12 pr-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg text-white focus:border-[var(--gold)]"
                     />
                   </div>
                 </div>
