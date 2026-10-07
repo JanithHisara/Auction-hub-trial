@@ -232,6 +232,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
             </div>
             </div>
         </Section>
+        )}
 
         {/* Specifications */}
         <Section title="Specifications" icon="" number={auctions.length > 0 ? (isSealed ? "3" : "4") : (isSealed ? "2" : "3")}>
