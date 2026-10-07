@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
@@ -278,15 +278,21 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
                     <p className={`font-bold font-mono ${idx === 0 ? 'text-[var(--gold)]' : 'text-white'}`}>
                       {hideBids ? '***' : formatCurrency(bid.bid_amount)}
                     </p>
-                    <p className="text-sm text-white mt-1">
-                      {(gem.status === 'completed' || gem.status === 'ended' || !!winner) ? (bidUser?.display_name || bidUser?.anonymous_name || bidUser?.email || 'Unknown') : (bidUser?.anonymous_name || 'Anonymous')}
-                    </p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                      <p className="text-xs text-[var(--text-muted)]">{bidUser?.email}</p>
-                      {bidUser?.phone && <p className="text-xs text-[var(--text-muted)]">{bidUser.phone}</p>}
-                    </div>
-                    {bidUser?.id && (
-                      <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-mono opacity-60">ID: {bidUser.id.slice(0, 8)}...</p>
+                    {!hideBids ? (
+                      <>
+                        <p className="text-sm text-white mt-1">
+                          {(gem.status === 'completed' || gem.status === 'ended' || !!winner) ? (bidUser?.display_name || bidUser?.anonymous_name || bidUser?.email || 'Unknown') : (bidUser?.anonymous_name || 'Anonymous')}
+                        </p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                          <p className="text-xs text-[var(--text-muted)]">{bidUser?.email}</p>
+                          {bidUser?.phone && <p className="text-xs text-[var(--text-muted)]">{bidUser.phone}</p>}
+                        </div>
+                        {bidUser?.id && (
+                          <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-mono opacity-60">ID: {bidUser.id.slice(0, 8)}...</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-[var(--text-muted)] mt-1 italic">Bidder information hidden</p>
                     )}
                   </div>
                    <div className="text-right flex-shrink-0 ml-4">
