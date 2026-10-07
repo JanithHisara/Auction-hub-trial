@@ -19,9 +19,11 @@ interface AdminControlsProps {
   allRegisteredBiddersBid?: boolean
   hasNoBidsInCurrentRound?: boolean
   startingPrice?: number
+  auctionStatus?: string
+  eligibleBiddersCount?: number
 }
 
-export default function AdminControls({ gemId, currentPrice, minIncrement, status, roundEndTime, auctionType, highestBid, allRegisteredBiddersBid, hasNoBidsInCurrentRound, startingPrice }: AdminControlsProps) {
+export default function AdminControls({ gemId, currentPrice, minIncrement, status, roundEndTime, auctionType, highestBid, allRegisteredBiddersBid, hasNoBidsInCurrentRound, startingPrice, auctionStatus, eligibleBiddersCount }: AdminControlsProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const confirm = useConfirm()
@@ -286,7 +288,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
           )}
 
           {/* TENDER BASE / FIXED BID CONTROLS */}
-          {isTenderBaseFixedBid && (
+          {isTenderBaseFixedBid && (auctionStatus === 'registration_closed' || auctionStatus === 'ended' || auctionStatus === 'completed') && (
             <>
               {/* For sealed bid, admin just needs to announce winner after auction ends */}
               <button
@@ -356,16 +358,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 </>
               )}
 
-              {(status === 'active' || status === 'ended') && roundEndTime && !isRoundActive && !hasNoBidsInCurrentRound && (
-                <button
-                  onClick={() => setShowAnnounceWinnerModal(true)}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                  Announce Winner
-                </button>
-              )}
+              
             </>
           )}
 
@@ -385,7 +378,16 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
 
               {(status === 'active' || status === 'ended') && roundEndTime && (!isRoundActive || allRegisteredBiddersBid) && (
                 <>
-                  {hasNoBidsInCurrentRound ? (
+                  {eligibleBiddersCount !== undefined && eligibleBiddersCount <= 1 ? (
+                    <button
+                      onClick={() => setShowAnnounceWinnerModal(true)}
+                      disabled={loading}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                    >
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
+                      Announce Winner
+                    </button>
+                  ) : hasNoBidsInCurrentRound ? (
                     <button
                       onClick={() => setShowNextRoundModal(true)}
                       disabled={loading}
@@ -425,16 +427,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
                 </>
               )}
 
-              {(status === 'active' || status === 'ended') && roundEndTime && !isRoundActive && (
-                <button
-                  onClick={() => setShowAnnounceWinnerModal(true)}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                  Announce Winner
-                </button>
-              )}
+              
             </>
           )}
         </div>

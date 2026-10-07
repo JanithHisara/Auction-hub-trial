@@ -144,6 +144,8 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
         allRegisteredBiddersBid={allRegisteredBiddersBid}
         hasNoBidsInCurrentRound={hasNoBidsInCurrentRound}
         startingPrice={gem.starting_price}
+        auctionStatus={(gem.auction as any)?.status}
+        eligibleBiddersCount={eligibleBiddersCount}
       />
 
       {/* Main Content Grid */}
