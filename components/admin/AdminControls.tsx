@@ -378,7 +378,7 @@ export default function AdminControls({ gemId, currentPrice, minIncrement, statu
 
               {(status === 'active' || status === 'ended') && roundEndTime && (!isRoundActive || allRegisteredBiddersBid) && (
                 <>
-                  {eligibleBiddersCount !== undefined && eligibleBiddersCount <= 1 ? (
+                  {eligibleBiddersCount !== undefined && eligibleBiddersCount === 1 ? (
                     <button
                       onClick={() => setShowAnnounceWinnerModal(true)}
                       disabled={loading}
