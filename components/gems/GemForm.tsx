@@ -30,8 +30,6 @@ function toUTCISO(localDatetime: string) {
 export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-    const selectedAuction = auctions.find(a => a.id === formData.auction_id)
-    const isSealed = selectedAuction?.auction_type === 'tender_base_fixed_bid'
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: gem?.name || '',
@@ -72,7 +70,6 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
 
 
       if (formData.auction_id) {
-        const selectedAuction = auctions.find(a => a.id === formData.auction_id)
         if (selectedAuction) {
           const aucStart = new Date(selectedAuction.auction_start)
           const aucEnd = new Date(selectedAuction.auction_end)
