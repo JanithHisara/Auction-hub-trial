@@ -188,7 +188,8 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
           </div>
         </Section>
 
-        {/* Pricing */}`n        {!isSealed && (
+        {/* Pricing */}
+        {!isSealed && (
         <Section title="Pricing & Timing" icon="" number={auctions.length > 0 ? "3" : "2"}>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
