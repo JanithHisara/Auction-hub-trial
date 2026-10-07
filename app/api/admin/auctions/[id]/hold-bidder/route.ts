@@ -67,7 +67,12 @@ export async function POST(
       .select('*, user:users!bidder_holds_user_id_fkey(id, email, anonymous_name, phone, display_name)')
       .single()
 
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json({ error: 'User is already on hold' }, { status: 400 })
+      }
+      throw error
+    }
 
     return NextResponse.json(hold)
   } catch (error: unknown) {
@@ -104,7 +109,12 @@ export async function PATCH(
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json({ error: 'User is already on hold' }, { status: 400 })
+      }
+      throw error
+    }
 
     return NextResponse.json(hold)
   } catch (error: unknown) {
