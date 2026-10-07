@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect, useCallback } from 'react'
@@ -92,15 +92,16 @@ export default function BidderHoldManager({
       })
 
       if (!res.ok) {
-        const err = await res.json()
-        confirm(err.error || 'Failed to hold bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
+        let errMsg = 'Failed to hold bidder';
+        try { const err = await res.json(); errMsg = err.error || errMsg; } catch { errMsg = 'Server returned HTML or invalid JSON (Status: ' + res.status + ')' }
+        confirm(errMsg, { isAlert: true, confirmText: 'OK', title: 'Notice' })
       } else {
         setShowHoldModal(null)
         setHoldReason('')
         await fetchHolds()
       }
-    } catch {
-      confirm('Failed to hold bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
+    } catch (error: any) {
+      confirm(error?.message || 'Failed to hold bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setActionLoading(null)
     }
@@ -116,13 +117,14 @@ export default function BidderHoldManager({
       })
 
       if (!res.ok) {
-        const err = await res.json()
-        confirm(err.error || 'Failed to release bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
+        let errMsg = 'Failed to release bidder';
+        try { const err = await res.json(); errMsg = err.error || errMsg; } catch { errMsg = 'Server returned HTML or invalid JSON (Status: ' + res.status + ')' }
+        confirm(errMsg, { isAlert: true, confirmText: 'OK', title: 'Notice' })
       } else {
         await fetchHolds()
       }
-    } catch {
-      confirm('Failed to release bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
+    } catch (error: any) {
+      confirm(error?.message || 'Failed to release bidder', { isAlert: true, confirmText: 'OK', title: 'Notice' })
     } finally {
       setActionLoading(null)
     }

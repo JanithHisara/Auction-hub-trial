@@ -23,7 +23,7 @@ export async function GET(
 
     return NextResponse.json(holds || [])
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch holds'
+    const message = (error as any)?.message || (error as any)?.details || 'Failed to fetch holds'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -71,7 +71,7 @@ export async function POST(
 
     return NextResponse.json(hold)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to hold bidder'
+    const message = (error as any)?.message || (error as any)?.details || 'Failed to hold bidder'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -108,7 +108,7 @@ export async function PATCH(
 
     return NextResponse.json(hold)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to release bidder'
+    const message = (error as any)?.message || (error as any)?.details || 'Failed to release bidder'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
