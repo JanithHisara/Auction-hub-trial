@@ -50,6 +50,9 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     certificates: gem?.certificates?.map(cert => ({ url: cert.certificate_url, type: cert.certificate_type || '' })) || [{ url: '', type: '' }],
   })
 
+  const selectedAuction = auctions.find(a => a.id === formData.auction_id)
+  const isSealed = selectedAuction?.auction_type === 'tender_base_fixed_bid'
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (loading) return
