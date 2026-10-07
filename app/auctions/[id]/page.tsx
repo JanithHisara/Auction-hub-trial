@@ -92,7 +92,7 @@ export default async function AuctionDetailPage({ params }: { params: Promise<{ 
 
   const now = new Date()
   const registrationOpen = 
-    auction.status === 'registration_open' &&
+    (auction.status === 'registration_open' || (auction.status === 'live' && auction.auction_type === 'tender_base_fixed_bid')) &&
     now >= new Date(auction.registration_start) &&
     now <= new Date(auction.registration_end)
   const isLive = auction.status === 'live'
