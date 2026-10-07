@@ -195,7 +195,7 @@ export default function TenderStatusActions({
             {/* Status change preview */}
             <div className="flex items-center justify-center gap-3 mb-6 p-3 bg-[var(--surface)] rounded-lg">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-500/20 text-gray-400">
-                {currentStatus.replace('_', ' ').toUpperCase()}
+                {currentStatus === 'registration_closed' ? 'BIDDING CLOSED' : currentStatus === 'live' ? 'BIDDING OPEN' : currentStatus.replace('_', ' ').toUpperCase()}
               </span>
               <span className="text-[var(--text-muted)]"></span>
               <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -205,7 +205,7 @@ export default function TenderStatusActions({
                 nextStatus === 'completed' ? 'bg-purple-500/20 text-purple-400' :
                 'bg-blue-500/20 text-blue-400'
               }`}>
-                {nextStatus.replace('_', ' ').toUpperCase()}
+                {nextStatus === 'registration_closed' ? 'BIDDING CLOSED' : nextStatus === 'live' ? 'BIDDING OPEN' : nextStatus.replace('_', ' ').toUpperCase()}
               </span>
             </div>
 

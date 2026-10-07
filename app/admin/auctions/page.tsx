@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Auction } from '@/types/database'
@@ -138,7 +138,7 @@ export default async function AdminAuctionsPage() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold inline-block w-fit ${statusColors[auction.status]}`}>
-                          {auction.status.replace('_', ' ').toUpperCase()}
+                          {auction.auction_type === 'tender_base_fixed_bid' && auction.status === 'registration_closed' ? 'BIDDING CLOSED' : auction.auction_type === 'tender_base_fixed_bid' && auction.status === 'live' ? 'BIDDING OPEN' : auction.status.replace('_', ' ').toUpperCase()}
                         </span>
                         <span className={`px-2 py-0.5 rounded text-xs inline-block w-fit ${
                           auction.auction_type === 'progressive_elimination_auction' 
@@ -195,7 +195,7 @@ export default async function AdminAuctionsPage() {
                     <p className="text-xs text-[var(--text-muted)] line-clamp-1">{auction.description || 'No description'}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[auction.status]}`}>
-                        {auction.status.replace('_', ' ').toUpperCase()}
+                        {auction.auction_type === 'tender_base_fixed_bid' && auction.status === 'registration_closed' ? 'BIDDING CLOSED' : auction.auction_type === 'tender_base_fixed_bid' && auction.status === 'live' ? 'BIDDING OPEN' : auction.status.replace('_', ' ').toUpperCase()}
                       </span>
                       <span className={`px-2 py-0.5 rounded text-xs ${
                         auction.auction_type === 'progressive_elimination_auction' 

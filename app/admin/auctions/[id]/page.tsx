@@ -163,7 +163,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
                 : ' Closed Bid'}
           </span>
           <span className={`px-4 py-2 rounded-full text-sm font-bold ${statusColors[auction.status]}`}>
-            {auction.status.replace('_', ' ').toUpperCase()}
+            {auction.auction_type === 'tender_base_fixed_bid' && auction.status === 'registration_closed' ? 'BIDDING CLOSED' : auction.auction_type === 'tender_base_fixed_bid' && auction.status === 'live' ? 'BIDDING OPEN' : auction.status.replace('_', ' ').toUpperCase()}
           </span>
         </div>
       </div>
