@@ -35,7 +35,6 @@ async function getAuction(id: string) {
     .eq('auction_id', id)
     .order('created_at')
 
-  const unpublishedItemCount = items?.filter(item => item.status !== 'published').length || 0;
   // Get bid counts for each item
   const itemsWithBids = await Promise.all(
     (items || []).map(async (item) => {
@@ -131,6 +130,7 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
   const { auction, items, registrations } = data
   const totalBids = items.reduce((sum, item) => sum + item.bidsCount, 0)
   const totalValue = items.reduce((sum, item) => sum + item.highestBid, 0)
+    const unpublishedItemCount = items?.filter(item => item.status !== 'published').length || 0;
   const approvedCount = registrations.filter(r => r.approval_status === 'approved').length
 
   return (
