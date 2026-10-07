@@ -14,7 +14,7 @@ export async function GET(
 
     const { data: holds, error } = await supabase
       .from('bidder_holds')
-      .select('*, user:users(id, email, anonymous_name, phone, display_name)')
+      .select('*, user:users!bidder_holds_user_id_fkey(id, email, anonymous_name, phone, display_name)')
       .eq('auction_id', auctionId)
       .eq('is_active', true)
       .order('held_at', { ascending: false })
@@ -64,7 +64,7 @@ export async function POST(
         admin_id: admin.id,
         reason: reason || null,
       })
-      .select('*, user:users(id, email, anonymous_name, phone, display_name)')
+      .select('*, user:users!bidder_holds_user_id_fkey(id, email, anonymous_name, phone, display_name)')
       .single()
 
     if (error) throw error
