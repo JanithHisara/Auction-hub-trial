@@ -108,6 +108,13 @@ export default function TenderStatusActions({
   }
 
   const handleActivateAll = async () => {
+    const isConfirmed = await confirm("Are you sure you want to activate all items in this auction?", {
+      title: "Activate All Items",
+      confirmText: "Yes, Activate",
+      cancelText: "Cancel"
+    });
+    if (!isConfirmed) return;
+
     if (isLoading) return
     setIsLoading(true)
     try {
