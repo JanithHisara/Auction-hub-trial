@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 
 export async function POST(
   request: NextRequest,
@@ -73,11 +75,13 @@ export async function POST(
     }
 
     // Create registration with pending approval status (no email sent yet)
-    const { data: registration, error: regError } = await supabase
+    const adminClient = createAdminClient()
+    const { data: registration, error: regError } = await adminClient
       .from('auction_registrations')
       .insert({
         auction_id: auctionId,
         user_id: user.id,
+        access_token: randomUUID(),
         approval_status: 'pending',
       })
       .select()
