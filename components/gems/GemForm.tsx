@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -9,7 +9,7 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 
 interface GemFormProps {
   gem?: Gem & { images?: GemImage[]; certificates?: GemCertificate[] }
-  auctions?: Pick<Auction, 'id' | 'name' | 'status' | 'auction_start' | 'auction_end'>[]
+  auctions?: Pick<Auction, 'id' | 'name' | 'status' | 'auction_start' | 'auction_end' | 'auction_type'>[]
   defaultAuctionId?: string
 }
 
@@ -30,6 +30,8 @@ function toUTCISO(localDatetime: string) {
 export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+    const selectedAuction = auctions.find(a => a.id === formData.auction_id)
+    const isSealed = selectedAuction?.auction_type === 'tender_base_fixed_bid'
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: gem?.name || '',
@@ -85,7 +87,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          start_time: toUTCISO(formData.start_time),
+          start_time: (isSealed && selectedAuction) ? new Date(selectedAuction.auction_start).toISOString() : toUTCISO(formData.start_time),
           end_time: new Date('2099-12-31T23:59:59Z').toISOString(),
           auction_id: formData.auction_id || null,
           images: formData.images.filter(url => url.trim() !== ''),
@@ -186,7 +188,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
           </div>
         </Section>
 
-        {/* Pricing */}
+        {/* Pricing */}`n        {!isSealed && (
         <Section title="Pricing & Timing" icon="" number={auctions.length > 0 ? "3" : "2"}>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -232,7 +234,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         </Section>
 
         {/* Specifications */}
-        <Section title="Specifications" icon="" number={auctions.length > 0 ? "4" : "3"}>
+        <Section title="Specifications" icon="" number={auctions.length > 0 ? (isSealed ? "3" : "4") : (isSealed ? "2" : "3")}>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-[var(--text-secondary)] mb-2">Carat Weight</label>
@@ -271,7 +273,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
         </Section>
 
       {/* Images */}
-      <Section title="Images & Videos" icon="" number={auctions.length > 0 ? "5" : "4"}>
+      <Section title="Images & Videos" icon="" number={auctions.length > 0 ? (isSealed ? "4" : "5") : (isSealed ? "3" : "4")}>
         <ImageUploader
           images={formData.images}
           mediaTypes={formData.media_types}
@@ -280,7 +282,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
       </Section>
 
       {/* Certificates */}
-      <Section title="Certificates" icon="" number={auctions.length > 0 ? "6" : "5"}>
+      <Section title="Certificates" icon="" number={auctions.length > 0 ? (isSealed ? "5" : "6") : (isSealed ? "4" : "5")}>
         <div className="space-y-3">
           {formData.certificates.map((cert, index) => (
             <div key={index} className="flex gap-2">
