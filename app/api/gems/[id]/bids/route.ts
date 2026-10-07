@@ -40,7 +40,7 @@ export async function POST(
     // Get gem with auction info
     const { data: gem } = await supabase
       .from('gems')
-      .select('*, auction:auctions(auction_type, auction_end)')
+      .select('*, auction:auctions(auction_type, auction_end, status)')
       .eq('id', id)
       .eq('status', 'active')
       .single()
@@ -150,14 +150,19 @@ export async function POST(
       // Tender base / fixed bid: user submits custom amount (one bid only)
       
       // Check if bidding round is active
-      const endTimeStr = gem.round_end_time || (gem.auction as any)?.auction_end || gem.end_time;
-      if (!endTimeStr) {
-        return NextResponse.json({ error: 'Bidding has not started yet' }, { status: 400 })
+      // Check if auction is still live
+      if ((gem.auction as any)?.status && (gem.auction as any).status !== 'live') {
+        return NextResponse.json({ error: 'Bidding has ended for this auction' }, { status: 400 })
       }
-      
-      const roundEndTime = new Date(endTimeStr)
-      if (now >= roundEndTime) {
-        return NextResponse.json({ error: 'Bidding time has ended' }, { status: 400 })
+
+      const endTimeStr = gem.round_end_time || (gem.auction as any)?.auction_end || gem.end_time;
+      if (endTimeStr) {
+        const roundEndTime = new Date(endTimeStr)
+        if (now >= roundEndTime) {
+          return NextResponse.json({ error: 'Bidding time has ended' }, { status: 400 })
+        }
+      } else if (!gem.round_end_time && auctionType !== 'tender_base_fixed_bid') {
+         return NextResponse.json({ error: 'Bidding has not started yet' }, { status: 400 })
       }
       
       // Check if user already placed a bid (one bid only rule)
@@ -233,7 +238,7 @@ export async function PATCH(
 
     const { data: gem } = await supabase
       .from('gems')
-      .select('*, auction:auctions(auction_type, auction_end)')
+      .select('*, auction:auctions(auction_type, auction_end, status)')
       .eq('id', id)
       .eq('status', 'active')
       .single()
@@ -266,13 +271,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Bid editing is only available for Closed Bid auctions' }, { status: 400 })
     }
 
-    const endTimeStr = gem.round_end_time || (gem.auction as any)?.auction_end || gem.end_time;
-    if (!endTimeStr) {
-      return NextResponse.json({ error: 'Bidding has not started' }, { status: 400 })
+    if ((gem.auction as any)?.status && (gem.auction as any).status !== 'live') {
+      return NextResponse.json({ error: 'Bidding has ended for this auction' }, { status: 400 })
     }
 
+    const endTimeStr = gem.round_end_time || (gem.auction as any)?.auction_end || gem.end_time;
     const now = new Date()
-    if (now >= new Date(endTimeStr)) {
+    if (endTimeStr && now >= new Date(endTimeStr)) {
       return NextResponse.json({ error: 'Bidding time has ended. Bid is locked.' }, { status: 400 })
     }
 
