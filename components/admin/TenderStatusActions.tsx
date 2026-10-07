@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useState, useEffect } from 'react'
@@ -12,6 +12,7 @@ interface Props {
   auctionId: string
   currentStatus: AuctionStatus
   itemCount: number
+unpublishedItemCount?: number
   approvedCount: number
 }
 
@@ -68,7 +69,7 @@ const statusFlow: Record<AuctionStatus, { next: AuctionStatus | null; label: str
 }
 
 export default function TenderStatusActions({
-  auctionId, currentStatus, itemCount, approvedCount }: Props) {
+  auctionId, currentStatus, itemCount, unpublishedItemCount = 0, approvedCount }: Props) {
   const confirm = useConfirm();
   const [isLoading, setIsLoading] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -132,7 +133,12 @@ export default function TenderStatusActions({
 
   // Warnings based on current state
   const warnings: string[] = []
-  if (currentStatus === 'upcoming' && itemCount === 0) {
+  const blockingErrors: string[] = []
+  if (nextStatus === 'registration_open' && unpublishedItemCount > 0) {
+    blockingErrors.push('Cannot open registration: ' + unpublishedItemCount + ' item(s) are not published')
+  }
+
+    if (currentStatus === 'upcoming' && itemCount === 0) {
     warnings.push('No items added to this auction yet')
   }
   if (currentStatus === 'registration_open' && approvedCount === 0) {
@@ -220,6 +226,23 @@ export default function TenderStatusActions({
               </div>
             )}
 
+            {/* Blocking Errors */}
+            {blockingErrors.length > 0 && (
+              <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-400 font-medium text-sm mb-1">Cannot Proceed</p>
+                    <ul className="text-xs text-red-400/80 space-y-1">
+                      {blockingErrors.map((e, i) => (
+                        <li key={i}> {e}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="p-3 bg-[var(--surface)] rounded-lg text-center">
@@ -243,7 +266,7 @@ export default function TenderStatusActions({
               </button>
               <button
                 onClick={handleAction}
-                disabled={isLoading}
+                  disabled={isLoading || blockingErrors.length > 0}
                 className={`flex-1 px-4 py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all ${current.color}`}
               >
                 {isLoading ? (
