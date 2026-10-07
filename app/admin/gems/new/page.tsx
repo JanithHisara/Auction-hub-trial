@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import GemForm from '@/components/gems/GemForm'
@@ -10,7 +10,7 @@ async function getAuctions() {
 
   const { data: auctions } = await supabase
     .from('auctions')
-    .select('id, name, status, auction_start, auction_end')
+    .select('id, name, status, auction_start, auction_end, auction_type')
     .eq('admin_id', user.id)
     .in('status', ['draft', 'upcoming', 'registration_open'])
     .order('auction_start', { ascending: true })
@@ -39,7 +39,7 @@ export default async function NewGemPage({
         <h1 className="text-3xl font-bold text-white mb-2">Add New Item</h1>
         <p className="text-[var(--text-secondary)] mb-8">Create a new auction item</p>
         
-        <GemForm auctions={auctions} defaultAuctionId={auction_id} />
+        <GemForm auctions={auctions as any} defaultAuctionId={auction_id} />
       </div>
     </div>
   )

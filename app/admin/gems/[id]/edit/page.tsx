@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import GemForm from '@/components/gems/GemForm'
@@ -32,7 +32,7 @@ export default async function EditGemPage({ params }: { params: Promise<{ id: st
 
   const { data: auctions } = await supabase
     .from('auctions')
-    .select('id, name, status, auction_start, auction_end')
+    .select('id, name, status, auction_start, auction_end, auction_type')
     .eq('admin_id', user.id)
     .in('status', ['draft', 'upcoming', 'registration_open'])
     .order('auction_start', { ascending: true })
@@ -52,7 +52,7 @@ export default async function EditGemPage({ params }: { params: Promise<{ id: st
         
         <GemForm 
           gem={{ ...gem, images: images || [], certificates: certificates || [] }} 
-          auctions={auctions || []}
+          auctions={(auctions || []) as any}
         />
       </div>
     </div>
