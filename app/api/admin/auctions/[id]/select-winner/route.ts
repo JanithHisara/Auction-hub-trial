@@ -15,8 +15,7 @@ export async function POST(
     const supabase = await createClient()
 
     // Get gem with auction info
-    const { data: gem } = await supabase
-      .from('gems')
+    const { data: gem } = await adminDb.from('gems')
       .select(`
         id,
         name,
@@ -58,8 +57,7 @@ export async function POST(
     }
 
     // Create auction winner record
-    const { data: winner, error: winnerError } = await supabase
-      .from('auction_winners')
+    const { data: winner, error: winnerError } = await adminDb.from('auction_winners')
       .insert({
         gem_id: id,
         user_id: winningBid.user_id,
@@ -78,29 +76,25 @@ export async function POST(
     }
 
     // Update gem status to completed
-    await supabase
-      .from('gems')
+    await adminDb.from('gems')
       .update({ status: 'completed' })
       .eq('id', id)
 
     // Increment winner's auctions_won count in user_rewards
-    const { data: existingRewards } = await supabase
-      .from('user_rewards')
+    const { data: existingRewards } = await adminDb.from('user_rewards')
       .select('auctions_won')
       .eq('user_id', winningBid.user_id)
       .single()
 
     if (existingRewards) {
-      await supabase
-        .from('user_rewards')
+      await adminDb.from('user_rewards')
         .update({ auctions_won: (existingRewards.auctions_won || 0) + 1 })
         .eq('user_id', winningBid.user_id)
     }
 
     // Auto-activate next pending item in the auction
     if (gem.auction_id) {
-      const { data: nextPendingItem } = await supabase
-        .from('gems')
+      const { data: nextPendingItem } = await adminDb.from('gems')
         .select('id, name')
         .eq('auction_id', gem.auction_id)
         .eq('status', 'pending')
@@ -109,8 +103,7 @@ export async function POST(
         .single()
 
       if (nextPendingItem) {
-        await supabase
-          .from('gems')
+        await adminDb.from('gems')
           .update({ status: 'active' })
           .eq('id', nextPendingItem.id)
         
