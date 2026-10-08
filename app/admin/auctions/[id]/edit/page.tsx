@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
@@ -26,6 +26,16 @@ export default function EditAuctionPage() {
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [moderators, setModerators] = useState<any[]>([])
+
+  useEffect(() => {
+    async function fetchModerators() {
+      const supabase = createClient()
+      const { data } = await supabase.from('users').select('id, email, display_name').eq('role', 'moderator')
+      if (data) setModerators(data)
+    }
+    fetchModerators()
+  }, [])
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
@@ -42,6 +52,7 @@ export default function EditAuctionPage() {
     auction_end: '',
     max_participants: '',
     entry_fee: '0',
+      moderator_id: '',
   })
   const [originalData, setOriginalData] = useState<{
     registration_start: string
@@ -69,6 +80,7 @@ export default function EditAuctionPage() {
           auction_end: toLocalDatetime(auction.auction_end),
           max_participants: auction.max_participants?.toString() || '',
           entry_fee: auction.entry_fee?.toString() || '0',
+      moderator_id: auction.moderator_id || '',
         })
         setOriginalData({
           registration_start: auction.registration_start || '',

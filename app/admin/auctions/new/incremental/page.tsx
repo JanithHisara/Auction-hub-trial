@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -18,6 +18,16 @@ function toUTCISO(localDatetime: string) {
 export default function NewAuctionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [moderators, setModerators] = useState<any[]>([])
+
+  useEffect(() => {
+    async function fetchModerators() {
+      const supabase = createClient()
+      const { data } = await supabase.from('users').select('id, email, display_name').eq('role', 'moderator')
+      if (data) setModerators(data)
+    }
+    fetchModerators()
+  }, [])
   const router = useRouter()
   const supabase = createClient()
   const errorRef = useRef<HTMLDivElement>(null)
@@ -34,6 +44,7 @@ export default function NewAuctionPage() {
     auction_end: '',
     max_participants: '',
     entry_fee: '0',
+      moderator_id: '',
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -117,6 +128,7 @@ export default function NewAuctionPage() {
           auction_end: new Date('2099-12-31T23:59:59Z').toISOString(),
           max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
           entry_fee: parseFloat(formData.entry_fee) || 0,
+            moderator_id: formData.moderator_id || null,
           status: 'draft',
         })
         .select()

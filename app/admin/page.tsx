@@ -1,12 +1,18 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { requirePermission } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 async function getStats() {
   const user = await requirePermission(PERMISSIONS.VIEW_DASHBOARD)
   const supabase = await createClient()
+
+  const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (userData?.role === 'moderator') {
+    redirect('/admin/auctions')
+  }
 
   // Get auctions
   const { data: auctions } = await supabase

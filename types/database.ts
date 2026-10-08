@@ -1,4 +1,4 @@
-﻿export type UserRole = 'user' | 'moderator' | 'admin' | 'super_admin'
+export type UserRole = 'user' | 'moderator' | 'admin' | 'super_admin'
 export type GemStatus = 'draft' | 'pending' | 'active' | 'ended' | 'completed'
 export type AuctionStatus = 'draft' | 'upcoming' | 'registration_open' | 'registration_closed' | 'live' | 'ended' | 'completed'
 export type AuctionType = 'progressive_elimination_auction' | 'tender_base_fixed_bid' | 'incremental_approval_auction'
@@ -19,6 +19,7 @@ export interface User {
 export interface Auction {
   id: string
   admin_id: string
+  moderator_id?: string | null
   name: string
   description: string | null
   banner_image_url: string | null
@@ -72,6 +73,7 @@ export interface Gem {
   id: string
   auction_id: string | null
   admin_id: string
+  moderator_id?: string | null
   name: string
   description: string
   starting_price: number
@@ -147,6 +149,7 @@ export interface AuctionWinner {
   winning_bid_id: string
   selected_at: string
   admin_id: string
+  moderator_id?: string | null
 }
 
 // New: User Rewards/Engagement
@@ -178,6 +181,7 @@ export interface BidderHold {
   auction_id: string
   user_id: string
   admin_id: string
+  moderator_id?: string | null
   reason: string | null
   held_at: string
   released_at: string | null
@@ -201,7 +205,8 @@ export interface ChatConversation {
   id: string
   auction_id: string
   user_id: string
-  assigned_admin_id: string | null
+  assigned_admin_id: string
+  moderator_id?: string | null | null
   status: ChatConversationStatus
   created_at: string
   last_message_at: string
@@ -250,6 +255,7 @@ export interface RolePermission {
   created_at: string
   permission?: Permission
 }
+
 
 
 

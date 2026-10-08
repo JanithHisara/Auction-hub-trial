@@ -32,6 +32,8 @@ export default async function AdminLayout({
   const user = await requireAdmin()
   const pendingCount = await getPendingCount(user.id)
   const permissions = await getUserPermissions(user.id)
+  const supabase = await createClient()
+  const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
 
   const hasPermission = (key: string) => permissions.includes(key)
 
@@ -53,12 +55,12 @@ export default async function AdminLayout({
           {/* Navigation */}
           <nav className="mb-6 sm:mb-8 -mx-4 px-4 overflow-x-auto">
             <div className="flex gap-2 pb-3 sm:pb-4 border-b border-[var(--border)] min-w-max">
-              {hasPermission(PERMISSIONS.VIEW_DASHBOARD) && (
+              {hasPermission(PERMISSIONS.VIEW_DASHBOARD) && userData?.role !== 'moderator' && (
                 <NavLink href="/admin" icon={<LayoutDashboard className="w-4 h-4" />}>
                   Overview
                 </NavLink>
               )}
-              {hasPermission(PERMISSIONS.MANAGE_AUCTIONS) && (
+              {(hasPermission(PERMISSIONS.MANAGE_AUCTIONS) || userData?.role === 'moderator') && (
                 <NavLink href="/admin/auctions" icon={<Calendar className="w-4 h-4" />}>
                   Auctions
                 </NavLink>
@@ -84,7 +86,7 @@ export default async function AdminLayout({
                   Access Control
                 </NavLink>
               )}
-              {hasPermission(PERMISSIONS.MANAGE_AUCTIONS) && (
+              {(hasPermission(PERMISSIONS.MANAGE_AUCTIONS) || userData?.role === 'moderator') && (
                 <NavLink href="/admin/auctions/new" icon={<Plus className="w-4 h-4" />} highlight>
                   New Auction
                 </NavLink>
