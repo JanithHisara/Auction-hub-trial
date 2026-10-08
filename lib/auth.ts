@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { UserRole } from '@/types/database'
-import { ADMIN_ROLES } from '@/lib/permissions'
+import { ADMIN_ROLES, PERMISSIONS } from '@/lib/permissions'
 
 export async function getCurrentUser() {
   const supabase = await createClient()
