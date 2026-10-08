@@ -55,6 +55,7 @@ export async function PUT(
         auction_end: body.auction_end,
         max_participants: body.max_participants ? parseInt(body.max_participants) : null,
         entry_fee: parseFloat(body.entry_fee) || 0,
+        moderator_id: body.moderator_id || null,
       })
       .eq('id', id)
       .eq('admin_id', user.id)
