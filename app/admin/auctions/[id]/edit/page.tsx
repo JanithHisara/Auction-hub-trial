@@ -31,9 +31,11 @@ export default function EditAuctionPage() {
 
   useEffect(() => {
     async function fetchModerators() {
-      const supabase = createClient()
-      const { data } = await supabase.from('users').select('id, email, display_name').eq('role', 'moderator')
-      if (data) setModerators(data)
+      const res = await fetch('/api/admin/moderators')
+      if (res.ok) {
+        const { moderators } = await res.json()
+        setModerators(moderators)
+      }
     }
     fetchModerators()
   }, [])
