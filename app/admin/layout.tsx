@@ -85,10 +85,6 @@ export default async function AdminLayout({
               <NavLink href="/admin/chat" icon={<MessageCircle className="w-4 h-4" />}>
                 Chat Inbox
               </NavLink>
-              {/* Chat Inbox accessible by admins/moderators */}
-              <NavLink href="/admin/chat" icon={<MessageCircle className="w-4 h-4" />}>
-                Chat Inbox
-              </NavLink>
               {hasPermission(PERMISSIONS.MANAGE_PERMISSIONS) && (
                 <NavLink href="/admin/access-control" icon={<Shield className="w-4 h-4" />}>
                   Access Control
