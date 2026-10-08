@@ -1,3 +1,4 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { UserRole } from '@/types/database'
@@ -162,7 +163,6 @@ export async function checkPermission(permissionKey: string): Promise<boolean> {
   return keys.includes(permissionKey)
 }
 
-import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function requireAuctionManager(auctionId?: string, gemId?: string) {
   const user = await requireAuth()
