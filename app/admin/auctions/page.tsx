@@ -67,12 +67,14 @@ export default async function AdminAuctionsPage() {
           <h1 className="text-3xl font-bold text-white">Auctions</h1>
           <p className="text-[var(--text-secondary)]">Manage your auction events</p>
         </div>
-        <Link 
-          href="/admin/auctions/new"
-          className="btn-gold"
-        >
-          <span>+ Create Auction</span>
-        </Link>
+        {userData?.role !== 'moderator' && (
+            <Link 
+              href="/admin/auctions/new"
+              className="btn-gold"
+            >
+              <span>+ Create Auction</span>
+            </Link>
+          )}
       </div>
 
       {/* Stats */}
