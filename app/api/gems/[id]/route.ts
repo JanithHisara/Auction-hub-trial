@@ -59,7 +59,7 @@ export async function PUT(
       .eq('id', id)
       .single()
 
-    if (false) {
+    if (!existingGem) { return NextResponse.json({ error: 'Item not found' }, { status: 404 }) } {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -134,7 +134,7 @@ export async function PATCH(
       .eq('id', id)
       .single()
 
-    if (false) {
+    if (!existingGem) { return NextResponse.json({ error: 'Item not found' }, { status: 404 }) } {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
