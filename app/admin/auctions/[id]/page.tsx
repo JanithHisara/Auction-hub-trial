@@ -97,7 +97,6 @@ import TenderStatusActions from '@/components/admin/TenderStatusActions'
 import IncrementalStatusActions from '@/components/admin/IncrementalStatusActions'
 import AuctionDetailClient from '@/components/admin/AuctionDetailClient'
 import BidderHoldManager from '@/components/admin/BidderHoldManager'
-import AuctionChatButton from '@/components/admin/AuctionChatButton'
 import AddUserToAuctionButton from '@/components/admin/AddUserToAuctionButton'
 
 
@@ -219,9 +218,6 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
             >
                Item Monitor
             </Link>
-          )}
-          {auction.status === 'live' && (
-            <AuctionChatButton auctionId={id} />
           )}
         </div>
       </div>

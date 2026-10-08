@@ -46,7 +46,10 @@ export default function AuctionChatWidget({ auctionId, userId }: Props) {
       const res = await fetch(`/api/chat/conversations/${conversation.id}/messages`)
       const data = await res.json()
       if (Array.isArray(data)) {
-        setMessages(data)
+        setMessages(prev => {
+          const optimistic = prev.filter(m => m.id.toString().startsWith('temp-'))
+          return [...data, ...optimistic]
+        })
       }
       setIsLoading(false)
       setTimeout(scrollToBottom, 100)

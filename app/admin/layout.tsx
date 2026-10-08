@@ -2,7 +2,7 @@ import { requireAdmin, getUserPermissions, getCurrentUser } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { LayoutDashboard, Calendar, Gem, Plus, UserCheck, Shield, Users, CreditCard } from 'lucide-react'
+import { LayoutDashboard, Calendar, Gem, Plus, UserCheck, Shield, Users, CreditCard, MessageCircle } from 'lucide-react'
 import { PERMISSIONS } from '@/lib/permissions'
 
 async function getPendingCount(adminId: string) {
@@ -81,6 +81,14 @@ export default async function AdminLayout({
                   NFC Cards
                 </NavLink>
               )}
+              {/* Chat Inbox accessible by admins/moderators */}
+              <NavLink href="/admin/chat" icon={<MessageCircle className="w-4 h-4" />}>
+                Chat Inbox
+              </NavLink>
+              {/* Chat Inbox accessible by admins/moderators */}
+              <NavLink href="/admin/chat" icon={<MessageCircle className="w-4 h-4" />}>
+                Chat Inbox
+              </NavLink>
               {hasPermission(PERMISSIONS.MANAGE_PERMISSIONS) && (
                 <NavLink href="/admin/access-control" icon={<Shield className="w-4 h-4" />}>
                   Access Control
