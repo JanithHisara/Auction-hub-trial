@@ -13,7 +13,7 @@ export async function POST(
     
 
     const { id: auctionId } = await params
-    await requireAuctionManager(PERMISSIONS.MANAGE_REGISTRATIONS, auctionId)
+    await requireAuctionManager(auctionId)
     const body = await request.json()
     const { user_id } = body
 

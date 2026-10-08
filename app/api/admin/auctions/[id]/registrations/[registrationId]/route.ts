@@ -14,7 +14,7 @@ export async function PATCH(
     const { id: auctionId, registrationId } = await params
     const { approval_status } = await request.json()
 
-    const user = await requireAuctionManager(PERMISSIONS.MANAGE_REGISTRATIONS, auctionId)
+    const user = await requireAuctionManager(auctionId)
     const supabase = await createClient()
     const adminDb = createAdminClient()
 
