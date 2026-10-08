@@ -59,6 +59,9 @@ const statusColors: Record<string, string> = {
 
 export default async function AdminAuctionsPage() {
   const auctions = await getAuctions()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: userData } = await supabase.from('users').select('role').eq('id', user?.id).single()
 
   return (
     <div className="space-y-8">
