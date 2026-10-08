@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import AuctionChatWidget from '@/components/chat/AuctionChatWidget'
 import { createClient } from '@/lib/supabase/client'
 import AuctionCountdown from '@/components/shared/AuctionCountdown'
 import { Auction, Gem, Bid, AuctionRegistration, User } from '@/types/database'
@@ -192,6 +193,8 @@ export default function TenderRoomClient({ auction, items: initialItems, user, r
           })}
         </div>
       )}
+      {/* Chat Widget */}
+      <AuctionChatWidget auctionId={auction.id} userId={user.id} />
     </div>
   )
 }

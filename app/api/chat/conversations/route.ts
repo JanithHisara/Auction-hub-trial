@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 
@@ -61,7 +62,8 @@ export async function GET(request: Request) {
 
     const isAdminRole = userData?.role === 'admin' || userData?.role === 'super_admin' || userData?.role === 'moderator'
     if (isAdminRole) {
-      const { data: conversations, error } = await supabase
+      const adminClient = createAdminClient()
+      const { data: conversations, error } = await adminClient
         .from('chat_conversations')
         .select(`
           *,

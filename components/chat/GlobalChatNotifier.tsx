@@ -50,14 +50,15 @@ export default function GlobalChatNotifier({ userId, role }: { userId?: string; 
           // If we aren't a participant and we aren't a global admin, skip
           if (!isParticipant && !isGlobalAdmin) return
 
-          // Fetch sender name
-          const { data: sender } = await supabase
-            .from('users')
-            .select('display_name, anonymous_name, email')
-            .eq('id', newMsg.sender_id)
-            .single()
-
-          const senderName = sender?.display_name || sender?.anonymous_name || sender?.email || 'Unknown User'
+          // Fetch sender name via API to bypass RLS
+          let senderName = 'Unknown User'
+          try {
+            const res = await fetch('/api/chat/user-profile?id=' + newMsg.sender_id)
+            const data = await res.json()
+            if (data.name) senderName = data.name
+          } catch (e) {
+            console.error(e)
+          }
 
           const id = Math.random().toString(36).substr(2, 9)
           setNotifications(prev => [...prev, {
