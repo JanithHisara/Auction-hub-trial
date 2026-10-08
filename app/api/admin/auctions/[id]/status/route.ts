@@ -1,6 +1,6 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requirePermission } from '@/lib/auth'
+import { requireAuctionManager } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendAuctionLiveEmail, sendAuctionSummaryEmail } from '@/lib/email/resend'
@@ -11,7 +11,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const user = await requirePermission(PERMISSIONS.MANAGE_AUCTIONS)
+    const user = await requireAuctionManager(id, undefined, PERMISSIONS.MANAGE_AUCTIONS)
     const supabase = await createClient()
 
     let status: string
@@ -30,14 +30,14 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    const { error } = await supabase
+    const adminDb = createAdminClient()
+    const { error } = await adminDb
       .from('auctions')
       .update({ 
         status,
         published_at: status !== 'draft' ? new Date().toISOString() : null,
       })
       .eq('id', id)
-      .eq('admin_id', user.id)
 
     if (error) {
       console.error('Update error:', error)
