@@ -31,6 +31,28 @@ export async function POST(
     }
 
     const adminDb = createAdminClient()
+
+    if (status === 'registration_open') {
+      const { count: unpublishedCount } = await adminDb
+        .from('gems')
+        .select('*', { count: 'exact', head: true })
+        .eq('auction_id', id)
+        .eq('status', 'draft')
+
+      if (unpublishedCount && unpublishedCount > 0) {
+        return NextResponse.json({ error: 'All items must be published before opening registration.' }, { status: 400 })
+      }
+
+      const { count: totalCount } = await adminDb
+        .from('gems')
+        .select('*', { count: 'exact', head: true })
+        .eq('auction_id', id)
+
+      if (totalCount === 0) {
+        return NextResponse.json({ error: 'Auction must have at least one item before opening registration.' }, { status: 400 })
+      }
+    }
+
     const { error } = await adminDb
       .from('auctions')
       .update({ 
