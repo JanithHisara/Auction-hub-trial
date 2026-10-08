@@ -162,21 +162,24 @@ export async function checkPermission(permissionKey: string): Promise<boolean> {
   return keys.includes(permissionKey)
 }
 
+import { createAdminClient } from '@/lib/supabase/admin'
+
 export async function requireAuctionManager(auctionId?: string, gemId?: string) {
   const user = await requireAuth()
   const supabase = await createClient()
+  const adminDb = createAdminClient()
 
   const hasGlobal = await checkPermission(PERMISSIONS.CONTROL_BIDDING)
   if (hasGlobal) return user
 
   let targetAuctionId = auctionId
   if (gemId && !targetAuctionId) {
-    const { data: gem } = await supabase.from('gems').select('auction_id').eq('id', gemId).single()
+    const { data: gem } = await adminDb.from('gems').select('auction_id').eq('id', gemId).single()
     if (gem?.auction_id) targetAuctionId = gem.auction_id
   }
 
   if (targetAuctionId) {
-    const { data: auction } = await supabase.from('auctions').select('moderator_id').eq('id', targetAuctionId).single()
+    const { data: auction } = await adminDb.from('auctions').select('moderator_id').eq('id', targetAuctionId).single()
     if (auction?.moderator_id === user.id) {
       return user
     }
