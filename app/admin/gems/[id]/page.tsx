@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requirePermission } from '@/lib/auth'
+import { requireAuctionManager } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
@@ -12,7 +12,7 @@ import GemDetailClient from '@/components/admin/GemDetailClient'
 
 export default async function GemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
+  const user = await requireAuctionManager(undefined, id, PERMISSIONS.MANAGE_ITEMS)
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -20,7 +20,7 @@ export default async function GemDetailPage({ params }: { params: Promise<{ id: 
     .from('gems')
     .select('*, auction:auctions(name, auction_type, status)')
     .eq('id', id)
-    .eq('admin_id', user.id)
+    
     .single()
 
   if (!gem) notFound()
