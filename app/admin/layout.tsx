@@ -60,7 +60,7 @@ export default async function AdminLayout({
                   Overview
                 </NavLink>
               )}
-              {hasPermission(PERMISSIONS.MANAGE_AUCTIONS) && (
+              {(hasPermission(PERMISSIONS.MANAGE_AUCTIONS) || userData?.role === 'moderator') && (
                 <NavLink href="/admin/auctions" icon={<Calendar className="w-4 h-4" />}>
                   Auctions
                 </NavLink>
