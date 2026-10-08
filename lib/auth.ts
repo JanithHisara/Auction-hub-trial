@@ -164,12 +164,12 @@ export async function checkPermission(permissionKey: string): Promise<boolean> {
 }
 
 
-export async function requireAuctionManager(auctionId?: string, gemId?: string) {
+export async function requireAuctionManager(auctionId?: string, gemId?: string, requiredGlobalPermission: string = PERMISSIONS.CONTROL_BIDDING) {
   const user = await requireAuth()
   const supabase = await createClient()
   const adminDb = createAdminClient()
 
-  const hasGlobal = await checkPermission(PERMISSIONS.CONTROL_BIDDING)
+  const hasGlobal = await checkPermission(requiredGlobalPermission)
   if (hasGlobal) return user
 
   let targetAuctionId = auctionId
