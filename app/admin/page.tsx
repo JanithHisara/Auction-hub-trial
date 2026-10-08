@@ -105,37 +105,7 @@ export default async function AdminDashboard() {
         />
       </div>
 
-      {/* Quick Actions */}
-      <div className="card-glass rounded-2xl p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <QuickAction 
-            href="/admin/auctions/new" 
-            icon="" 
-            title="New Auction"
-            desc="Create event"
-            primary
-          />
-          <QuickAction 
-            href="/admin/gems/new" 
-            icon="" 
-            title="New Item"
-            desc="Add to auction"
-          />
-          <QuickAction 
-            href="/admin/auctions" 
-            icon="" 
-            title="Auctions"
-            desc="Manage events"
-          />
-          <QuickAction 
-            href="/admin/gems" 
-            icon="" 
-            title="All Items"
-            desc="View inventory"
-          />
-        </div>
-      </div>
+
 
       {/* Recent Activity Placeholder */}
       <div className="card-glass rounded-2xl p-4 sm:p-6">
