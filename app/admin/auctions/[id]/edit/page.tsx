@@ -429,7 +429,7 @@ export default function EditAuctionPage() {
               <div>
                 <label className="block text-sm text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
-                  Entry Fee ($)
+                  Entry Fee (LKR)
                 </label>
                 <input
                   type="number"

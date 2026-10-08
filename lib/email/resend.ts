@@ -241,7 +241,6 @@ export async function sendWinnerEmail({
   // Format currency
   const formattedAmount = 'LKR ' + new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
-    minimumFractionDigits: 0,
   }).format(winningAmount)
 
   // If Resend is not configured, log and return
