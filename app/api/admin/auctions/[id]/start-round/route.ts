@@ -1,4 +1,4 @@
-import { createAdminClient }
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { requirePermission, requireAuctionManager } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
