@@ -108,12 +108,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
       const responseData = await response.json();
       const finalId = responseData?.id || gem?.id;
       if (finalId) {
-        window.location.href = /admin/gems/${finalId}
-      } else {
-        const responseData = await response.json();
-      const finalId = responseData?.id || gem?.id;
-      if (finalId) {
-        window.location.href = /admin/gems/${finalId}
+        window.location.href = /admin/gems/ + finalId
       } else {
         window.location.href = '/admin/gems'
       }
