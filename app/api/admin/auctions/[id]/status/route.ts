@@ -41,7 +41,7 @@ export async function POST(
 
     if (error) {
       console.error('Update error:', error)
-      return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to update: ' + error.message }, { status: 500 })
     }
 
     // When auction goes live, notify all approved registered users via email
