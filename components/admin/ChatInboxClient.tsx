@@ -34,7 +34,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
   const fetchConversations = useCallback(async () => {
     setIsLoadingConvs(true)
     try {
-      const res = await fetch(/api/chat/conversations?auction_id=all)
+      const res = await fetch('/api/chat/conversations?auction_id=all')
       const data = await res.json()
       if (Array.isArray(data)) {
         setConversations(data)
@@ -69,7 +69,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
     const fetchMessages = async () => {
       setIsLoadingMessages(true)
-      const res = await fetch(/api/chat/conversations/ + activeConv.id + /messages)
+      const res = await fetch('/api/chat/conversations/' + activeConv.id + '/messages')
       const data = await res.json()
       if (Array.isArray(data)) {
         setMessages(data)
@@ -79,7 +79,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
     }
     fetchMessages()
 
-    fetch(/api/chat/conversations/ + activeConv.id, {
+    fetch('/api/chat/conversations/' + activeConv.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'mark_read' }),
@@ -108,7 +108,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
           setMessages(prev => [...prev, { ...newMsg, sender: sender as ChatMessage['sender'] }])
           setTimeout(scrollToBottom, 100)
 
-          fetch(/api/chat/conversations/ + activeConv.id, {
+          fetch('/api/chat/conversations/' + activeConv.id, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'mark_read' }),
@@ -129,7 +129,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
     setIsSending(true)
 
     const optimistic: ChatMessage = {
-      id: 	emp- + Date.now(),
+      id: 'temp-' + Date.now(),
       conversation_id: activeConv.id,
       sender_id: adminId,
       sender_role: 'admin',
@@ -142,7 +142,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
     setTimeout(scrollToBottom, 50)
 
     try {
-      const res = await fetch(/api/chat/conversations/ + activeConv.id + /messages, {
+      const res = await fetch('/api/chat/conversations/' + activeConv.id + '/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: messageContent }),
@@ -170,7 +170,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   const handleResolve = async () => {
     if (!activeConv?.id) return
-    await fetch(/api/chat/conversations/ + activeConv.id, {
+    await fetch('/api/chat/conversations/' + activeConv.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'resolve' }),
@@ -181,7 +181,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   const handleAssign = async () => {
     if (!activeConv?.id) return
-    await fetch(/api/chat/conversations/ + activeConv.id, {
+    await fetch('/api/chat/conversations/' + activeConv.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'assign' }),

@@ -61,11 +61,11 @@ export async function GET(request: Request) {
       
       let query = adminClient
         .from('chat_conversations')
-        .select(
+        .select(`
           *,
           user:users!chat_conversations_user_id_fkey(id, email, anonymous_name, display_name, phone),
           assigned_admin:users!chat_conversations_assigned_admin_id_fkey(id, email, display_name)
-        )
+        `)
         .order('last_message_at', { ascending: false })
         
       if (auctionId && auctionId !== 'all') {
