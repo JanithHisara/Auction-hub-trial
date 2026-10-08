@@ -108,11 +108,10 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
       const responseData = await response.json();
       const finalId = responseData?.id || gem?.id;
       if (finalId) {
-        window.location.href = /admin/gems/ + finalId
+        window.location.href = '/admin/gems/' + finalId
       } else {
         window.location.href = '/admin/gems'
-      }
-      }
+      } 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to save'
       setError(message)
