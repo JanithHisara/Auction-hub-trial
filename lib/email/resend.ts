@@ -239,9 +239,8 @@ export async function sendWinnerEmail({
   const finalPaymentUrl = paymentUrl || profileUrl
 
   // Format currency
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formattedAmount = 'LKR ' + new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
     minimumFractionDigits: 0,
   }).format(winningAmount)
 
@@ -633,7 +632,7 @@ export async function sendAuctionSummaryEmail({
       items,
     }),
     text: `Auction Summary: ${auctionName}\n\n${userName ? `Hi ${userName},` : 'Hello,'}\n\nHere is a summary of the items from ${auctionName}:\n\n` + 
-      items.map(item => `- ${item.name}: ${item.winningPrice ? `$${item.winningPrice.toLocaleString()}` : 'No bids'}\n  Description: ${item.description || 'No description'}`).join('\n\n') +
+      items.map(item => `- ${item.name}: ${item.winningPrice ? `LKR ${item.winningPrice.toLocaleString()}` : 'No bids'}\n  Description: ${item.description || 'No description'}`).join('\n\n') +
       `\n\nThank you for participating!\nAuctionhub`,
   })
 
