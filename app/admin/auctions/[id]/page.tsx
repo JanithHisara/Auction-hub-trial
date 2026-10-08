@@ -223,14 +223,6 @@ export default async function AdminAuctionDetailPage({ params }: { params: Promi
           {auction.status === 'live' && (
             <AuctionChatButton auctionId={id} />
           )}
-          {(auction.status === 'live' || auction.status === 'registration_open' || auction.status === 'registration_closed') && (
-            <Link
-              href={`/admin/auctions/${id}/entrance`}
-              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-500/30 transition-colors"
-            >
-               Entrance Scanner
-            </Link>
-          )}
         </div>
       </div>
 
