@@ -169,8 +169,7 @@ export default function EditAuctionPage() {
             auction_start: toUTCISO(formData.auction_start),
             auction_end: formData.auction_type === 'tender_base_fixed_bid' ? toUTCISO(formData.auction_end) : new Date('2099-12-31T23:59:59Z').toISOString(),
           }),
-        }),
-      })
+        })
 
       if (!res.ok) {
         const data = await res.json()
