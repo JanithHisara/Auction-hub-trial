@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { requirePermission } from '@/lib/auth'
+import { requirePermission, requireAuctionManager } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
 
@@ -10,6 +11,7 @@ export async function GET(
   try {
     const { id } = await params
     const supabase = await createClient()
+      const adminDb = createAdminClient()
     const { data: gem, error } = await supabase
       .from('gems')
       .select('*')
@@ -45,8 +47,9 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
+    const user = await requireAuctionManager(undefined, id, PERMISSIONS.MANAGE_ITEMS)
     const supabase = await createClient()
+      const adminDb = createAdminClient()
     const body = await request.json()
 
     // Verify admin owns this gem
@@ -60,9 +63,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const { data: gem, error } = await supabase
-      .from('gems')
-      .update({
+    const { data: gem, error } = await adminDb.from('gems').update({
         auction_id: body.auction_id || null,
         name: body.name,
         description: body.description,
@@ -121,8 +122,9 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const user = await requirePermission(PERMISSIONS.MANAGE_ITEMS)
+    const user = await requireAuctionManager(undefined, id, PERMISSIONS.MANAGE_ITEMS)
     const supabase = await createClient()
+      const adminDb = createAdminClient()
     const body = await request.json()
 
     // Verify admin owns this gem
@@ -162,9 +164,7 @@ export async function PATCH(
       }
     }
 
-    const { data: gem, error } = await supabase
-      .from('gems')
-      .update(updates)
+    const { data: gem, error } = await adminDb.from('gems').update(updates)
       .eq('id', id)
       .select()
       .single()
