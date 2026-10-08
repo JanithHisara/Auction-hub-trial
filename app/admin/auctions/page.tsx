@@ -67,14 +67,12 @@ export default async function AdminAuctionsPage() {
           <h1 className="text-3xl font-bold text-white">Auctions</h1>
           <p className="text-[var(--text-secondary)]">Manage your auction events</p>
         </div>
-        {userData?.role !== 'moderator' && (
         <Link 
           href="/admin/auctions/new"
           className="btn-gold"
         >
           <span>+ Create Auction</span>
         </Link>
-        )}
       </div>
 
       {/* Stats */}
@@ -160,14 +158,12 @@ export default async function AdminAuctionsPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-        {userData?.role !== 'moderator' && (
                         <Link 
                           href={`/admin/auctions/${auction.id}`}
                           className="px-3 py-1.5 text-xs font-medium bg-[var(--surface)] hover:bg-[var(--surface-elevated)] text-white rounded-lg transition-colors"
                         >
                           View
                         </Link>
-        {userData?.role !== 'moderator' && (
                         <Link 
                           href={`/admin/auctions/${auction.id}/edit`}
                           className="px-3 py-1.5 text-xs font-medium bg-[var(--gold)]/20 hover:bg-[var(--gold)]/30 text-[var(--gold)] rounded-lg transition-colors"
@@ -230,14 +226,12 @@ export default async function AdminAuctionsPage() {
                 </div>
 
                 <div className="flex gap-2">
-        {userData?.role !== 'moderator' && (
                   <Link 
                     href={`/admin/auctions/${auction.id}`}
                     className="flex-1 py-2.5 text-center text-sm font-medium bg-[var(--surface)] hover:bg-[var(--surface-elevated)] text-white rounded-lg transition-colors"
                   >
                     View
                   </Link>
-        {userData?.role !== 'moderator' && (
                   <Link 
                     href={`/admin/auctions/${auction.id}/edit`}
                     className="flex-1 py-2.5 text-center text-sm font-medium bg-[var(--gold)]/20 hover:bg-[var(--gold)]/30 text-[var(--gold)] rounded-lg transition-colors"
