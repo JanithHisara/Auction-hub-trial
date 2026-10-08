@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { requirePermission } from '@/lib/auth'
+import { requireAuctionManager } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PERMISSIONS } from '@/lib/permissions'
 import { sendAuctionAccessEmail } from '@/lib/email/resend'
