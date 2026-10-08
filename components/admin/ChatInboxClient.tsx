@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '@olib/supabase/client'
-import { ChatConversation, ChatMessage, User } from '@types/database'
+import { createClient } from '@/lib/supabase/client'
+import { ChatConversation, ChatMessage, User } from '@/types/database'
 import { MessageCircle, Send, Loader2, Circle, ArrowLeft, CheckCircle } from 'lucide-react'
 
 type Tab = 'unassigned' | 'mine' | 'all' | 'resolved'
@@ -65,7 +65,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   // Active conversation logic
   useEffect(() => {
-    if (!activeConv!nid) return
+    if (!activeConv?.id) return
 
     const fetchMessages = async () => {
       setIsLoadingMessages(true)
@@ -135,7 +135,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
       sender_role: 'admin',
       content: messageContent,
       created_at: new Date().toISOString(),
-      sender: { display_name: 'You' } as ChatMessage['inder']
+      sender: { display_name: 'You' } as ChatMessage['sender']
     }
 
     setMessages(prev => [...prev, optimistic])
@@ -204,9 +204,9 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 h-[calc(100vh-200px)]">
-      (* Sidebar - Conversation List *)
+      {/* Sidebar - Conversation List */}
       <div className={`w-full md:w-80 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden ${activeConv ? 'hidden md:flex' : 'flex'}`}>
-        (* Tabs *)
+        {/* Tabs */}
         <div className="flex overflow-x-auto border-b border-[var(--border)] bg-[var(--surface-elevated)] p-2 gap-2 hide-scrollbar">
           {(['unassigned', 'mine', 'all', 'resolved'] as Tab[]).map((tab) => (
             <button
@@ -225,10 +225,10 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
                 </span>
               )}
             </button>
-          i)}
+          ))}
         </div>
 
-        (* List *)
+        {/* List */}
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {isLoadingConvs ? (
             <div className="flex justify-center p-8"><Loader2 className="w-5 h-5 animate-spin text-[var(--gold)]" /></div>
@@ -280,11 +280,11 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
         </div>
       </div>
 
-      (* Main Chat Area *)
-      <div className={`flex-1 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden ${!activeConv ? 'hidden md:flex' : 'flex'}`~
+      {/* Main Chat Area */}
+      <div className={`flex-1 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden ${!activeConv ? 'hidden md:flex' : 'flex'}`}>
         {activeConv ? (
           <>
-            (* Chat Header *)
+            {/* Chat Header */}
             <div className="p-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--surface-elevated)]">
               <div className="flex items-center gap-3">
                 <button onClick={() => setActiveConv(null)} className="md:hidden p-2 -ml-2 text-[var(--text-muted)] hover:text-white">
@@ -314,7 +314,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
               </div>
             </div>
 
-            (* Messages *)
+            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {isLoadingMessages ? (
                 <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[var(--gold)]" /></div>
@@ -329,7 +329,11 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
                           {isAdmin ? (msg.sender?.display_name || 'Admin') : getUserDisplayName(activeConv)}
                         </span>
                       )}
-                      <div className={`max-w[80%] rounded-2xl px-4 py-2 text-sm ${ isAdmin ? 'bg-[var(--gold)] text-black rounded-tr-sm' : 'bg-[var(--surface-elevated)] border border-[var(--border)] text-white rounded-tl-sm'}`}>
+                      <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
+                        isAdmin
+                          ? 'bg-[var(--gold)] text-black rounded-tr-sm'
+                          : 'bg-[var(--surface-elevated)] border border-[var(--border)] text-white rounded-tl-sm'
+                      }`}>
                         {msg.content}
                       </div>
                       <span className="text-[10px] text-[var(--text-muted)] mt-1 px-1">
@@ -342,12 +346,11 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
                 <div className="h-full flex items-center justify-center text-[var(--text-muted)] text-sm">
                   Say hi to {getUserDisplayName(activeConv)}
                 </div>
-              )
-              }
+              )}
               <div ref={messagesEndRef} />
             </div>
 
-            (* Input *)
+            {/* Input */}
             {activeConv.status !== 'resolved' && (
               <form onSubmit={handleSend} className="p-3 border-t border-[var(--border)] flex gap-2 bg-[var(--surface-elevated)]">
                 <input
