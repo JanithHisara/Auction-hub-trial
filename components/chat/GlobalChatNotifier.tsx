@@ -16,8 +16,11 @@ export default function GlobalChatNotifier({ userId, role }: { userId?: string; 
   const [notifications, setNotifications] = useState<Notification[]>([])
   const supabase = createClient()
 
+  const isGlobalAdmin = role === 'admin' || role === 'super_admin' || role === 'moderator', setNotifications] = useState<Notification[]>([])
+  const supabase = createClient()
+
   useEffect(() => {
-    if (!userId) return
+    if (!userId || !isGlobalAdmin) return
 
     const channel = supabase
       .channel('global-chat-notifications')
@@ -81,7 +84,7 @@ export default function GlobalChatNotifier({ userId, role }: { userId?: string; 
     }
   }, [userId, role, supabase])
 
-  if (notifications.length === 0) return null
+  if (!isGlobalAdmin || notifications.length === 0) return null
 
   return (
     <div className="fixed top-20 right-4 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
