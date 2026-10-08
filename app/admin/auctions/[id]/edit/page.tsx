@@ -131,7 +131,7 @@ export default function EditAuctionPage() {
           }
           
           if (dateVal < now) {
-            throw new Error(${label} must be in the future)
+            throw new Error(`${label} must be in the future`)
           }
         }
 
