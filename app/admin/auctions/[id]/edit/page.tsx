@@ -122,14 +122,18 @@ export default function EditAuctionPage() {
       const aucEnd = new Date(formData.auction_end)
 
       const now = new Date()
-      const checkFuture = (val: string, origVal: string | undefined, label: string) => {
-        if (!val) return
-        const dateVal = new Date(val)
-        const origDate = origVal ? new Date(origVal) : null
-        if (dateVal < now && (!origDate || dateVal.getTime() !== origDate.getTime())) {
-          throw new Error(`${label} must be in the future`)
+              const checkFuture = (val: string, origVal: string | undefined, label: string) => {
+          if (!val) return
+          const dateVal = new Date(val)
+          
+          if (origVal && val === toLocalDatetime(origVal)) {
+            return
+          }
+          
+          if (dateVal < now) {
+            throw new Error(${label} must be in the future)
+          }
         }
-      }
 
       if (originalData) {
         checkFuture(formData.registration_start, originalData.registration_start, 'Registration start time')
