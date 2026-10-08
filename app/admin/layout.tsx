@@ -60,7 +60,7 @@ export default async function AdminLayout({
                   Overview
                 </NavLink>
               )}
-              {(hasPermission(PERMISSIONS.MANAGE_AUCTIONS) || userData?.role === 'moderator') && (
+              {hasPermission(PERMISSIONS.MANAGE_AUCTIONS) && (
                 <NavLink href="/admin/auctions" icon={<Calendar className="w-4 h-4" />}>
                   Auctions
                 </NavLink>
@@ -86,7 +86,7 @@ export default async function AdminLayout({
                   Access Control
                 </NavLink>
               )}
-              {(hasPermission(PERMISSIONS.MANAGE_AUCTIONS) || userData?.role === 'moderator') && (
+              {hasPermission(PERMISSIONS.MANAGE_AUCTIONS) && (
                 <NavLink href="/admin/auctions/new" icon={<Plus className="w-4 h-4" />} highlight>
                   New Auction
                 </NavLink>
