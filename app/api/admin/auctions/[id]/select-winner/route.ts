@@ -13,6 +13,7 @@ export async function POST(
     const { id } = await params
     const user = await requireAuctionManager(undefined, id)
     const supabase = await createClient()
+    const adminDb = createAdminClient()
 
     // Get gem with auction info
     const { data: gem } = await adminDb.from('gems')
@@ -42,7 +43,6 @@ export async function POST(
     // Criteria:
     // 1. Highest Bid Amount
     // 2. Earliest created_at timestamp (First to bid as tiebreaker)
-    const adminDb = createAdminClient()
     const { data: winningBid } = await adminDb
       .from('bids')
       .select('id, user_id, bid_amount, created_at')
