@@ -53,7 +53,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
   // Subscribe to all conversations
   useEffect(() => {
     const channel = supabase
-      .channel(global-admin-chat-convs)
+      .channel('global-admin-chat-convs')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chat_conversations' },
@@ -91,10 +91,10 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
     if (!activeConv?.id) return
 
     const channel = supabase
-      .channel(global-admin-chat-msgs- + activeConv.id)
+      .channel('global-admin-chat-msgs-' + activeConv.id)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: conversation_id=eq. + activeConv.id },
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: 'conversation_id=eq.' + activeConv.id },
         async (payload) => {
           const newMsg = payload.new as ChatMessage
           if (newMsg.sender_id === adminId) return
