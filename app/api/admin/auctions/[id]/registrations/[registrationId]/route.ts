@@ -1,6 +1,6 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requirePermission } from '@/lib/auth'
+import { requireAuctionManager } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendAuctionAccessEmail } from '@/lib/email/resend'
@@ -14,7 +14,7 @@ export async function PATCH(
     const { id: auctionId, registrationId } = await params
     const { approval_status } = await request.json()
 
-    const user = await requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS)
+    const user = await requireAuctionManager(PERMISSIONS.MANAGE_REGISTRATIONS, auctionId)
     const supabase = await createClient()
     const adminDb = createAdminClient()
 
@@ -45,14 +45,14 @@ export async function PATCH(
     console.log('[Approval] User found:', registeredUser?.email)
 
     if (approval_status === 'approved') {
-      const { data: auction } = await supabase
+      const { data: auction } = await adminDb
         .from('auctions')
         .select('max_participants')
         .eq('id', auctionId)
         .single()
 
       if (auction?.max_participants) {
-        const { count } = await supabase
+        const { count } = await adminDb
           .from('auction_registrations')
           .select('*', { count: 'exact', head: true })
           .eq('auction_id', auctionId)
@@ -67,7 +67,7 @@ export async function PATCH(
     // Generate access_token if not already present (user self-registered without token)
     const accessToken = registration.access_token || randomUUID()
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await adminDb
       .from('auction_registrations')
       .update({
         approval_status,

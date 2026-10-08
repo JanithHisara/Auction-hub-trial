@@ -5,7 +5,11 @@ import { PERMISSIONS } from '@/lib/permissions'
 
 export async function GET(request: NextRequest) {
   try {
-    await requirePermission(PERMISSIONS.MANAGE_USERS)
+        try {
+      await requirePermission(PERMISSIONS.MANAGE_USERS)
+    } catch {
+      await requirePermission(PERMISSIONS.MANAGE_REGISTRATIONS)
+    }
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
