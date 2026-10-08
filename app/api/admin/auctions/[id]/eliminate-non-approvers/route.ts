@@ -1,5 +1,6 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { requirePermission } from '@/lib/auth'
+import { requireAuctionManager } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
 import { NextResponse } from 'next/server'
 
@@ -9,9 +10,10 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    await requirePermission(PERMISSIONS.CONTROL_BIDDING)
+    await requireAuctionManager(undefined, id)
 
     const supabase = await createClient()
+    const adminDb = createAdminClient()
 
     // Get the gem info
     const { data: gem } = await supabase
