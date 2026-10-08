@@ -190,6 +190,24 @@ export default function NewAuctionPage() {
                 className="w-full"
               />
             </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                  Assign Moderator (Optional)
+                </label>
+                <select
+                  name="moderator_id"
+                  value={formData.moderator_id}
+                  onChange={handleChange}
+                  className="w-full"
+                >
+                  <option value="">No Moderator</option>
+                  {moderators.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.display_name || m.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
             <div>
               <label className="block text-sm text-[var(--text-secondary)] mb-2">
