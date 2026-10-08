@@ -1,3 +1,4 @@
+import { createAdminClient }
 import { createClient } from '@/lib/supabase/server'
 import { requirePermission, requireAuctionManager } from '@/lib/auth'
 import { PERMISSIONS } from '@/lib/permissions'
@@ -12,11 +13,10 @@ export async function POST(
     await requireAuctionManager(undefined, id)
 
     const supabase = await createClient()
+    const adminDb = createAdminClient()
     const body = await request.json().catch(() => ({}))
     
-    const { data: gem } = await supabase
-      .from('gems')
-      .select('increment_interval')
+    const { data: gem } = await adminDb.from('gems').select('increment_interval')
       .eq('id', id)
       .single()
 
@@ -29,9 +29,7 @@ export async function POST(
     const now = new Date()
     const roundEnd = new Date(now.getTime() + (durationSeconds * 1000))
 
-    const { error } = await supabase
-      .from('gems')
-      .update({ round_end_time: roundEnd.toISOString() })
+    const { error } = await adminDb.from('gems').update({ round_end_time: roundEnd.toISOString() })
       .eq('id', id)
 
     if (error) throw error
