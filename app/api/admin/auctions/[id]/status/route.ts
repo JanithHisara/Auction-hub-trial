@@ -184,9 +184,12 @@ export async function POST(
     
     return NextResponse.redirect(new URL(`/admin/auctions/${id}`, request.url))
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Status update error:', error)
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+    if (error?.message === 'NEXT_REDIRECT') {
+      return NextResponse.json({ error: 'Unauthorized: You are not the assigned moderator for this auction.' }, { status: 403 })
+    }
+    return NextResponse.json({ error: error?.message || 'Internal server error' }, { status: 500 })
   }
 }
 
