@@ -36,7 +36,7 @@ export default function GemForm({ gem, auctions = [], defaultAuctionId }: GemFor
     description: gem?.description || '',
     auction_id: gem?.auction_id || defaultAuctionId || '',
     starting_price: gem?.starting_price?.toString() || '0',
-    min_bid_increment: gem?.min_bid_increment?.toString() || '100',
+    min_bid_increment: gem?.min_bid_increment?.toString() || '1000',
     increment_interval: gem?.increment_interval?.toString() || '60',
     start_time: gem?.start_time ? toLocalDatetimeString(gem.start_time) : '',
     end_time: gem?.end_time ? toLocalDatetimeString(gem.end_time) : '',
