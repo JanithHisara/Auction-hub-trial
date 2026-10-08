@@ -59,9 +59,7 @@ export async function PUT(
       .eq('id', id)
       .single()
 
-    if (!existingGem) { return NextResponse.json({ error: 'Item not found' }, { status: 404 }) } {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    if (!existingGem) { return NextResponse.json({ error: 'Item not found' }, { status: 404 })
 
     const { data: gem, error } = await adminDb.from('gems').update({
         auction_id: body.auction_id || null,
@@ -134,9 +132,7 @@ export async function PATCH(
       .eq('id', id)
       .single()
 
-    if (!existingGem) { return NextResponse.json({ error: 'Item not found' }, { status: 404 }) } {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    if (!existingGem) { return NextResponse.json({ error: 'Item not found' }, { status: 404 })
 
     // If trying to activate, check no other item is currently active in this auction
     if (body.status === 'active' && existingGem.auction_id) {
