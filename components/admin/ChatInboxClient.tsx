@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { ChatConversation, ChatMessage, User } from '@/types/database'
+import { createClient } from '@olib/supabase/client'
+import { ChatConversation, ChatMessage, User } from '@types/database'
 import { MessageCircle, Send, Loader2, Circle, ArrowLeft, CheckCircle } from 'lucide-react'
 
 type Tab = 'unassigned' | 'mine' | 'all' | 'resolved'
@@ -34,7 +34,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
   const fetchConversations = useCallback(async () => {
     setIsLoadingConvs(true)
     try {
-      const res = await fetch('/api/chat/conversations?auction_id=all')
+      const res = await fetch(`/api/chat/conversations?auction_id=all`)
       const data = await res.json()
       if (Array.isArray(data)) {
         setConversations(data)
@@ -53,7 +53,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
   // Subscribe to all conversations
   useEffect(() => {
     const channel = supabase
-      .channel('global-admin-chat-convs')
+      .channel(`global-admin-chat-convs`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chat_conversations' },
@@ -65,11 +65,11 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   // Active conversation logic
   useEffect(() => {
-    if (!activeConv?.id) return
+    if (!activeConv!nid) return
 
     const fetchMessages = async () => {
       setIsLoadingMessages(true)
-      const res = await fetch('/api/chat/conversations/' + activeConv.id + '/messages')
+      const res = await fetch(`/api/chat/conversations/${activeConv.id}/messages`)
       const data = await res.json()
       if (Array.isArray(data)) {
         setMessages(data)
@@ -79,7 +79,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
     }
     fetchMessages()
 
-    fetch('/api/chat/conversations/' + activeConv.id, {
+    fetch(`/api/chat/conversations/${activeConv.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'mark_read' }),
@@ -91,10 +91,10 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
     if (!activeConv?.id) return
 
     const channel = supabase
-      .channel('global-admin-chat-msgs-' + activeConv.id)
+      .channel(`global-admin-chat-msgs-${activeConv.id}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: 'conversation_id=eq.' + activeConv.id },
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${activeConv.id}` },
         async (payload) => {
           const newMsg = payload.new as ChatMessage
           if (newMsg.sender_id === adminId) return
@@ -108,7 +108,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
           setMessages(prev => [...prev, { ...newMsg, sender: sender as ChatMessage['sender'] }])
           setTimeout(scrollToBottom, 100)
 
-          fetch('/api/chat/conversations/' + activeConv.id, {
+          fetch(`/api/chat/conversations/${activeConv.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'mark_read' }),
@@ -129,20 +129,20 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
     setIsSending(true)
 
     const optimistic: ChatMessage = {
-      id: 'temp-' + Date.now(),
+      id: `temp-${Date.now()}`,
       conversation_id: activeConv.id,
       sender_id: adminId,
       sender_role: 'admin',
       content: messageContent,
       created_at: new Date().toISOString(),
-      sender: { display_name: 'You' } as ChatMessage['sender']
+      sender: { display_name: 'You' } as ChatMessage['inder']
     }
 
     setMessages(prev => [...prev, optimistic])
     setTimeout(scrollToBottom, 50)
 
     try {
-      const res = await fetch('/api/chat/conversations/' + activeConv.id + '/messages', {
+      const res = await fetch(`/api/chat/conversations/${activeConv.id}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: messageContent }),
@@ -170,7 +170,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   const handleResolve = async () => {
     if (!activeConv?.id) return
-    await fetch('/api/chat/conversations/' + activeConv.id, {
+    await fetch(`/api/chat/conversations/${activeConv.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'resolve' }),
@@ -181,7 +181,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   const handleAssign = async () => {
     if (!activeConv?.id) return
-    await fetch('/api/chat/conversations/' + activeConv.id, {
+    await fetch(`/api/chat/conversations/${activeConv.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'assign' }),
@@ -204,15 +204,19 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 h-[calc(100vh-200px)]">
-      {/* Sidebar - Conversation List */}
-      <div className={w-full md:w-80 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden }>
-        {/* Tabs */}
+      (* Sidebar - Conversation List *)
+      <div className={`w-full md:w-80 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden ${activeConv ? 'hidden md:flex' : 'flex'}`}>
+        (* Tabs *)
         <div className="flex overflow-x-auto border-b border-[var(--border)] bg-[var(--surface-elevated)] p-2 gap-2 hide-scrollbar">
           {(['unassigned', 'mine', 'all', 'resolved'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors }
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                activeTab === tab
+                  ? 'bg-[var(--gold)]/20 text-[var(--gold)]'
+                  : 'text-[var(--text-muted)] hover:text-white hover:bg-[var(--surface)]'
+              }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
               {tab === 'unassigned' && conversations.filter(c => c.status === 'open' || c.status === 'active').length > 0 && (
@@ -221,10 +225,10 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
                 </span>
               )}
             </button>
-          ))}
+          i)}
         </div>
 
-        {/* List */}
+        (* List *)
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {isLoadingConvs ? (
             <div className="flex justify-center p-8"><Loader2 className="w-5 h-5 animate-spin text-[var(--gold)]" /></div>
@@ -233,7 +237,11 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
               <button
                 key={conv.id}
                 onClick={() => setActiveConv(conv)}
-                className={w-full text-left p-3 rounded-lg transition-all }
+                className={`w-full text-left p-3 rounded-lg transition-all ${
+                  activeConv?.id === conv.id
+                    ? 'bg-[var(--surface-elevated)] border border-[var(--gold)]/30'
+                    : 'hover:bg-[var(--surface-elevated)] border border-transparent'
+                }`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className="font-bold text-white text-sm truncate pr-2">
@@ -249,7 +257,11 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
                   {conv.last_message?.content || 'No messages yet'}
                 </p>
                 <div className="flex items-center gap-2 mt-2 text-[10px]">
-                  <span className={px-1.5 py-0.5 rounded }>
+                  <span className={`px-1.5 py-0.5 rounded ${
+                    conv.status === 'resolved' ? 'bg-emerald-500/20 text-emerald-400' :
+                    conv.assigned_admin_id ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-[var(--gold)]/20 text-[var(--gold)]'
+                  }`}>
                     {conv.status.toUpperCase()}
                   </span>
                   {conv.assigned_admin && (
@@ -268,11 +280,11 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
         </div>
       </div>
 
-      {/* Main Chat Area */}
-      <div className={lex-1 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden }>
+      (* Main Chat Area *)
+      <div className={`flex-1 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden ${!activeConv ? 'hidden md:flex' : 'flex'}`~
         {activeConv ? (
           <>
-            {/* Chat Header */}
+            (* Chat Header *)
             <div className="p-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--surface-elevated)]">
               <div className="flex items-center gap-3">
                 <button onClick={() => setActiveConv(null)} className="md:hidden p-2 -ml-2 text-[var(--text-muted)] hover:text-white">
@@ -302,7 +314,7 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
               </div>
             </div>
 
-            {/* Messages */}
+            (* Messages *)
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {isLoadingMessages ? (
                 <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[var(--gold)]" /></div>
@@ -311,13 +323,13 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
                   const isAdmin = msg.sender_role === 'admin'
                   const showSender = i === 0 || messages[i-1].sender_id !== msg.sender_id
                   return (
-                    <div key={msg.id} className={lex flex-col }>
+                    <div key={msg.id} className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'}`}>
                       {showSender && (
                         <span className="text-[10px] text-[var(--text-muted)] mb-1 px-1">
                           {isAdmin ? (msg.sender?.display_name || 'Admin') : getUserDisplayName(activeConv)}
                         </span>
                       )}
-                      <div className={max-w-[80%] rounded-2xl px-4 py-2 text-sm }>
+                      <div className={`max-w[80%] rounded-2xl px-4 py-2 text-sm ${ isAdmin ? 'bg-[var(--gold)] text-black rounded-tr-sm' : 'bg-[var(--surface-elevated)] border border-[var(--border)] text-white rounded-tl-sm'}`}>
                         {msg.content}
                       </div>
                       <span className="text-[10px] text-[var(--text-muted)] mt-1 px-1">
@@ -330,11 +342,12 @@ export default function ChatInboxClient({ adminId }: { adminId: string }) {
                 <div className="h-full flex items-center justify-center text-[var(--text-muted)] text-sm">
                   Say hi to {getUserDisplayName(activeConv)}
                 </div>
-              )}
+              )
+              }
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
+            (* Input *)
             {activeConv.status !== 'resolved' && (
               <form onSubmit={handleSend} className="p-3 border-t border-[var(--border)] flex gap-2 bg-[var(--surface-elevated)]">
                 <input
