@@ -142,26 +142,33 @@ export default function EditAuctionPage() {
     
       }
 
-      if (regEnd <= regStart) {
-        throw new Error('Registration end time must be after registration start time')
-      }
-      if (aucStart <= regEnd) {
-        throw new Error('Auction start time must be after registration end time')
-      }
-      if (aucEnd <= aucStart) {
-        throw new Error('Auction end time must be after auction start time')
-      }
+              if (formData.auction_type === 'tender_base_fixed_bid') {
+          if (aucStart <= regStart) {
+            throw new Error('Bid start time must be after registration opens')
+          }
+          if (aucEnd <= aucStart) {
+            throw new Error('End bidding time must be after bid start time')
+          }
+        } else {
+          if (regEnd <= regStart) {
+            throw new Error('Registration end time must be after registration start time')
+          }
+          if (aucStart <= regEnd) {
+            throw new Error('Auction start time must be after registration end time')
+          }
+        }
 
-      const res = await fetch(`/api/admin/auctions/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          published_at: null, // Removed from edit form
-          registration_start: toUTCISO(formData.registration_start),
-          registration_end: toUTCISO(formData.registration_end),
-          auction_start: toUTCISO(formData.auction_start),
-          auction_end: new Date('2099-12-31T23:59:59Z').toISOString(),
+        const res = await fetch(`/api/admin/auctions/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            published_at: null, // Removed from edit form
+            registration_start: toUTCISO(formData.registration_start),
+            registration_end: formData.auction_type === 'tender_base_fixed_bid' ? toUTCISO(formData.auction_end) : toUTCISO(formData.registration_end),
+            auction_start: toUTCISO(formData.auction_start),
+            auction_end: formData.auction_type === 'tender_base_fixed_bid' ? toUTCISO(formData.auction_end) : new Date('2099-12-31T23:59:59Z').toISOString(),
+          }),
         }),
       })
 
