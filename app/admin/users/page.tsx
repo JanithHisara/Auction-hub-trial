@@ -1,9 +1,14 @@
-import { requirePermission } from '@/lib/auth'
+import { requirePermission, getCurrentUser } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/server'
 import { PERMISSIONS } from '@/lib/permissions'
 import UsersClient from '@/components/admin/UsersClient'
 
 export default async function UsersPage() {
   await requirePermission(PERMISSIONS.MANAGE_USERS)
+  const user = await getCurrentUser()
+  const supabase = await createClient()
+  const { data: userData } = await supabase.from('users').select('role').eq('id', user?.id).single()
+  const canChangeRoles = userData?.role === 'super_admin'
 
   return (
     <div className="space-y-6">
@@ -14,7 +19,7 @@ export default async function UsersPage() {
         </p>
       </div>
 
-      <UsersClient />
+      <UsersClient canChangeRoles={canChangeRoles} />
     </div>
   )
 }

@@ -72,9 +72,8 @@ export async function requirePermission(permissionKey: string) {
   }
 
   if (userData.role === 'admin') {
-    const excluded = ['manage_permissions', 'manage_users']
-    if (!excluded.includes(permissionKey)) return user
-    redirect('/')
+    if (permissionKey === 'manage_permissions') redirect('/')
+    return user
   }
 
   if (!ADMIN_ROLES.includes(userData.role as typeof ADMIN_ROLES[number])) {
@@ -134,8 +133,7 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
     const { data: allPerms } = await supabase
       .from('permissions')
       .select('key')
-    const excluded = ['manage_permissions', 'manage_users']
-    return (allPerms || []).map((p: { key: string }) => p.key).filter(k => !excluded.includes(k))
+    return (allPerms || []).map((p: { key: string }) => p.key).filter(k => k !== 'manage_permissions')
   }
 
   const { data: rolePerms } = await supabase

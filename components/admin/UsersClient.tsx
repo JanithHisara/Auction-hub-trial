@@ -16,7 +16,7 @@ interface UserRow {
   anonymous_name: string | null
 }
 
-export default function UsersClient() {
+export default function UsersClient({ canChangeRoles = true }: { canChangeRoles?: boolean }) {
   const [users, setUsers] = useState<UserRow[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -203,7 +203,9 @@ export default function UsersClient() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {changingRole === user.id ? (
+                      {!canChangeRoles ? (
+                        <span className="text-xs text-[var(--text-secondary)]">View Only</span>
+                      ) : changingRole === user.id ? (
                         <Loader2 className="w-4 h-4 animate-spin text-[var(--gold)] mx-auto" />
                       ) : user.role === 'super_admin' ? (
                         <span className="text-xs text-[var(--text-secondary)]">Protected</span>
