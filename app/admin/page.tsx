@@ -14,17 +14,20 @@ async function getStats() {
     redirect('/admin/auctions')
   }
 
+  // Super admin and admin see all platform data; others see their own
+  const isGlobalView = userData?.role === 'super_admin' || userData?.role === 'admin'
+
   // Get auctions
-  const { data: auctions } = await supabase
-    .from('auctions')
-    .select('id, status')
-    .eq('admin_id', user.id)
+  const auctionsQuery = supabase.from('auctions').select('id, status')
+  const { data: auctions } = isGlobalView
+    ? await auctionsQuery
+    : await auctionsQuery.eq('admin_id', user.id)
 
   // Get gems
-  const { data: gems } = await supabase
-    .from('gems')
-    .select('id, status, starting_price')
-    .eq('admin_id', user.id)
+  const gemsQuery = supabase.from('gems').select('id, status, starting_price')
+  const { data: gems } = isGlobalView
+    ? await gemsQuery
+    : await gemsQuery.eq('admin_id', user.id)
 
   // Get bids
   const { data: bids } = await supabase
