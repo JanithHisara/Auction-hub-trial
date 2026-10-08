@@ -88,8 +88,8 @@ export default function GlobalChatNotifier({ userId, role }: { userId?: string; 
       {notifications.map(notif => {
         // Link logic: Admins click to go to auction admin page, users to their room
         const linkHref = (role === 'admin' || role === 'super_admin' || role === 'moderator') 
-          ? /admin/auctions/ + notif.auction_id
-          : /auctions/ + notif.auction_id
+          ? '/admin/auctions/' + notif.auction_id
+          : '/auctions/' + notif.auction_id
 
         return (
           <div key={notif.id} className="bg-[var(--surface-elevated)] border border-[var(--gold)]/30 rounded-xl p-4 shadow-xl pointer-events-auto animate-in slide-in-from-right-8 fade-in duration-300">
